@@ -20,6 +20,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+#if DEBUG
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<InventoryHQDbContext>();
+    db.Database.Migrate();
+}
+
+# endif
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
