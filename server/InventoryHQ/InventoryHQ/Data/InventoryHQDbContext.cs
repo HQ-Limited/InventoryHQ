@@ -1,13 +1,107 @@
 ﻿using InventoryHQ.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using System;
 
 namespace InventoryHQ.Data
 {
     public class InventoryHQDbContext : DbContext
     {
-        public InventoryHQDbContext(DbContextOptions<InventoryHQDbContext> options) 
+        public InventoryHQDbContext(DbContextOptions<InventoryHQDbContext> options)
             : base(options) { }
 
-        public DbSet<TestModel> Test { get; set; }
+        public DbSet<Product> Products { get; set; }
+
+        public DbSet<Variation> Variations { get; set; }
+
+        public DbSet<Models.Attribute> Attributes { get; set; }
+
+        public DbSet<Category> Categories { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+                {
+                    var method = typeof(InventoryHQDbContext).GetMethod(nameof(SetSoftDeleteFilter), BindingFlags.NonPublic | BindingFlags.Static)
+                        ?.MakeGenericMethod(entityType.ClrType);
+
+                    method?.Invoke(null, [modelBuilder]);
+                }
+            }
+
+            modelBuilder.Entity<Variation>()
+                        .HasIndex(v => v.SKU)
+                        .IsUnique();
+
+            // TODO: Check if this works.
+            modelBuilder.Entity<Models.Attribute>()
+                        .HasIndex(at => new { at.Name, at.Value })
+                        .IsUnique();
+
+            modelBuilder.Entity<Category>()
+                        .HasOne(c => c.Parent)
+                        .WithMany(c => c.Children)
+                        .HasForeignKey(f => f.ParentId)
+                        .OnDelete(DeleteBehavior.Restrict);
+
+            base.OnModelCreating(modelBuilder);
+        }
+
+        public override int SaveChanges()
+        {
+            HandleUpdate();
+            HandleSoftDelete();
+
+            return base.SaveChanges();
+        }
+
+        private void HandleUpdate()
+        {
+            var entries = ChangeTracker
+                .Entries()
+                .Where(e => e.Entity is BaseEntity && (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+            foreach (var entityEntry in entries)
+            {
+                ((BaseEntity)entityEntry.Entity).UpdatedDate = DateTime.UtcNow;
+
+                if (entityEntry.State == EntityState.Added)
+                {
+                    ((BaseEntity)entityEntry.Entity).CreatedDate = DateTime.UtcNow;
+                }
+            }
+        }
+
+        private void HandleSoftDelete()
+        {
+            var entities = ChangeTracker.Entries<BaseEntity>();
+
+            foreach (var entityEntry in entities)
+            {
+                if (entityEntry.State == EntityState.Deleted)
+                {
+                    entityEntry.State = EntityState.Modified;
+                    entityEntry.Entity.IsDeleted = true;
+                }
+            }
+        }
+
+        private static void SetSoftDeleteFilter<TEntity>(ModelBuilder builder) where TEntity : BaseEntity
+        {
+            builder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
+        }
+
+        public async Task RestoreAsync<TEntity>(int id) where TEntity : BaseEntity
+        {
+            var entity = await Set<TEntity>().IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id);
+            if (entity != null && entity.IsDeleted)
+            {
+                entity.IsDeleted = false;
+                Update(entity);
+                await SaveChangesAsync();
+            }
+        }
     }
 }
