@@ -1,4 +1,7 @@
 using InventoryHQ.Data;
+using InventoryHQ.Middlewares;
+using InventoryHQ.Profiles;
+using InventoryHQ.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +15,15 @@ builder.Services.AddDbContext<InventoryHQDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddTransient<ProductService>();
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<InventoryHQProfile>();
+});
+
 var app = builder.Build();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -31,9 +42,7 @@ using (var scope = app.Services.CreateScope())
 # endif
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
