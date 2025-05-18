@@ -25,6 +25,7 @@ namespace InventoryHQ.Controllers
         public async Task<ActionResult<ProductDto>> GetProductById(int id)
         {
             var product = await _productService.GetProductByIdAsync(id);
+
             if (product == null)
             {
                 return NotFound($"There is no product with id {id}");
