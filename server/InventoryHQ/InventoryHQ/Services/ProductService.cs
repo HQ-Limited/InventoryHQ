@@ -61,7 +61,6 @@ namespace InventoryHQ.Services
             }
 
             _mapper.Map(dto, product);
-
             await _data.SaveChangesAsync();
 
             return product.Id;

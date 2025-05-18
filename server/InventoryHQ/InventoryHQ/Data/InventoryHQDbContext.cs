@@ -96,6 +96,7 @@ namespace InventoryHQ.Data
         public async Task RestoreAsync<TEntity>(int id) where TEntity : BaseEntity
         {
             var entity = await Set<TEntity>().IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id);
+
             if (entity != null && entity.IsDeleted)
             {
                 entity.IsDeleted = false;
