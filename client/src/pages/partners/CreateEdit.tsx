@@ -1,30 +1,14 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import type { FormProps } from 'antd';
-import { Button, Checkbox, Form, Input, InputNumber, Select } from 'antd';
+import { Button, Form, Input, InputNumber, Select } from 'antd';
+import { PartnerType } from './common';
 
-type FieldType = {
-    company?: string;
-    legalRepresentative?: string;
-    city?: string;
-    address?: string;
-    uic?: string;
-    vat?: string;
-    phone?: string;
-    email?: string;
-    bank?: string;
-    bic?: string;
-    iban?: string;
-    discount?: number;
-    priceGroup?: string;
-    type?: string;
-};
-
-const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
+const onFinish: FormProps<PartnerType>['onFinish'] = (values) => {
     console.log('Success:', values);
 };
 
-const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
+const onFinishFailed: FormProps<PartnerType>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
 };
 
@@ -52,6 +36,7 @@ const CreateEdit: React.FC = () => {
 
     return (
         <Form
+            style={{ padding: '20px' }}
             layout="vertical"
             variant="filled"
             onFinish={onFinish}
@@ -60,7 +45,7 @@ const CreateEdit: React.FC = () => {
             scrollToFirstError
             initialValues={values}
         >
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="Company"
                 name="company"
                 rules={[
@@ -71,7 +56,7 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="Legal Representative"
                 name="legalRepresentative"
                 rules={[{ max: 100 }]}
@@ -79,15 +64,15 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType> label="City" name="city" rules={[{ max: 50 }]}>
+            <Form.Item<PartnerType> label="City" name="city" rules={[{ max: 50 }]}>
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType> label="Address" name="address" rules={[{ max: 100 }]}>
+            <Form.Item<PartnerType> label="Address" name="address" rules={[{ max: 100 }]}>
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="Unified Identification Code (UIC)"
                 name="uic"
                 rules={[
@@ -98,11 +83,11 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType> label="VAT Number" name="vat" rules={[{ max: 20 }]}>
+            <Form.Item<PartnerType> label="VAT Number" name="vat" rules={[{ max: 20 }]}>
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="Phone Number"
                 name="phone"
                 rules={[
@@ -117,7 +102,7 @@ const CreateEdit: React.FC = () => {
                 <Input type="tel" />
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="Email"
                 name="email"
                 rules={[
@@ -131,11 +116,11 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType> label="Bank" name="bank" rules={[{ max: 50 }]}>
+            <Form.Item<PartnerType> label="Bank" name="bank" rules={[{ max: 50 }]}>
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="BIC"
                 name="bic"
                 rules={[
@@ -158,7 +143,7 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="IBAN"
                 name="iban"
                 rules={[
@@ -172,7 +157,7 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="Discount %"
                 name="discount"
                 rules={[
@@ -199,7 +184,7 @@ const CreateEdit: React.FC = () => {
                 />
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="Price group"
                 name="priceGroup"
                 rules={[{ required: true, message: 'Please select a price group!' }]}
@@ -210,7 +195,7 @@ const CreateEdit: React.FC = () => {
                 </Select>
             </Form.Item>
 
-            <Form.Item<FieldType>
+            <Form.Item<PartnerType>
                 label="Type"
                 name="type"
                 rules={[{ required: true, message: 'Please select a type!' }]}
@@ -221,7 +206,7 @@ const CreateEdit: React.FC = () => {
                 </Select>
             </Form.Item>
 
-            <Form.Item label={null}>
+            <Form.Item style={{ textAlign: 'center' }} label={null}>
                 <Button type="primary" htmlType="submit">
                     Submit
                 </Button>
