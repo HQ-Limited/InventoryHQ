@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import type { GetProp, TableProps } from 'antd';
-import { Button, FloatButton, Space, Table } from 'antd';
+import type { CheckboxProps, GetProp, MenuProps, PopconfirmProps, TableProps } from 'antd';
+import {
+    Button,
+    Checkbox,
+    Dropdown,
+    FloatButton,
+    message,
+    Popconfirm,
+    Space,
+    Table,
+    Typography,
+} from 'antd';
 import type { AnyObject } from 'antd/es/_util/type';
 import type { SorterResult } from 'antd/es/table/interface';
 import { createStyles } from 'antd-style';
 import { Link } from 'react-router-dom';
-import { PlusOutlined } from '@ant-design/icons';
+import { DownOutlined, PlusOutlined } from '@ant-design/icons';
+import { PartnerType } from './common';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
-
-interface DataType {
-    name: string;
-    gender: string;
-    email: string;
-    id: string;
-}
 
 interface TableParams {
     pagination?: TablePaginationConfig;
@@ -24,53 +28,69 @@ interface TableParams {
     filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
 }
 
-const columns: ColumnsType<DataType> = [
+const confirm: PopconfirmProps['onConfirm'] = (e) => {
+    console.log(e);
+    message.success('Click on Yes');
+};
+
+const cancel: PopconfirmProps['onCancel'] = (e) => {
+    console.log(e);
+    message.error('Click on No');
+};
+
+const columns: ColumnsType<PartnerType> = [
     {
-        title: 'Name',
-        dataIndex: 'name',
+        key: 'company',
+        title: 'Company',
+        dataIndex: 'company',
         sorter: true,
         width: '20%',
     },
     {
-        title: 'Gender',
-        dataIndex: 'gender',
+        key: 'uic',
+        title: 'UIC',
+        dataIndex: 'uic',
         sorter: true,
+    },
+    {
+        key: 'priceGroup',
+        title: 'Price Group',
+        dataIndex: 'priceGroup',
         filters: [
-            { text: 'Male', value: 'male' },
-            { text: 'Female', value: 'female' },
-            {
-                text: 'Submenu',
-                value: 'Submenu',
-                children: [
-                    {
-                        text: 'Green',
-                        value: 'Green',
-                    },
-                    {
-                        text: 'Black',
-                        value: 'Black',
-                    },
-                ],
-            },
+            { text: 'Wholesale', value: 'wholesale' },
+            { text: 'Retail', value: 'retail' },
         ],
-        width: '20%',
     },
     {
-        title: 'Email',
-        dataIndex: 'email',
+        key: 'type',
+        title: 'Type',
+        dataIndex: 'type',
+        filters: [
+            { text: 'Customer', value: 'customer' },
+            { text: 'Supplier', value: 'supplier' },
+        ],
+        hidden: true,
     },
     {
-        title: 'Action',
         key: 'action',
+        title: 'Action',
         render: (_, record) => (
             <Space size="middle">
                 <Link to={`/partners/${record.id}`}>
                     <Button type="primary">Edit</Button>
                 </Link>
-                <Button type="primary" danger>
-                    {/* TODO: Create a modal for confirmation */}
-                    Delete
-                </Button>
+                <Popconfirm
+                    title="Confirmation"
+                    description="Are you sure you want to delete this record?"
+                    onConfirm={confirm}
+                    onCancel={cancel}
+                    okText="Yes"
+                    cancelText="No"
+                >
+                    <Button type="primary" danger>
+                        Delete
+                    </Button>
+                </Popconfirm>
             </Space>
         ),
     },
@@ -137,8 +157,38 @@ const getRandomuserParams = (params: TableParams) => {
 
 const View: React.FC = () => {
     const { styles } = useStyle();
-    const [data, setData] = useState<DataType[]>();
+    const [data, setData] = useState<PartnerType[]>();
     const [loading, setLoading] = useState(false);
+    const [hiddenColumns, setHiddenColumns] = useState<string[]>(
+        columns.filter((item) => item?.hidden == true).map((item) => item.key as string)
+    );
+
+    const onChange: CheckboxProps['onChange'] = (e) => {
+        if (hiddenColumns.includes(e.target.value)) {
+            setHiddenColumns(hiddenColumns.filter((item) => item !== e.target.value));
+        } else {
+            setHiddenColumns([...hiddenColumns, e.target.value]);
+        }
+    };
+
+    const items: MenuProps['items'] = columns.map((item) => ({
+        key: item.key,
+        label: (
+            <Checkbox
+                onChange={onChange}
+                checked={!hiddenColumns.includes(item.key as string)}
+                value={item.key as string}
+            >
+                {item.title as string}
+            </Checkbox>
+        ),
+    }));
+
+    const newColumns = columns.map((item) => ({
+        ...item,
+        hidden: hiddenColumns.includes(item.key as string),
+    }));
+
     const [tableParams, setTableParams] = useState<TableParams>({
         pagination: {
             current: 1,
@@ -152,6 +202,7 @@ const View: React.FC = () => {
 
     const fetchData = () => {
         setLoading(true);
+
         fetch(`https://660d2bd96ddfa2943b33731c.mockapi.io/api/users?${params.toString()}`)
             .then((res) => res.json())
             .then((res) => {
@@ -177,7 +228,11 @@ const View: React.FC = () => {
         JSON.stringify(tableParams.filters),
     ]);
 
-    const handleTableChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter) => {
+    const handleTableChange: TableProps<PartnerType>['onChange'] = (
+        pagination,
+        filters,
+        sorter
+    ) => {
         setTableParams({
             pagination,
             filters,
@@ -198,14 +253,27 @@ const View: React.FC = () => {
                     type="primary"
                     icon={<PlusOutlined />}
                     tooltip={{
-                        title: 'Create a new partner',
+                        title: 'Create new partner',
                         color: 'blue',
                     }}
                 ></FloatButton>
             </Link>
-            <Table<DataType>
+            <Link to="/partners/new">
+                <Button type="primary" onClick={fetchData}>
+                    Create new partner
+                </Button>
+            </Link>
+            <Dropdown menu={{ items }}>
+                <Typography.Link>
+                    <Space>
+                        Columns
+                        <DownOutlined />
+                    </Space>
+                </Typography.Link>
+            </Dropdown>
+            <Table<PartnerType>
                 className={styles.customTable}
-                columns={columns}
+                columns={newColumns}
                 rowKey={(record) => record.id}
                 dataSource={data}
                 pagination={tableParams.pagination}
