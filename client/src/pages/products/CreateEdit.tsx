@@ -1,190 +1,121 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import type { CheckboxChangeEvent, FormProps } from 'antd';
-import {
-    Button,
-    Checkbox,
-    Form,
-    Input,
-    InputNumber,
-    Segmented,
-    Select,
-    Tabs,
-    TreeSelect,
-} from 'antd';
+import { Button, Checkbox, Form, Input, InputNumber, TreeSelect } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
-import { AttributeType, VariationType } from './common';
 
-type SimpleProductType = VariationType;
-
-type VariableProductType = {
-    id: number;
-    name: string;
-    description: string;
-    category_id: [CategoryType];
-    images: [string];
-    variatons: [CommonProductProperties];
-};
-
-const onFinish: FormProps<PartnerType>['onFinish'] = (values) => {
+const onFinish: FormProps<SimpleProductType>['onFinish'] = (values) => {
     console.log('Success:', values);
 };
 
-const onFinishFailed: FormProps<PartnerType>['onFinishFailed'] = (errorInfo) => {
+const onFinishFailed: FormProps<SimpleProductType>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
 };
 
-const categories = [
-    {
-        value: 'parent 1',
-        title: 'parent 1',
-        children: [
-            {
-                value: 'parent 1-0',
-                title: 'parent 1-0',
-                children: [
-                    {
-                        value: 'leaf1',
-                        title: 'my leaf',
-                    },
-                    {
-                        value: 'leaf2',
-                        title: 'your leaf',
-                    },
-                ],
-            },
-            {
-                value: 'parent 1-1',
-                title: 'parent 1-1',
-                children: [
-                    {
-                        value: 'sss',
-                        title: <b style={{ color: '#08c' }}>sss</b>,
-                    },
-                ],
-            },
-        ],
-    },
-];
+type SimpleProductType = {
+    id?: number;
+    name: string;
+    description?: string;
+    price: number;
+    quantity: number;
+    manage_quantity: boolean;
+    sku?: string;
+    categories: [number];
+};
 
-const generalTabsChildren = (
-    <>
-        <Form.Item<VariationType>
-            label="Price"
-            name="price"
-            rules={[
-                {
-                    required: true,
-                    message: 'Please enter the price!',
-                },
-                {
-                    validator: (_, value) => {
-                        if (value <= 0) {
-                            return Promise.reject('Price must be greater than 0!');
-                        }
-                        return Promise.resolve();
-                    },
-                },
-            ]}
-        >
-            <InputNumber style={{ width: '100%' }} precision={2} step={0.01} min={0.01} />
-        </Form.Item>
+type Category = {
+    id: number;
+    name: string;
+    parent?: number;
+};
 
-        <Form.Item<VariationType> name="manage_quantity" valuePropName="checked">
-            <Checkbox>Manage quantity</Checkbox>
-        </Form.Item>
-
-        <Form.Item<VariationType>
-            label="Quantity"
-            name="quantity"
-            rules={[
-                {
-                    required: true,
-                    message: 'Please enter the quantity!',
-                },
-                {
-                    validator: (_, value) => {
-                        if (value <= 0) {
-                            return Promise.reject('Quantity must be greater than 0!');
-                        }
-                        return Promise.resolve();
-                    },
-                },
-            ]}
-        >
-            <InputNumber style={{ width: '100%' }} precision={2} step={0.01} min={0.01} />
-        </Form.Item>
-    </>
-);
-/* 
-const AttributeInput = (attribute: Attribute, variations: boolean) => {
-    return (
-        <>
-            <Form.Item<AttributeType>
-                label={attribute.name}
-                name="name"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Please select at least one value!',
-                    },
-                ]}
-            >
-                <Select>
-                    {attribute.values.map((value) => (
-                        <Select.Option value={value}>{value}</Select.Option>
-                    ))}
-                </Select>
-            </Form.Item>
-            {variations && (
-                <Form.Item name="variation" valuePropName="checked">
-                    <Checkbox>Use as variation</Checkbox>
-                </Form.Item>
-            )}
-        </>
-    );
-}; */
+type CategoriesTree = {
+    value: number;
+    title: string;
+    children: CategoriesTree[];
+};
 
 const CreateEdit: React.FC = () => {
     const params = useParams();
     const id = params.id;
     const [values, setValues] = useState({
         manage_quantity: true,
+        categories: [],
     });
-    const [productType, setProductType] = useState('simple');
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
 
-    const simpleTabs = [
-        {
-            label: 'General',
-            key: 'general',
-            children: generalTabsChildren,
-        },
-    ];
+    useEffect(() => {
+        if (id) {
+            //TODO Fetch product info
+            // setValues()
+        }
 
-    const variableTabs = [
-        {
-            label: 'General',
-            key: 'general',
-            children: <div>gen</div>,
-        },
-        {
-            label: 'Attributes',
-            key: 'attributes',
-            children: <div>attr</div>,
-        },
-    ];
+        //TODO Fetch categories
+        const data = [
+            {
+                id: 0,
+                name: 'Category 1',
+            },
+            {
+                id: 1,
+                name: 'Category 2',
+            },
+            {
+                id: 2,
+                name: 'Category 2.1',
+                parent: 1,
+            },
+        ];
+        setCategories(data);
 
-    const [tabs, setProductTabs] = useState(
-        productType ? (productType == 'simple' ? simpleTabs : variableTabs) : []
-    );
+        const newTree: CategoriesTree[] = [];
 
-    const onProductTypeChange = (value: string) => {
-        setProductType(value);
-        setProductTabs(value === 'simple' ? simpleTabs : variableTabs);
+        data.map((category) => {
+            if (!category.parent) {
+                // Check if already exists
+                const exists = newTree.find((c) => c.value === category.id);
+
+                if (!exists)
+                    newTree.push({
+                        value: category.id,
+                        title: category.name,
+                        children: [],
+                    });
+            } else {
+                // Check if parent exists in categoriesTree
+                const parentExists = newTree.find((c) => c.value === category.parent);
+                if (parentExists) {
+                    parentExists.children.push({
+                        value: category.id,
+                        title: category.name,
+                        children: [],
+                    });
+                } else {
+                    // Create parent first
+                    const parent = categories.find((c) => c.id === category.parent);
+
+                    newTree.push({
+                        value: parent.id,
+                        title: parent.name,
+                        children: [
+                            {
+                                value: category.id,
+                                title: category.name,
+                                children: [],
+                            },
+                        ],
+                    });
+                }
+            }
+        });
+
+        setCategoriesTree(newTree);
+    }, []);
+
+    const onManageQuantityChange = (e: CheckboxChangeEvent) => {
+        setValues({ ...values, manage_quantity: e.target.checked });
     };
-
-    // Get all categories from '/api/categories'
-    // Get all attributes from '/api/attributes'
 
     return (
         <Form
@@ -197,7 +128,7 @@ const CreateEdit: React.FC = () => {
             scrollToFirstError
             initialValues={values}
         >
-            <Form.Item<PartnerType>
+            <Form.Item<SimpleProductType>
                 label="Name"
                 name="name"
                 rules={[
@@ -208,13 +139,73 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType> label="Description" name="description" rules={[{ max: 1000 }]}>
+            <Form.Item<SimpleProductType>
+                label="Description"
+                name="description"
+                rules={[{ max: 1000 }]}
+            >
                 <TextArea rows={6} />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<SimpleProductType>
+                label="Price"
+                name="price"
+                rules={[
+                    {
+                        required: true,
+                        message: 'Please enter the price!',
+                    },
+                    {
+                        validator: (_, value) => {
+                            if (value <= 0) {
+                                return Promise.reject('Price must be greater than 0!');
+                            }
+                            return Promise.resolve();
+                        },
+                    },
+                ]}
+            >
+                <InputNumber style={{ width: '100%' }} precision={2} step={0.01} min={0.01} />
+            </Form.Item>
+
+            <Form.Item<SimpleProductType> name="manage_quantity" valuePropName="checked">
+                <Checkbox onChange={onManageQuantityChange}>Manage quantity</Checkbox>
+            </Form.Item>
+
+            {values.manage_quantity && (
+                <Form.Item<SimpleProductType>
+                    label="Quantity"
+                    name="quantity"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please enter the quantity!',
+                        },
+                        {
+                            validator: (_, value) => {
+                                if (value <= 0) {
+                                    return Promise.reject('Quantity must be greater than 0!');
+                                }
+                                return Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <InputNumber style={{ width: '100%' }} precision={2} step={0.01} min={0.01} />
+                </Form.Item>
+            )}
+
+            <Form.Item<SimpleProductType>
+                label="SKU"
+                name="sku"
+                rules={[{ required: true, message: 'Please enter the SKU!' }, { max: 100 }]}
+            >
+                <Input />
+            </Form.Item>
+
+            <Form.Item<SimpleProductType>
                 label="Categories"
-                name="category_id"
+                name="categories"
                 rules={[{ required: true, message: 'Please select atleast one category!' }]}
             >
                 <TreeSelect
@@ -226,23 +217,9 @@ const CreateEdit: React.FC = () => {
                     allowClear
                     multiple
                     treeDefaultExpandAll
-                    treeData={categories}
+                    treeData={categoriesTree}
                 />
             </Form.Item>
-
-            <Form.Item<PartnerType>
-                label="Type"
-                name="type"
-                initialValue={productType}
-                rules={[{ required: true, message: 'Please select a type!' }]}
-            >
-                <Select onChange={onProductTypeChange}>
-                    <Select.Option value="simple">Simple</Select.Option>
-                    <Select.Option value="variable">Variable</Select.Option>
-                </Select>
-            </Form.Item>
-
-            <Tabs tabPosition="left" items={tabs} />
 
             <Form.Item style={{ textAlign: 'center' }} label={null}>
                 <Button type="primary" htmlType="submit">
