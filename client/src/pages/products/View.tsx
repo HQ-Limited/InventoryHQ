@@ -17,6 +17,7 @@ import { createStyles } from 'antd-style';
 import { Link } from 'react-router-dom';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import { VariationType } from './common';
+import Card from 'antd/es/card/Card';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -29,13 +30,7 @@ interface TableParams {
 }
 
 const confirm: PopconfirmProps['onConfirm'] = (e) => {
-    console.log(e);
     message.success('Click on Yes');
-};
-
-const cancel: PopconfirmProps['onCancel'] = (e) => {
-    console.log(e);
-    message.error('Click on No');
 };
 
 const columns: ColumnsType<VariationType> = [
@@ -46,7 +41,13 @@ const columns: ColumnsType<VariationType> = [
         render: (_, record) => {
             if (record.images) {
                 if (typeof record.images == 'string') record.images = [record.images]; // TODO Remove this when backend API implemented. Since mockupapi returns only 1 string, instead of an array
-                return <img src={record.images} width="100" height="100" />;
+                return (
+                    <img
+                        src={record.images.length > 0 ? record.images[0] : ''}
+                        width="100"
+                        height="100"
+                    />
+                );
             } else {
                 return null;
             }
@@ -62,7 +63,6 @@ const columns: ColumnsType<VariationType> = [
         key: 'sku',
         title: 'SKU',
         dataIndex: 'sku',
-        sorter: true,
     },
     {
         key: 'price',
@@ -124,7 +124,6 @@ const columns: ColumnsType<VariationType> = [
                     title="Confirmation"
                     description="Are you sure you want to delete this record?"
                     onConfirm={confirm}
-                    onCancel={cancel}
                     okText="Yes"
                     cancelText="No"
                 >
@@ -167,11 +166,9 @@ const getRandomuserParams = (params: TableParams) => {
     const { pagination, filters, sortField, sortOrder, ...restParams } = params;
     const result: Record<string, any> = {};
 
-    // https://github.com/mockapi-io/docs/wiki/Code-examples#pagination
     result.limit = pagination?.pageSize;
     result.page = pagination?.current;
 
-    // https://github.com/mockapi-io/docs/wiki/Code-examples#filtering
     if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
@@ -180,13 +177,11 @@ const getRandomuserParams = (params: TableParams) => {
         });
     }
 
-    // https://github.com/mockapi-io/docs/wiki/Code-examples#sorting
     if (sortField) {
         result.orderby = sortField;
         result.order = sortOrder === 'ascend' ? 'asc' : 'desc';
     }
 
-    // 处理其他参数
     Object.entries(restParams).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
             result[key] = value;
@@ -243,7 +238,7 @@ const View: React.FC = () => {
 
     const fetchData = () => {
         setLoading(true);
-
+        console.log(tableParams);
         fetch(`https://683833182c55e01d184c6087.mockapi.io/api/products?${params.toString()}`)
             .then((res) => res.json())
             .then((res) => {
@@ -254,8 +249,6 @@ const View: React.FC = () => {
                     pagination: {
                         ...tableParams.pagination,
                         total: 100,
-                        // 100 is mock data, you should read it from server
-                        // total: data.totalCount,
                     },
                 });
             });
@@ -281,7 +274,6 @@ const View: React.FC = () => {
             sortField: Array.isArray(sorter) ? undefined : sorter.field,
         });
 
-        // `dataSource` is useless since `pageSize` changed
         if (pagination.pageSize !== tableParams.pagination?.pageSize) {
             setData([]);
         }
@@ -289,40 +281,49 @@ const View: React.FC = () => {
 
     return (
         <>
-            <Link to="/products/new">
-                <FloatButton
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    tooltip={{
-                        title: 'Create new product',
-                        color: 'blue',
-                    }}
-                ></FloatButton>
-            </Link>
-            <Link to="/products/new">
-                <Button type="primary" onClick={fetchData}>
-                    Create new product
-                </Button>
-            </Link>
-            <Dropdown menu={{ items }}>
-                <Typography.Link>
-                    <Space>
-                        Columns
-                        <DownOutlined />
-                    </Space>
-                </Typography.Link>
-            </Dropdown>
-            <Table<VariationType>
-                className={styles.customTable}
-                columns={newColumns}
-                rowKey={(record) => record.id}
-                dataSource={data}
-                pagination={tableParams.pagination}
-                bordered
-                scroll={{ y: '80vh', scrollToFirstRowOnChange: true }}
-                loading={loading}
-                onChange={handleTableChange}
-            />
+            <section className="table-wrapper">
+                <Card
+                    title={
+                        <Space>
+                            <Link to="/products/new">
+                                <FloatButton
+                                    type="primary"
+                                    icon={<PlusOutlined />}
+                                    tooltip={{
+                                        title: 'Create new product',
+                                        color: 'blue',
+                                    }}
+                                ></FloatButton>
+                            </Link>
+                            <Link to="/products/new">
+                                <Button type="primary" onClick={fetchData}>
+                                    Create new product
+                                </Button>
+                            </Link>
+                            <Dropdown menu={{ items }}>
+                                <Button type="primary">
+                                    <Space>
+                                        Columns
+                                        <DownOutlined />
+                                    </Space>
+                                </Button>
+                            </Dropdown>
+                        </Space>
+                    }
+                >
+                    <Table<VariationType>
+                        className={styles.customTable}
+                        columns={newColumns}
+                        rowKey={(record) => record.id}
+                        dataSource={data}
+                        pagination={tableParams.pagination}
+                        bordered
+                        scroll={{ y: '80vh', scrollToFirstRowOnChange: true }}
+                        loading={loading}
+                        onChange={handleTableChange}
+                    />
+                </Card>
+            </section>
         </>
     );
 };

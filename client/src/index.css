@@ -1,7 +1,16 @@
 body {
     margin: 0;
-    padding: 0;
+    padding: 3rem;
     background-color: #141414;
     height: 100vh;
     max-height: 100vh;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.table-wrapper {
+    width: 80%;
+    margin: auto;
 }
