@@ -1,5 +1,5 @@
 export type PartnerType = {
-    id: string;
+    id: number;
     company: string;
     legalRepresentative?: string;
     city?: string;

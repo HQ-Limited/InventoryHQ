@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import { ConfigProvider, theme } from 'antd';
 import ProductsView from './pages/products/View';
-import ProductsCreate from './pages/products/Create';
+import ProductsCreateEdit from './pages/products/CreateEdit';
 import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
 
@@ -18,7 +18,8 @@ function App() {
                 <Routes>
                     <Route path="/" element={<div>Home</div>} />
                     <Route path="/products" element={<ProductsView />} />
-                    <Route path="/products/create" element={<ProductsCreate />} />
+                    <Route path="/products/new" element={<ProductsCreateEdit />} />
+                    <Route path="/products/:id" element={<ProductsCreateEdit />} />
 
                     <Route path="/partners" element={<PartnersView />} />
                     <Route path="/partners/new" element={<PartnersCreateEdit />} />
