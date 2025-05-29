@@ -5,6 +5,7 @@ import ProductsView from './pages/products/View';
 import ProductsCreate from './pages/products/Create';
 import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
+import Home from './pages/Home';
 
 function App() {
     return (
@@ -16,7 +17,7 @@ function App() {
             <BrowserRouter>
                 {/* <MainLayout> */}
                 <Routes>
-                    <Route path="/" element={<div>Home</div>} />
+                    <Route path="/" element={<Home />} />
                     <Route path="/products" element={<ProductsView />} />
                     <Route path="/products/create" element={<ProductsCreate />} />
 
