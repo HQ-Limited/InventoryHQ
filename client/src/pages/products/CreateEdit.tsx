@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { CheckboxChangeEvent, FormProps } from 'antd';
-import { Button, Checkbox, Form, Input, InputNumber, TreeSelect } from 'antd';
+import { Button, Checkbox, Form, Input, InputNumber, message, TreeSelect } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
+import axios from 'axios';
 
 const onFinish: FormProps<SimpleProductType>['onFinish'] = (values) => {
     console.log('Success:', values);
@@ -14,13 +15,13 @@ const onFinishFailed: FormProps<SimpleProductType>['onFinishFailed'] = (errorInf
 
 type SimpleProductType = {
     id?: number;
-    name: string;
+    name?: string;
     description?: string;
-    price: number;
-    quantity: number;
+    price?: number;
+    quantity?: number;
     manage_quantity: boolean;
     sku?: string;
-    categories: [number];
+    categories?: [number];
 };
 
 type Category = {
@@ -36,81 +37,89 @@ type CategoriesTree = {
 };
 
 const CreateEdit: React.FC = () => {
+    const navigate = useNavigate();
     const params = useParams();
     const id = params.id;
-    const [values, setValues] = useState({
+    const [values, setValues] = useState<SimpleProductType>({
         manage_quantity: true,
-        categories: [],
     });
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
 
     useEffect(() => {
-        if (id) {
-            //TODO Fetch product info
-            // setValues()
-        }
+        const fetchData = async () => {
+            if (id) {
+                try {
+                    const req = await axios.get(`/api/products/${id}`);
 
-        //TODO Fetch categories
-        const data = [
-            {
-                id: 0,
-                name: 'Category 1',
-            },
-            {
-                id: 1,
-                name: 'Category 2',
-            },
-            {
-                id: 2,
-                name: 'Category 2.1',
-                parent: 1,
-            },
-        ];
-        setCategories(data);
-
-        const newTree: CategoriesTree[] = [];
-
-        data.map((category) => {
-            if (!category.parent) {
-                // Check if already exists
-                const exists = newTree.find((c) => c.value === category.id);
-
-                if (!exists)
-                    newTree.push({
-                        value: category.id,
-                        title: category.name,
-                        children: [],
-                    });
-            } else {
-                // Check if parent exists in categoriesTree
-                const parentExists = newTree.find((c) => c.value === category.parent);
-                if (parentExists) {
-                    parentExists.children.push({
-                        value: category.id,
-                        title: category.name,
-                        children: [],
-                    });
-                } else {
-                    // Create parent first
-                    const parent = categories.find((c) => c.id === category.parent);
-
-                    newTree.push({
-                        value: parent.id,
-                        title: parent.name,
-                        children: [
-                            {
-                                value: category.id,
-                                title: category.name,
-                                children: [],
-                            },
-                        ],
-                    });
+                    if (req.status === 200) {
+                        const product: SimpleProductType = req.data;
+                        setValues(product);
+                    } else {
+                        navigate('/404');
+                    }
+                } catch (e) {
+                    navigate('/404');
                 }
             }
-        });
 
-        setCategoriesTree(newTree);
+            try {
+                let cats: Category[] = [];
+                const req = await axios.get('/api/categories');
+
+                if (req.status === 200) {
+                    cats = req.data;
+                    setCategories(cats);
+
+                    const newTree: CategoriesTree[] = [];
+
+                    cats.map((category) => {
+                        if (!category.parent) {
+                            // Check if already exists
+                            const exists = newTree.find((c) => c.value === category.id);
+
+                            if (!exists)
+                                newTree.push({
+                                    value: category.id,
+                                    title: category.name,
+                                    children: [],
+                                });
+                        } else {
+                            // Check if parent exists in categoriesTree
+                            const parentExists = newTree.find((c) => c.value === category.parent);
+                            if (parentExists) {
+                                parentExists.children.push({
+                                    value: category.id,
+                                    title: category.name,
+                                    children: [],
+                                });
+                            } else {
+                                // Create parent first
+                                const parent = categories.find((c) => c.id === category.parent);
+
+                                newTree.push({
+                                    value: parent.id,
+                                    title: parent.name,
+                                    children: [
+                                        {
+                                            value: category.id,
+                                            title: category.name,
+                                            children: [],
+                                        },
+                                    ],
+                                });
+                            }
+                        }
+                    });
+                    setCategoriesTree(newTree);
+                } else {
+                    message.error('Failed to fetch categories');
+                }
+            } catch (e) {
+                message.error('Failed to fetch categories');
+            }
+        };
+        fetchData();
     }, []);
 
     const onManageQuantityChange = (e: CheckboxChangeEvent) => {
