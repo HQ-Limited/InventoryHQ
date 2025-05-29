@@ -16,7 +16,7 @@ import type { SorterResult } from 'antd/es/table/interface';
 import { createStyles } from 'antd-style';
 import { Link } from 'react-router-dom';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
-import { PartnerType } from './common';
+import { PartnerType } from '../../types/PartnerTypes';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;

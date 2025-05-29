@@ -15,3 +15,5 @@ export type PartnerType = {
     priceGroup: 'retail' | 'wholesale';
     type: 'customer' | 'supplier';
 };
+
+export type CreatePartnerType = Omit<PartnerType, 'id'>;
