@@ -5,6 +5,7 @@ import ProductsView from './pages/products/View';
 import ProductsCreateEdit from './pages/products/CreateEdit';
 import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
+import Page404 from './pages/404';
 
 function App() {
     return (
@@ -24,6 +25,8 @@ function App() {
                     <Route path="/partners" element={<PartnersView />} />
                     <Route path="/partners/new" element={<PartnersCreateEdit />} />
                     <Route path="/partners/:id" element={<PartnersCreateEdit />} />
+
+                    <Route path="*" element={<Page404 />} />
                 </Routes>
                 {/* </MainLayout> */}
             </BrowserRouter>
