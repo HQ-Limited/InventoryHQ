@@ -1,22 +1,22 @@
 export type CommonProductProperties = {
     price: number;
-    quantity: number;
+    quantity?: number;
     manage_quantity: boolean;
     sku: string;
-    images: [string];
-    attribute_id: [AttributeType];
+    images?: string[];
+    attribute_id?: AttributeType[];
 };
 
 export type ProductType = {
     id: number;
-    variations: [number];
+    variations: number[];
 };
 
 export type VariationType = CommonProductProperties & {
     id: number;
     name: string;
     description: string;
-    category_id: [CategoryType];
+    category_id: CategoryType[];
 };
 
 export type AttributeType = {
