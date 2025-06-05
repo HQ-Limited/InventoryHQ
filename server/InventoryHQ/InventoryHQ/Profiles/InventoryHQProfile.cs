@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using InventoryHQ.Data.Models;
-using InventoryHQ.Models;
+using InventoryHQ.Models.DTOs;
 
 namespace InventoryHQ.Profiles
 {
@@ -10,6 +10,14 @@ namespace InventoryHQ.Profiles
         {
             CreateMap<Product, ProductDto>()
                 .ForMember(x => x.Variations, opt => opt.MapFrom(src => src.Variations))
+                .ForMember(x => x.Categories, opt => opt.MapFrom(src => src.Categories))
+                .ReverseMap();
+
+            CreateMap<Product, SimpleProductDto>()
+                .ForMember(x => x.Name, opt => opt.MapFrom(src => src.Variations.FirstOrDefault().Name))
+                .ForMember(x => x.Quantity, opt => opt.MapFrom(src => src.Variations.FirstOrDefault().Quantity))
+                .ForMember(x => x.Description, opt => opt.MapFrom(src => src.Variations.FirstOrDefault().Description))
+                .ForMember(x => x.SKU, opt => opt.MapFrom(src => src.Variations.FirstOrDefault().SKU))
                 .ForMember(x => x.Categories, opt => opt.MapFrom(src => src.Categories))
                 .ReverseMap();
 

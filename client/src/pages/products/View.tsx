@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import { VariationType } from './common';
 import Card from 'antd/es/card/Card';
+import productService from '../../services/productService';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -81,16 +82,19 @@ const columns: ColumnsType<VariationType> = [
         title: 'Categories',
         dataIndex: 'categories',
         render: (_, record) => {
-            if (record.category_id) {
-                if (typeof record.category_id == 'string')
-                    record.category_id = [record.category_id]; // TODO Remove this when backend API implemented. Since mockupapi returns only 1 string, instead of an array
-                return record.category_id.map((category) => (
-                    <Link to={`/categories/${category}`}>{category}</Link>
-                ));
-
-                return record.category_id.map((category) => {
-                    <Link to={`/categories/${category.id}`}>{category.name}</Link>;
-                });
+            if (record.categories) {
+                return (
+                    <>
+                        {record.categories.map((category, i) => (
+                            <>
+                                <Link key={i} to={`/categories/${category.id}`}>
+                                    {category.name}
+                                </Link>
+                                <br />
+                            </>
+                        ))}
+                    </>
+                );
             } else {
                 return null;
             }
@@ -154,43 +158,6 @@ const useStyle = createStyles(({ css, token }) => {
     };
 });
 
-const toURLSearchParams = <T extends AnyObject>(record: T) => {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(record)) {
-        params.append(key, value);
-    }
-    return params;
-};
-
-const getRandomuserParams = (params: TableParams) => {
-    const { pagination, filters, sortField, sortOrder, ...restParams } = params;
-    const result: Record<string, any> = {};
-
-    result.limit = pagination?.pageSize;
-    result.page = pagination?.current;
-
-    if (filters) {
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
-                result[key] = value;
-            }
-        });
-    }
-
-    if (sortField) {
-        result.orderby = sortField;
-        result.order = sortOrder === 'ascend' ? 'asc' : 'desc';
-    }
-
-    Object.entries(restParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-            result[key] = value;
-        }
-    });
-
-    return result;
-};
-
 const View: React.FC = () => {
     const { styles } = useStyle();
     const [data, setData] = useState<VariationType[]>();
@@ -228,55 +195,48 @@ const View: React.FC = () => {
     const [tableParams, setTableParams] = useState<TableParams>({
         pagination: {
             current: 1,
-            pageSize: 50,
+            pageSize: 20,
             position: ['bottomCenter'],
             hideOnSinglePage: true,
         },
     });
 
-    const params = toURLSearchParams(getRandomuserParams(tableParams));
-
-    const fetchData = () => {
-        setLoading(true);
-        console.log(tableParams);
-        fetch(`https://683833182c55e01d184c6087.mockapi.io/api/products?${params.toString()}`)
-            .then((res) => res.json())
-            .then((res) => {
-                setData(Array.isArray(res) ? res : []);
-                setLoading(false);
-                setTableParams({
-                    ...tableParams,
-                    pagination: {
-                        ...tableParams.pagination,
-                        total: 100,
-                    },
-                });
-            });
+    const fetchProducts = async (tableParams = {}) => {
+        const products = await productService.getProducts(tableParams);
+        return products;
     };
 
-    useEffect(fetchData, [
-        tableParams.pagination?.current,
-        tableParams.pagination?.pageSize,
-        tableParams?.sortOrder,
-        tableParams?.sortField,
-        JSON.stringify(tableParams.filters),
-    ]);
+    useEffect(() => {
+        setLoading(true);
 
-    const handleTableChange: TableProps<VariationType>['onChange'] = (
-        pagination,
-        filters,
-        sorter
-    ) => {
-        setTableParams({
+        fetchProducts()
+            .then((res) => {
+                setData(res.data);
+                setLoading(false);
+            })
+            .catch(console.error);
+    }, []);
+
+    const onTableChange: TableProps<VariationType>['onChange'] = (pagination, filters, sorter) => {
+        setLoading(true);
+
+        const newTableParams = {
             pagination,
             filters,
             sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
             sortField: Array.isArray(sorter) ? undefined : sorter.field,
-        });
+        };
 
-        if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-            setData([]);
-        }
+        setTableParams(newTableParams);
+
+        fetchProducts(newTableParams)
+            .then((res) => {
+                setData(res.data);
+                setLoading(false);
+            })
+            .catch(console.error);
+
+        setLoading(false);
     };
 
     return (
@@ -286,19 +246,7 @@ const View: React.FC = () => {
                     title={
                         <Space>
                             <Link to="/products/new">
-                                <FloatButton
-                                    type="primary"
-                                    icon={<PlusOutlined />}
-                                    tooltip={{
-                                        title: 'Create new product',
-                                        color: 'blue',
-                                    }}
-                                ></FloatButton>
-                            </Link>
-                            <Link to="/products/new">
-                                <Button type="primary" onClick={fetchData}>
-                                    Create new product
-                                </Button>
+                                <Button type="primary">Create new product</Button>
                             </Link>
                             <Dropdown menu={{ items }}>
                                 <Button type="primary">
@@ -318,9 +266,9 @@ const View: React.FC = () => {
                         dataSource={data}
                         pagination={tableParams.pagination}
                         bordered
-                        scroll={{ y: '80vh', scrollToFirstRowOnChange: true }}
+                        scroll={{ y: '50vh', scrollToFirstRowOnChange: false }}
                         loading={loading}
-                        onChange={handleTableChange}
+                        onChange={onTableChange}
                     />
                 </Card>
             </section>
