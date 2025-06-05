@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using InventoryHQ.Data;
 using InventoryHQ.Data.Models;
-using InventoryHQ.Models;
+using InventoryHQ.Models.DTOs;
+using InventoryHQ.Models.Request;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 
 namespace InventoryHQ.Services
 {
@@ -19,7 +22,31 @@ namespace InventoryHQ.Services
 
         public async Task<List<ProductDto>> GetProducts()
         {
-            return _mapper.Map<List<ProductDto>>(await _data.Products.ToListAsync());
+            return _mapper.Map<List<ProductDto>>(await _data.Products.Include(x => x.Variations).Include(x => x.Categories).ToListAsync());
+        }
+
+        public async Task<List<SimpleProductDto>> GetSimpleProducts(TableParams tableParams)
+        {
+            var query = _data.Products.AsQueryable();
+
+            var projected = query.ProjectTo<SimpleProductDto>(_mapper.ConfigurationProvider);
+
+            if (!string.IsNullOrEmpty(tableParams.SortField))
+            {
+                var simpleProducts = projected.OrderBy($"{tableParams.SortField} asc");
+
+                return await simpleProducts.ToListAsync();
+            }
+            return null;
+
+
+            //var simpleProducts = await _data.Products
+            //    .Where(p => p.Variations.Count == 1)
+            //    .Include(x => x.Variations)
+            //    .Include(x => x.Categories)
+            //    .ToListAsync();
+
+            //return _mapper.Map<List<SimpleProductDto>>(simpleProducts);
         }
 
         public async Task<ProductDto> GetProductByIdAsync(int id)
@@ -68,7 +95,7 @@ namespace InventoryHQ.Services
 
         public async Task<bool> DeleteProductAsync(int id)
         {
-            var entity = await _data.Products.FirstOrDefaultAsync(x=> x.Id == id);
+            var entity = await _data.Products.FirstOrDefaultAsync(x => x.Id == id);
 
             if (entity == null || entity.IsDeleted)
             {
