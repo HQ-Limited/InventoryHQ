@@ -4,6 +4,7 @@ import type { CheckboxChangeEvent, FormProps } from 'antd';
 import { Button, Checkbox, Form, Input, InputNumber, message, Select, TreeSelect } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 import axios from 'axios';
+import { WHOLESALE_ENABLED } from '../../global';
 
 const onFinish: FormProps<SimpleProductType>['onFinish'] = (values) => {
     console.log('Success:', values);
@@ -18,6 +19,7 @@ type SimpleProductType = {
     name?: string;
     description?: string;
     price?: number;
+    wholesalePrice?: number;
     quantity?: number;
     manage_quantity: boolean;
     sku?: string;
@@ -83,6 +85,7 @@ const CreateEdit: React.FC = () => {
                             name: 'Product 1',
                             description: 'Description 1',
                             price: 100,
+                            wholesalePrice: 70,
                             quantity: 10,
                             manage_quantity: true,
                             sku: 'sku-1',
@@ -442,6 +445,34 @@ const CreateEdit: React.FC = () => {
                 >
                     <InputNumber style={{ width: '100%' }} precision={2} step={0.01} min={0.01} />
                 </Form.Item>
+
+                {WHOLESALE_ENABLED && (
+                    <Form.Item<SimpleProductType>
+                        label="Wholesale Price"
+                        name="wholesalePrice"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter the wholesale price!',
+                            },
+                            {
+                                validator: (_, value) => {
+                                    if (value <= 0) {
+                                        return Promise.reject('Price must be greater than 0!');
+                                    }
+                                    return Promise.resolve();
+                                },
+                            },
+                        ]}
+                    >
+                        <InputNumber
+                            style={{ width: '100%' }}
+                            precision={2}
+                            step={0.01}
+                            min={0.01}
+                        />
+                    </Form.Item>
+                )}
 
                 <Form.Item<SimpleProductType> name="manage_quantity" valuePropName="checked">
                     <Checkbox onChange={onManageQuantityChange}>Manage quantity</Checkbox>
