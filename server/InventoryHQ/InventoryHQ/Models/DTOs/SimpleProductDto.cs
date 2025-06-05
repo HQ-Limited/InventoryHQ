@@ -1,9 +1,6 @@
-﻿using InventoryHQ.Data.Models;
-using System.ComponentModel.DataAnnotations;
-
-namespace InventoryHQ.Models
+﻿namespace InventoryHQ.Models.DTOs
 {
-    public class VariationDto
+    public class SimpleProductDto
     {
         public int Id { get; set; }
 
@@ -17,7 +14,7 @@ namespace InventoryHQ.Models
 
         public string SKU { get; set; }
 
-        public int ProductId { get; set; }
+        public List<CategoryDto> Categories { get; set; } = new();
 
         public List<AttributeDto> Attributes { get; set; } = new();
     }

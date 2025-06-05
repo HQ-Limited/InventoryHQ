@@ -1,4 +1,5 @@
-﻿using InventoryHQ.Models;
+﻿using InventoryHQ.Models.DTOs;
+using InventoryHQ.Models.Request;
 using InventoryHQ.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,10 +16,18 @@ namespace InventoryHQ.Controllers
             _productService = productService;
         }
 
+        [HttpPost("simple")]
+        public async Task<ActionResult<List<SimpleProductDto>>> GetSimpleProducts(TableParams @params)
+        {
+            var simpleProducts = await _productService.GetSimpleProducts(@params);
+            return simpleProducts;
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<ProductDto>>> GetProducts()
         {
-            return await _productService.GetProducts();
+            var products = await _productService.GetProducts();
+            return products;
         }
 
         [HttpGet("{id:int}")]
