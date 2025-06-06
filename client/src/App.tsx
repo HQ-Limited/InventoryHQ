@@ -3,6 +3,7 @@ import MainLayout from './layouts/MainLayout';
 import { ConfigProvider, theme } from 'antd';
 import ProductsView from './pages/products/View';
 import ProductsCreateEdit from './pages/products/CreateEdit';
+import VariableProductsCreateEdit from './pages/products/CreateEditVariable';
 import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
 import Page404 from './pages/404';
@@ -20,6 +21,8 @@ function App() {
                     <Route path="/" element={<div>Home</div>} />
                     <Route path="/products" element={<ProductsView />} />
                     <Route path="/products/new" element={<ProductsCreateEdit />} />
+                    <Route path="/products/new/variable" element={<VariableProductsCreateEdit />} />
+                    <Route path="/products/variable/:id" element={<VariableProductsCreateEdit />} />
                     <Route path="/products/:id" element={<ProductsCreateEdit />} />
 
                     <Route path="/partners" element={<PartnersView />} />
