@@ -16,12 +16,33 @@ import type { SorterResult } from 'antd/es/table/interface';
 import { createStyles } from 'antd-style';
 import { Link } from 'react-router-dom';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
-import { VariationType } from './common';
 import Card from 'antd/es/card/Card';
 import productService from '../../services/productService';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
+
+type VariationType = {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    quantity?: number;
+    manage_quantity: boolean;
+    sku: string;
+    images?: string[];
+    attribute_id?: {
+        id: number;
+        name: string;
+        value: string;
+    }[];
+    category_id: {
+        id: number;
+        name: string;
+        image: string;
+        parent: number;
+    }[];
+};
 
 interface TableParams {
     pagination?: TablePaginationConfig;
