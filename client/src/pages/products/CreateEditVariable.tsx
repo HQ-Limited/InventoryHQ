@@ -5,15 +5,14 @@ import { Button, Checkbox, Form, Input, InputNumber, message, Select, TreeSelect
 import TextArea from 'antd/es/input/TextArea';
 import axios from 'axios';
 import { WHOLESALE_ENABLED } from '../../global';
-import { Attribute, CategoriesTree, Category, SimpleProductType } from './common';
+import { Attribute, CategoriesTree, Category, VariableProductType } from './common';
 import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
-
-const onFinish: FormProps<SimpleProductType>['onFinish'] = (values) => {
+const onFinish: FormProps<VariableProductType>['onFinish'] = (values) => {
     console.log('Success:', values);
 };
 
-const onFinishFailed: FormProps<SimpleProductType>['onFinishFailed'] = (errorInfo) => {
+const onFinishFailed: FormProps<VariableProductType>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
 };
 
@@ -23,9 +22,9 @@ const CreateEdit: React.FC = () => {
     const navigate = useNavigate();
     const params = useParams();
     const id = params.id;
-    const [values, setValues] = useState<SimpleProductType>({
+    const [values, setValues] = useState<VariableProductType>({
         attributes: [],
-        manage_quantity: true,
+        variations: [],
     });
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
@@ -36,7 +35,7 @@ const CreateEdit: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            let product: SimpleProductType = {
+            let product: VariableProductType = {
                 attributes: [],
                 manage_quantity: true,
             };
@@ -359,6 +358,21 @@ const CreateEdit: React.FC = () => {
         });
     };
 
+    const onIsVariationalChange = ({ id, value }: { id: number; value: boolean }) => {
+        setValues((prev) => {
+            const newValues = {
+                ...prev,
+                attributes: prev.attributes.map((a) => {
+                    if (a.id === id) {
+                        a.isVariational = value;
+                    }
+                    return a;
+                }),
+            };
+            return newValues;
+        });
+    };
+
     return (
         <>
             {contextHolder}
@@ -372,7 +386,7 @@ const CreateEdit: React.FC = () => {
                 autoComplete="off"
                 scrollToFirstError
             >
-                <Form.Item<SimpleProductType>
+                <Form.Item<VariableProductType>
                     label="Name"
                     name="name"
                     rules={[
@@ -383,7 +397,7 @@ const CreateEdit: React.FC = () => {
                     <Input />
                 </Form.Item>
 
-                <Form.Item<SimpleProductType>
+                <Form.Item<VariableProductType>
                     label="Description"
                     name="description"
                     rules={[{ max: 1000 }]}
@@ -391,96 +405,7 @@ const CreateEdit: React.FC = () => {
                     <TextArea rows={6} />
                 </Form.Item>
 
-                <Form.Item<SimpleProductType>
-                    label="Price"
-                    name="price"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please enter the price!',
-                        },
-                        {
-                            validator: (_, value) => {
-                                if (value <= 0) {
-                                    return Promise.reject('Price must be greater than 0!');
-                                }
-                                return Promise.resolve();
-                            },
-                        },
-                    ]}
-                >
-                    <InputNumber style={{ width: '100%' }} precision={2} step={0.01} min={0.01} />
-                </Form.Item>
-
-                {WHOLESALE_ENABLED && (
-                    <Form.Item<SimpleProductType>
-                        label="Wholesale Price"
-                        name="wholesalePrice"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please enter the wholesale price!',
-                            },
-                            {
-                                validator: (_, value) => {
-                                    if (value <= 0) {
-                                        return Promise.reject('Price must be greater than 0!');
-                                    }
-                                    return Promise.resolve();
-                                },
-                            },
-                        ]}
-                    >
-                        <InputNumber
-                            style={{ width: '100%' }}
-                            precision={2}
-                            step={0.01}
-                            min={0.01}
-                        />
-                    </Form.Item>
-                )}
-
-                <Form.Item<SimpleProductType> name="manage_quantity" valuePropName="checked">
-                    <Checkbox onChange={onManageQuantityChange}>Manage quantity</Checkbox>
-                </Form.Item>
-
-                {values.manage_quantity && (
-                    <Form.Item<SimpleProductType>
-                        label="Quantity"
-                        name="quantity"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please enter the quantity!',
-                            },
-                            {
-                                validator: (_, value) => {
-                                    if (value <= 0) {
-                                        return Promise.reject('Quantity must be greater than 0!');
-                                    }
-                                    return Promise.resolve();
-                                },
-                            },
-                        ]}
-                    >
-                        <InputNumber
-                            style={{ width: '100%' }}
-                            precision={2}
-                            step={0.01}
-                            min={0.01}
-                        />
-                    </Form.Item>
-                )}
-
-                <Form.Item<SimpleProductType>
-                    label="SKU"
-                    name="sku"
-                    rules={[{ required: true, message: 'Please enter the SKU!' }, { max: 100 }]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item<SimpleProductType>
+                <Form.Item<VariableProductType>
                     label="Categories"
                     name="categories"
                     rules={[{ required: true, message: 'Please select atleast one category!' }]}
@@ -504,6 +429,7 @@ const CreateEdit: React.FC = () => {
                     onDeselect={onAttributeDeselect}
                     onClear={onAttributeClear}
                     options={attributesOptions}
+                    selected={values.attributes?.map((a) => a.id)}
                 />
 
                 {values.attributes &&
@@ -511,12 +437,15 @@ const CreateEdit: React.FC = () => {
                         const attr = attributes.find((o) => o.id === a.id)!;
                         return (
                             <AttributeValuesField
+                                showVariationCheckbox
                                 key={a.id}
                                 parentId={a.id}
                                 attribute={attr}
                                 onSelect={onAttributeValueSelect}
                                 onDeselect={onAttributeValueDeselect}
                                 onClear={onAttributeValueClear}
+                                onIsVariationalChange={onIsVariationalChange}
+                                onRemoveAttribute={onAttributeDeselect}
                             />
                         );
                     })}

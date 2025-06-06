@@ -1,33 +1,60 @@
-export type CommonProductProperties = {
-    price: number;
+// Used in Forms
+
+type ProductAttributes = {
+    id: number; // id of attribute name
+    values?: number[]; // id of attribute name + value (from attribute_values table)
+    isVariational?: boolean;
+};
+
+export type SimpleProductType = {
+    id?: number;
+    name?: string;
+    description?: string;
+    price?: number;
+    wholesalePrice?: number;
     quantity?: number;
     manage_quantity: boolean;
-    sku: string;
-    images?: string[];
-    attribute_id?: AttributeType[];
+    sku?: string;
+    categories?: number[];
+    attributes: ProductAttributes[];
 };
 
-export type ProductType = {
-    id: number;
-    variations: number[];
+export type VariableProductType = {
+    id?: number;
+    name?: string;
+    description?: string;
+    categories?: number[];
+    attributes: ProductAttributes[];
+    variations: Variation[];
 };
 
-export type VariationType = CommonProductProperties & {
+export type Variation = {
+    id?: number;
+    price?: number;
+    wholesalePrice?: number;
+    quantity?: number;
+    manage_quantity: boolean;
+    sku?: string;
+    attributes: ProductAttributes[];
+};
+
+export type Category = {
     id: number;
     name: string;
-    description: string;
-    category_id: CategoryType[];
+    parent?: number;
 };
 
-export type AttributeType = {
-    id: number;
-    name: string;
-    value: string;
+export type CategoriesTree = {
+    value: number;
+    title: string;
+    children: CategoriesTree[];
 };
 
-export type CategoryType = {
-    id: number;
+export type Attribute = {
+    id: number; // id of attribute name
     name: string;
-    image: string;
-    parent: number;
+    values?: {
+        id: number; // id of attribute name + value (from attribute_values table)
+        value: string;
+    }[];
 };
