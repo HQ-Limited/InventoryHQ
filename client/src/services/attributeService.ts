@@ -6,7 +6,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
 axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
 
 class AttributeService {
-    async getAttributes(id?: number | number[]): Promise<Partial<Attribute>[]> {
+    async getAttributes(id?: number | number[]): Promise<Attribute[]> {
         // const response = await axios.get(API_URL, id);
         // FAKE DATA
         const response = {

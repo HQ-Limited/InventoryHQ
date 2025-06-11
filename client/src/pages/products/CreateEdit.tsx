@@ -1,337 +1,119 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import SimpleForm from './SimpleForm';
+import VariableForm from './VariableForm';
+import { Button, Flex, Space } from 'antd';
+import Title from 'antd/es/typography/Title';
 import { useParams } from 'react-router-dom';
-import type { CheckboxChangeEvent, FormProps } from 'antd';
-import { Button, Form, message, Space } from 'antd';
-import { WHOLESALE_ENABLED } from '../../global';
-import { Attribute, CategoriesTree, Category, SimpleProductType } from '../../types/ProductTypes';
-import AttributesField from './components/AttributesField';
-import AttributeValuesField from './components/AttributeValuesField';
-import PriceField from './components/PriceField';
-import SKUField from './components/SKUField';
-import CategoryField from './components/CategoryField';
-import NameField from './components/NameField';
-import DescriptionField from './components/DescriptionField';
-import ManageQuantityField from './components/ManageQuantityField';
-import QuantityField from './components/QuantityField';
-import attributeService from '../../services/attributeService';
+import {
+    Attribute,
+    CategoriesTree,
+    Category,
+    SimpleProductType,
+    VariableProductType,
+} from '../../types/ProductTypes';
 import productService from '../../services/productService';
 import categoryService from '../../services/categoryService';
-const onFinish: FormProps<SimpleProductType>['onFinish'] = (values) => {
-    console.log('Success:', values);
-};
-
-const onFinishFailed: FormProps<SimpleProductType>['onFinishFailed'] = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-};
-
+import attributeService from '../../services/attributeService';
 const CreateEdit: React.FC = () => {
-    const [form] = Form.useForm();
+    const [type, setType] = useState<'simple' | 'variable' | undefined>();
     const params = useParams();
     const id = params.id;
-    const [values, setValues] = useState<Partial<SimpleProductType>>({
-        attributes: [],
-        manage_quantity: true,
-    });
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [product, setProduct] = useState<
+        Partial<SimpleProductType> | Partial<VariableProductType>
+    >({});
     const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
     const [attributes, setAttributes] = useState<Partial<Attribute>[]>([]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            let product: Partial<SimpleProductType> = {};
-            if (id) product = await productService.getProductById(Number(id));
+    const fetchData = async () => {
+        const categories: Category[] = await categoryService.getCategories();
 
-            const cats = await categoryService.getCategories();
-            setCategories(cats);
+        const newTree: CategoriesTree[] = [];
+        categories.map((category) => {
+            if (!category.parent) {
+                // Check if already exists
+                const exists = newTree.find((c) => c.value === category.id);
 
-            const newTree: CategoriesTree[] = [];
-
-            cats.map((category) => {
-                if (!category.parent) {
-                    // Check if already exists
-                    const exists = newTree.find((c) => c.value === category.id);
-
-                    if (!exists)
-                        newTree.push({
-                            value: category.id,
-                            title: category.name,
-                            children: [],
-                        });
+                if (!exists)
+                    newTree.push({
+                        value: category.id,
+                        title: category.name,
+                        children: [],
+                    });
+            } else {
+                // Check if parent exists in categoriesTree
+                const parentExists = newTree.find((c) => c.value === category.parent);
+                if (parentExists) {
+                    parentExists.children.push({
+                        value: category.id,
+                        title: category.name,
+                        children: [],
+                    });
                 } else {
-                    // Check if parent exists in categoriesTree
-                    const parentExists = newTree.find((c) => c.value === category.parent);
-                    if (parentExists) {
-                        parentExists.children.push({
-                            value: category.id,
-                            title: category.name,
-                            children: [],
-                        });
-                    } else {
-                        // Create parent first
-                        const parent = categories.find((c) => c.id === category.parent)!;
+                    // Create parent first
+                    const parent = categories.find((c) => c.id === category.parent)!;
 
-                        newTree.push({
-                            value: parent.id,
-                            title: parent.name,
-                            children: [
-                                {
-                                    value: category.id,
-                                    title: category.name,
-                                    children: [],
-                                },
-                            ],
-                        });
-                    }
+                    newTree.push({
+                        value: parent.id,
+                        title: parent.name,
+                        children: [
+                            {
+                                value: category.id,
+                                title: category.name,
+                                children: [],
+                            },
+                        ],
+                    });
                 }
-            });
-            setCategoriesTree(newTree);
-
-            const attrs: Partial<Attribute>[] = id
-                ? await attributeService.getAttributes(Number(id))
-                : await attributeService.getAttributes();
-            setAttributes(attrs);
-
-            if (product) {
-                setValues(product);
-                form.setFieldsValue(product);
             }
-        };
+        });
+        setCategoriesTree(newTree);
+
+        if (id) {
+            const product = await productService.getProductById(Number(id));
+            setProduct(product);
+            setType(product?.variations?.length > 0 ? 'variable' : 'simple');
+        }
+
+        const attrs: Partial<Attribute>[] = id
+            ? await attributeService.getAttributes(Number(id))
+            : await attributeService.getAttributes();
+        setAttributes(attrs);
+    };
+
+    useEffect(() => {
         fetchData();
     }, []);
 
-    const onManageQuantityChange = (e: CheckboxChangeEvent) => {
-        setValues({ ...values, manage_quantity: e.target.checked });
-    };
-
-    const onCategoryChange = (value: number[]) => setValues({ ...values, categories: value });
-
-    const onAttributeSelect = (value: number | string) => {
-        function addAttribute(id: number) {
-            // Add attribute to product
-            setValues((prev) => {
-                const newValues = {
-                    ...prev,
-                    attributes: [
-                        ...(prev.attributes || []),
-                        {
-                            id,
-                            values: [],
-                        },
-                    ],
-                };
-                return newValues;
-            });
-        }
-
-        if (typeof value === 'string') {
-            // Create attribute and get id from response
-            const createAttribute = async () => {
-                try {
-                    const id: number = await attributeService.createAttribute(value);
-
-                    addAttribute(id);
-                    setAttributes((prev) => [...prev, { id, name: value, values: [] }]);
-                } catch (e) {
-                    message.error('Failed to create attribute');
-                }
-            };
-
-            createAttribute();
-            return;
-        }
-
-        // Load all values for selected attribute
-        const fetchData = async () => {
-            const id: number = value;
-            // Check if attribute wasnt re-added (already has fetched values)
-            const wasFetched = attributes.find((a) => a.id === id)?.values;
-
-            if (!wasFetched) {
-                const values: { id: number; value: string }[] =
-                    await attributeService.getAttributeValues(id);
-
-                // Add all possible values to the attribute
-                setAttributes((prev) => {
-                    const newAttrs = prev.map((a) => {
-                        if (a.id === id) {
-                            a.values = values;
-                        }
-                        return a;
-                    });
-                    return newAttrs;
-                });
-            }
-
-            addAttribute(id);
-        };
-
-        fetchData();
-    };
-
-    const onAttributeDeselect = (id: number) => {
-        // Remove attribute from product
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: (prev.attributes || []).filter((a) => a.id !== id),
-            };
-            return newValues;
-        });
-    };
-
-    const onAttributeClear = () => {
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: [],
-            };
-            return newValues;
-        });
-    };
-
-    const onAttributeValueSelect = ({ id, parent }: { id: number | string; parent: number }) => {
-        function addAttributeValue({ id, parent }: { id: number; parent: number }) {
-            {
-                setValues((prev) => {
-                    const newValues = {
-                        ...prev,
-                        attributes: (prev.attributes || []).map((a) => {
-                            if (a.id === parent) {
-                                if (!a.values) a.values = [id];
-                                else if (!a.values.includes(id)) a.values = [...a.values, id];
-                            }
-                            return a;
-                        }),
-                    };
-                    return newValues;
-                });
-            }
-        }
-
-        if (typeof id === 'string') {
-            // Create attribute and get id from response
-            const createAttributeValue = async () => {
-                try {
-                    const newId: number = await attributeService.createAttributeValue({
-                        id: parent,
-                        value: id,
-                    });
-
-                    setAttributes((prev) =>
-                        prev.map((a) =>
-                            a.id === parent
-                                ? { ...a, values: [...(a.values || []), { id: newId, value: id }] }
-                                : a
-                        )
-                    );
-
-                    addAttributeValue({ id: newId, parent });
-                } catch (e) {
-                    message.error('Failed to create attribute');
-                }
-            };
-
-            createAttributeValue();
-            return;
-        }
-
-        // Add attribute value to product attribute
-        addAttributeValue({ id, parent });
-    };
-
-    const onAttributeValueDeselect = ({ id, parent }: { id: number; parent: number }) => {
-        // Remove attribute value from product attribute
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: (prev.attributes || []).map((a) => {
-                    if (a.id === parent) {
-                        a.values = a.values!.filter((v) => v !== id);
-                    }
-                    return a;
-                }),
-            };
-            return newValues;
-        });
-    };
-
-    const onAttributeValueClear = () => {
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: (prev.attributes || []).map((a) => {
-                    a.values = [];
-                    return a;
-                }),
-            };
-            return newValues;
-        });
-    };
-
     return (
-        <Form
-            form={form}
-            style={{ padding: '20px' }}
-            layout="vertical"
-            variant="filled"
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
-            scrollToFirstError
-        >
-            <NameField />
-            <DescriptionField />
-            <PriceField />
-
-            {WHOLESALE_ENABLED && <PriceField fieldName="wholesalePrice" label="Wholesale price" />}
-            <ManageQuantityField onChange={onManageQuantityChange} />
-
-            {values.manage_quantity && <QuantityField />}
-
-            <SKUField />
-
-            <CategoryField categoriesTree={categoriesTree} onChange={onCategoryChange} />
-
-            <AttributesField
-                onSelect={onAttributeSelect}
-                onDeselect={onAttributeDeselect}
-                onClear={onAttributeClear}
-                options={attributes?.map((v) => ({
-                    label: v.name!,
-                    value: v.id!,
-                }))}
-                required={true}
-            />
-
-            {values.attributes && (
-                <Space>
-                    {values.attributes?.map((a, i) => {
-                        const attr = attributes.find((o) => o.id === a.id)!;
-                        return (
-                            <AttributeValuesField
-                                key={i}
-                                attributeKey={i}
-                                parentId={a.id}
-                                options={attr.values!.map((v) => ({
-                                    label: v.value,
-                                    value: v.id,
-                                }))}
-                                attribute={attr}
-                                onSelect={onAttributeValueSelect}
-                                onDeselect={onAttributeValueDeselect}
-                                onClear={onAttributeValueClear}
-                            />
-                        );
-                    })}
-                </Space>
+        <>
+            {!id && type === undefined && (
+                <Flex vertical align={'center'}>
+                    <Title level={2}>Select product type</Title>
+                    <Space size={'large'}>
+                        <Button type="primary" size={'large'} onClick={() => setType('simple')}>
+                            Simple
+                        </Button>
+                        <Button type="primary" size={'large'} onClick={() => setType('variable')}>
+                            Variable
+                        </Button>
+                    </Space>
+                </Flex>
             )}
-
-            <Form.Item style={{ textAlign: 'center' }}>
-                <Button type="primary" htmlType="submit">
-                    Submit
-                </Button>
-            </Form.Item>
-        </Form>
+            {type === 'simple' && (
+                <SimpleForm
+                    categoriesTree={categoriesTree}
+                    initialAttributes={attributes}
+                    initialProduct={product as SimpleProductType}
+                />
+            )}
+            {type === 'variable' && (
+                <VariableForm
+                    categoriesTree={categoriesTree}
+                    initialAttributes={attributes}
+                    initialProduct={product as VariableProductType}
+                />
+            )}
+        </>
     );
 };
 

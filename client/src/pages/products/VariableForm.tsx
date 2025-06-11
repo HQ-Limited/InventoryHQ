@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
 import type { FormProps } from 'antd';
 import { Button, Form, message, Space, Steps } from 'antd';
 import {
     Attribute,
     CategoriesTree,
-    Category,
     VariableProductType,
     Variation,
     VariationAttributeType,
@@ -18,8 +16,6 @@ import CategoryField from './components/CategoryField';
 import NameField from './components/NameField';
 import DescriptionField from './components/DescriptionField';
 import attributeService from '../../services/attributeService';
-import productService from '../../services/productService';
-import categoryService from '../../services/categoryService';
 const onFinish: FormProps<VariableProductType>['onFinish'] = (values) => {
     console.log('Success:', values);
 };
@@ -28,87 +24,22 @@ const onFinishFailed: FormProps<VariableProductType>['onFinishFailed'] = (errorI
     console.log('Failed:', errorInfo);
 };
 
-const CreateEdit: React.FC = () => {
+const VariableForm: React.FC<{
+    categoriesTree: CategoriesTree[];
+    initialAttributes: Partial<Attribute>[];
+    initialProduct: Partial<VariableProductType>;
+}> = ({ categoriesTree, initialAttributes, initialProduct }) => {
     const [form] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
-    const params = useParams();
-    const id = params.id;
-    const [values, setValues] = useState<Partial<VariableProductType>>({
-        attributes: [],
-        variations: [],
-        selectedAttributes: [],
-    });
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
-    const [attributes, setAttributes] = useState<Partial<Attribute>[]>([]);
+    const [values, setValues] = useState<Partial<VariableProductType>>(
+        initialProduct || {
+            attributes: [],
+            variations: [],
+            selectedAttributes: [],
+        }
+    );
+    const [attributes, setAttributes] = useState<Partial<Attribute>[]>(initialAttributes);
     const [step, setStep] = useState(0);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            let product: Partial<VariableProductType> = {};
-
-            if (id) {
-                product = await productService.getProductById(Number(id));
-                setValues(product);
-            }
-
-            const cats: Category[] = await categoryService.getCategories();
-            setCategories(cats);
-
-            const newTree: CategoriesTree[] = [];
-
-            cats.map((category) => {
-                if (!category.parent) {
-                    // Check if already exists
-                    const exists = newTree.find((c) => c.value === category.id);
-
-                    if (!exists)
-                        newTree.push({
-                            value: category.id,
-                            title: category.name,
-                            children: [],
-                        });
-                } else {
-                    // Check if parent exists in categoriesTree
-                    const parentExists = newTree.find((c) => c.value === category.parent);
-                    if (parentExists) {
-                        parentExists.children.push({
-                            value: category.id,
-                            title: category.name,
-                            children: [],
-                        });
-                    } else {
-                        // Create parent first
-                        const parent = categories.find((c) => c.id === category.parent)!;
-
-                        newTree.push({
-                            value: parent.id,
-                            title: parent.name,
-                            children: [
-                                {
-                                    value: category.id,
-                                    title: category.name,
-                                    children: [],
-                                },
-                            ],
-                        });
-                    }
-                }
-            });
-            setCategoriesTree(newTree);
-
-            const attrs: Partial<Attribute>[] = id
-                ? await attributeService.getAttributes(Number(id))
-                : await attributeService.getAttributes();
-            setAttributes(attrs);
-
-            if (product) {
-                setValues(product);
-                form.setFieldsValue(product);
-            }
-        };
-        fetchData();
-    }, []);
 
     const onCategoryChange = (value: number[]) => setValues({ ...values, categories: value });
 
@@ -380,6 +311,7 @@ const CreateEdit: React.FC = () => {
                 onFinishFailed={onFinishFailed}
                 autoComplete="off"
                 scrollToFirstError
+                initialValues={values}
             >
                 <Space style={{ display: step === 0 ? 'block' : 'none' }}>
                     <NameField />
@@ -503,4 +435,4 @@ const CreateEdit: React.FC = () => {
     );
 };
 
-export default CreateEdit;
+export default VariableForm;
