@@ -5,8 +5,10 @@ const API_URL = 'https://localhost:44301/api/Product/simple';
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
 axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
 
+type Product = SimpleProductType | VariableProductType;
+
 class ProductService {
-    async getProducts(body?: any): Promise<SimpleProductType[] | VariableProductType[]> {
+    async getProducts(body?: any): Promise<Product[]> {
         // const response = await axios.get(API_URL, body);
         return await axios.get(API_URL, body);
     }
@@ -83,7 +85,7 @@ class ProductService {
             },
         };
 
-        return responseVariable.data;
+        return responseSimple.data;
     }
 }
 
