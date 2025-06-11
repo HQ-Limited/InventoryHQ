@@ -3,7 +3,6 @@ import MainLayout from './layouts/MainLayout';
 import { ConfigProvider, theme } from 'antd';
 import ProductsView from './pages/products/View';
 import ProductsCreateEdit from './pages/products/CreateEdit';
-import VariableProductsCreateEdit from './pages/products/CreateEditVariable';
 import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
 import Home from './pages/Home';
