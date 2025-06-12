@@ -96,30 +96,25 @@ export default function VariationCard({
                                 attributeKey={i}
                                 onSelect={functions.attribute.onSelect}
                             />
-
-                            <SKUField fieldName={['variations', variationKey, 'sku']} />
-
-                            <PriceField fieldName={['variations', variationKey, 'price']} />
-
-                            {WHOLESALE_ENABLED && (
-                                <PriceField
-                                    fieldName={['variations', variationKey, 'wholesalePrice']}
-                                    label="Wholesale Price"
-                                />
-                            )}
-
-                            <ManageQuantityField
-                                fieldName={['variations', variationKey, 'manage_quantity']}
-                            />
-
-                            {manage_quantity && (
-                                <QuantityField
-                                    fieldName={['variations', variationKey, 'quantity']}
-                                />
-                            )}
                         </React.Fragment>
                     );
                 })}
+            <SKUField fieldName={['variations', variationKey, 'sku']} />
+
+            <PriceField fieldName={['variations', variationKey, 'price']} />
+
+            {WHOLESALE_ENABLED && (
+                <PriceField
+                    fieldName={['variations', variationKey, 'wholesalePrice']}
+                    label="Wholesale Price"
+                />
+            )}
+
+            <ManageQuantityField fieldName={['variations', variationKey, 'manage_quantity']} />
+
+            {manage_quantity && (
+                <QuantityField fieldName={['variations', variationKey, 'quantity']} />
+            )}
         </Card>
     );
 }
