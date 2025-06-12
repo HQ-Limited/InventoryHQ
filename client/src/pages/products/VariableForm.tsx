@@ -257,6 +257,8 @@ const VariableForm: React.FC<{
             };
             return newValues;
         });
+
+        form.setFieldsValue({ variations });
     };
 
     const onVariationAttributeValueSelect = ({
