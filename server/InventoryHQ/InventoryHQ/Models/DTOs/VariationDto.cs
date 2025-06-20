@@ -10,10 +10,11 @@ namespace InventoryHQ.Models.DTOs
         [Required]
         public decimal RetailPrice { get; set; }
 
-        [Required]
         public string Description { get; set; }
 
         [Required]
         public int Quantity { get; set; }
+
+        public List<AttributeDto> Attributes { get; set; } = new();
     }
 }

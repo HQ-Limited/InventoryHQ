@@ -22,7 +22,12 @@ namespace InventoryHQ.Services
 
         public async Task<ProductDto?> GetById(int id)
         {
-            var product = await _data.Products.FirstOrDefaultAsync(x => x.Id == id);
+            var product = await _data.Products.Include(x => x.Variations)
+                                              .ThenInclude(x => x.VariationAttributeValues)
+                                              .ThenInclude(x => x.AttributeValue)
+                                              .ThenInclude(x => x.Attribute)
+                                              .Include(x => x.Categories)
+                                              .FirstOrDefaultAsync(x => x.Id == id);
             var simpleProduct = _mapper.Map<ProductDto>(product);
 
             return simpleProduct;
@@ -30,7 +35,11 @@ namespace InventoryHQ.Services
 
         public async Task<IEnumerable<ProductDto>> GetProducts()
         {
-            var products = await _data.Products.ToListAsync();
+            var products = await _data.Products.Include(x => x.Variations)
+                                              .ThenInclude(x => x.VariationAttributeValues)
+                                              .ThenInclude(x => x.AttributeValue)
+                                              .ThenInclude(x => x.Attribute)
+                                              .Include(x => x.Categories).ToListAsync();
             var simpleProducts = _mapper.Map<IEnumerable<ProductDto>>(products);
 
             return simpleProducts;

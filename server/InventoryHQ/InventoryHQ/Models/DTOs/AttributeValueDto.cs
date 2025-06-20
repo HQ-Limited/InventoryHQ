@@ -1,9 +1,9 @@
 ﻿namespace InventoryHQ.Models.DTOs
 {
-    public class CategoryDto
+    public class AttributeValueDto
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Value { get; set; }
     }
 }

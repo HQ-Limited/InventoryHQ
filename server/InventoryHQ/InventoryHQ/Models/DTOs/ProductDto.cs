@@ -6,9 +6,9 @@
 
         public string Name { get; set; }
 
-        public List<CategoryDto> Categories { get; set; } = new();
+        public bool IsVariable { get; set; }
 
-        public List<AttributeDto> Attributes { get; set; } = new();
+        public List<CategoryDto> Categories { get; set; } = new();
 
         public List<VariationDto> Variations { get; set; } = new();
     }
