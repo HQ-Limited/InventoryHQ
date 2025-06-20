@@ -18,6 +18,16 @@ namespace InventoryHQ.Data
 
         public DbSet<Category> Categories { get; set; }
 
+        public DbSet<AttributeValue> AttributeValues { get; set; }
+
+        public DbSet<Location> Locations { get; set; }
+
+        public DbSet<Package> Packages { get; set; }
+
+        public DbSet<VariationAttributeValue> VariationsAttributeValue { get; set; }
+
+        public DbSet<InventoryUnit> InventoryUnits { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -30,21 +40,6 @@ namespace InventoryHQ.Data
                     method?.Invoke(null, [modelBuilder]);
                 }
             }
-
-            modelBuilder.Entity<Variation>()
-                        .HasIndex(v => v.SKU)
-                        .IsUnique();
-
-            // TODO: Check if this works.
-            modelBuilder.Entity<Models.Attribute>()
-                        .HasIndex(at => new { at.Name, at.Value })
-                        .IsUnique();
-
-            modelBuilder.Entity<Category>()
-                        .HasOne(c => c.Parent)
-                        .WithMany(c => c.Children)
-                        .HasForeignKey(f => f.ParentId)
-                        .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }

@@ -18,7 +18,7 @@ builder.Services.AddDbContext<InventoryHQDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddTransient<ProductService>();
+builder.Services.AddTransient<SimpleProductService>();
 builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile<InventoryHQProfile>();
