@@ -1,5 +1,5 @@
 import { Button, Card, Checkbox, CheckboxChangeEvent, Form, Select, Tooltip } from 'antd';
-import { Attribute } from '../../../types/ProductTypes';
+import { AttributeDB } from '../../../types/ProductTypesDB';
 import { CloseOutlined } from '@ant-design/icons';
 
 export default function AttributeValuesField({
@@ -17,7 +17,7 @@ export default function AttributeValuesField({
 }: {
     attributeKey: number;
     parentId: number;
-    attribute: Partial<Attribute>;
+    attribute: Partial<AttributeDB>;
     onSelect: ({ id, parent }: { id: number; parent: number }) => void;
     onDeselect: ({ id, parent }: { id: number; parent: number }) => void;
     onClear: () => void;

@@ -1,10 +1,10 @@
 import { Card, Form, Select } from 'antd';
 import {
-    Attribute,
-    ProductAttributes,
-    Variation,
-    VariationAttributeType,
-} from '../../../types/ProductTypes';
+    AttributeDB,
+    ProductAttributeDB,
+    VariationDB,
+    VariationAttributeTypeDB,
+} from '../../../types/ProductTypesDB';
 import PriceField from './PriceField';
 import React from 'react';
 import SKUField from './SKUField';
@@ -18,7 +18,7 @@ function SelectField({
     attributeKey,
     onSelect,
 }: {
-    attribute: Attribute;
+    attribute: AttributeDB;
     variationKey: number;
     attributeKey: number;
     onSelect: ({
@@ -66,8 +66,8 @@ export default function VariationCard({
 }: {
     manage_quantity: boolean;
     variationKey: number;
-    attributes: Attribute[];
-    selectedAttributes: ProductAttributes[];
+    attributes: AttributeDB[];
+    selectedAttributes: ProductAttributeDB[];
     functions: {
         attribute: {
             onSelect: ({
