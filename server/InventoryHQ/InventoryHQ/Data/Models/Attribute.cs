@@ -6,5 +6,8 @@ namespace InventoryHQ.Data.Models
     {
         [Required]
         public string Name { get; set; }
+
+        [Required]
+        public ICollection<AttributeValue> AttributeValues { get; set; }
     }
 }

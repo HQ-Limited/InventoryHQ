@@ -3,6 +3,7 @@ using System;
 using InventoryHQ.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryHQ.Migrations
 {
     [DbContext(typeof(InventoryHQDbContext))]
-    partial class InventoryHQDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250620190445_MoveNameDescription")]
+    partial class MoveNameDescription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -271,6 +274,7 @@ namespace InventoryHQ.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
@@ -349,7 +353,7 @@ namespace InventoryHQ.Migrations
             modelBuilder.Entity("InventoryHQ.Data.Models.AttributeValue", b =>
                 {
                     b.HasOne("InventoryHQ.Data.Models.Attribute", "Attribute")
-                        .WithMany("AttributeValues")
+                        .WithMany()
                         .HasForeignKey("AttributeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -428,11 +432,6 @@ namespace InventoryHQ.Migrations
                     b.Navigation("AttributeValue");
 
                     b.Navigation("Variation");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.Attribute", b =>
-                {
-                    b.Navigation("AttributeValues");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.AttributeValue", b =>
