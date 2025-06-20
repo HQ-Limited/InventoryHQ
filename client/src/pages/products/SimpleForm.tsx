@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { CheckboxChangeEvent, FormProps } from 'antd';
 import { Button, Form, message, Space } from 'antd';
 import { WHOLESALE_ENABLED } from '../../global';
-import { Attribute, CategoriesTree, SimpleProductType } from '../../types/ProductTypes';
+import { AttributeDB, CategoriesTree, SimpleProductTypeDB } from '../../types/ProductTypesDB';
 import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
 import PriceField from './components/PriceField';
@@ -13,29 +13,29 @@ import DescriptionField from './components/DescriptionField';
 import ManageQuantityField from './components/ManageQuantityField';
 import QuantityField from './components/QuantityField';
 import attributeService from '../../services/attributeService';
-const onFinish: FormProps<SimpleProductType>['onFinish'] = (values) => {
+const onFinish: FormProps<SimpleProductTypeDB>['onFinish'] = (values) => {
     console.log('Success:', values);
 };
 
-const onFinishFailed: FormProps<SimpleProductType>['onFinishFailed'] = (errorInfo) => {
+const onFinishFailed: FormProps<SimpleProductTypeDB>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
 };
 
 const SimpleForm: React.FC<{
     categoriesTree: CategoriesTree[];
-    initialAttributes: Partial<Attribute>[];
-    initialProduct: Partial<SimpleProductType>;
+    initialAttributes: Partial<AttributeDB>[];
+    initialProduct: Partial<SimpleProductTypeDB>;
 }> = ({ categoriesTree, initialAttributes, initialProduct }) => {
     const [form] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
 
-    const [values, setValues] = useState<Partial<SimpleProductType>>(
+    const [values, setValues] = useState<Partial<SimpleProductTypeDB>>(
         initialProduct || {
             attributes: [],
             manage_quantity: true,
         }
     );
-    const [attributes, setAttributes] = useState<Partial<Attribute>[]>(initialAttributes);
+    const [attributes, setAttributes] = useState<Partial<AttributeDB>[]>(initialAttributes);
 
     const onManageQuantityChange = (e: CheckboxChangeEvent) => {
         setValues({ ...values, manage_quantity: e.target.checked });

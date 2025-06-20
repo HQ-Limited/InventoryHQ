@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { Category } from '../types/ProductTypes';
+import { CategoryDB } from '../types/ProductTypesDB';
 
 const API_URL = 'https://localhost:44301/api/Category';
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
 axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
 
 class ProductService {
-    async getCategories(body?: any): Promise<Category[]> {
+    async getCategories(body?: any): Promise<CategoryDB[]> {
         // const response = await axios.get(API_URL, body);
         // FAKE DATA
         const response = {

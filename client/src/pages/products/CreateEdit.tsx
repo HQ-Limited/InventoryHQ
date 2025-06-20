@@ -5,12 +5,12 @@ import { Button, Flex, Space } from 'antd';
 import Title from 'antd/es/typography/Title';
 import { useParams } from 'react-router-dom';
 import {
-    Attribute,
+    AttributeDB,
     CategoriesTree,
-    Category,
-    SimpleProductType,
-    VariableProductType,
-} from '../../types/ProductTypes';
+    CategoryDB,
+    SimpleProductTypeDB,
+    VariableProductTypeDB,
+} from '../../types/ProductTypesDB';
 import productService from '../../services/productService';
 import categoryService from '../../services/categoryService';
 import attributeService from '../../services/attributeService';
@@ -19,13 +19,13 @@ const CreateEdit: React.FC = () => {
     const params = useParams();
     const id = params.id;
     const [product, setProduct] = useState<
-        Partial<SimpleProductType> | Partial<VariableProductType>
+        Partial<SimpleProductTypeDB> | Partial<VariableProductTypeDB>
     >({});
     const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
-    const [attributes, setAttributes] = useState<Partial<Attribute>[]>([]);
+    const [attributes, setAttributes] = useState<Partial<AttributeDB>[]>([]);
 
     const fetchData = async () => {
-        const categories: Category[] = await categoryService.getCategories();
+        const categories: CategoryDB[] = await categoryService.getCategories();
 
         const newTree: CategoriesTree[] = [];
         categories.map((category) => {
@@ -74,7 +74,7 @@ const CreateEdit: React.FC = () => {
             setType(product?.variations?.length > 0 ? 'variable' : 'simple');
         }
 
-        const attrs: Partial<Attribute>[] = id
+        const attrs: Partial<AttributeDB>[] = id
             ? await attributeService.getAttributes(Number(id))
             : await attributeService.getAttributes();
         setAttributes(attrs);
@@ -103,14 +103,14 @@ const CreateEdit: React.FC = () => {
                 <SimpleForm
                     categoriesTree={categoriesTree}
                     initialAttributes={attributes}
-                    initialProduct={product as SimpleProductType}
+                    initialProduct={product as SimpleProductTypeDB}
                 />
             )}
             {type === 'variable' && (
                 <VariableForm
                     categoriesTree={categoriesTree}
                     initialAttributes={attributes}
-                    initialProduct={product as VariableProductType}
+                    initialProduct={product as VariableProductTypeDB}
                 />
             )}
         </>

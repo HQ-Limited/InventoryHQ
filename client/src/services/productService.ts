@@ -1,19 +1,154 @@
 import axios from 'axios';
+import { SimpleProductTypeDB, VariableProductTypeDB } from '../types/ProductTypesDB';
 import { SimpleProductType, VariableProductType } from '../types/ProductTypes';
 
 const API_URL = 'https://localhost:44301/api/Product/simple';
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
 axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
 
+type ProductDB = SimpleProductTypeDB | VariableProductTypeDB;
 type Product = SimpleProductType | VariableProductType;
 
 class ProductService {
     async getProducts(body?: any): Promise<Product[]> {
         // const response = await axios.get(API_URL, body);
-        return await axios.get(API_URL, body);
+
+        // TEST CODE
+        const response = {
+            status: 200,
+            data: [
+                {
+                    id: 1,
+                    name: 'Product 1',
+                    description: 'Description 1',
+                    price: 100,
+                    wholesalePrice: 70,
+                    quantity: 10,
+                    manage_quantity: true,
+                    sku: 'sku-1',
+                    categories: [
+                        {
+                            id: 1,
+                            name: 'Category 1',
+                        },
+                    ],
+                    attributes: [
+                        {
+                            id: 1,
+                            name: 'Color',
+                            values: [
+                                {
+                                    id: 1,
+                                    name: 'Red',
+                                },
+                                {
+                                    id: 2,
+                                    name: 'Blue',
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    id: 2,
+                    name: 'Product 2',
+                    description: 'Description 2',
+                    categories: [
+                        {
+                            id: 1,
+                            name: 'Category 1',
+                        },
+                    ],
+                    attributes: [
+                        {
+                            id: 1,
+                            name: 'Color',
+                            values: [
+                                {
+                                    id: 1,
+                                    name: 'Red',
+                                },
+                                {
+                                    id: 2,
+                                    name: 'Blue',
+                                },
+                            ],
+                        },
+                    ],
+                    variations: [
+                        {
+                            id: 1,
+                            price: 10,
+                            quantity: 30,
+                            manage_quantity: true,
+                            sku: 'sku-2-red',
+                            attributes: [
+                                {
+                                    id: 1,
+                                    name: 'Color',
+                                    value: {
+                                        id: 1,
+                                        name: 'Red',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            id: 2,
+                            price: 12,
+                            quantity: 15,
+                            manage_quantity: true,
+                            sku: 'sku-2-blue',
+                            attributes: [
+                                {
+                                    id: 1,
+                                    name: 'Color',
+                                    value: {
+                                        id: 2,
+                                        name: 'Blue',
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    id: 3,
+                    name: 'Product 3',
+                    price: 33,
+                    quantity: 0,
+                    manage_quantity: false,
+                    sku: 'sku-1',
+                    categories: [
+                        {
+                            id: 1,
+                            name: 'Category 1',
+                        },
+                    ],
+                    attributes: [
+                        {
+                            id: 1,
+                            name: 'Color',
+                            values: [
+                                {
+                                    id: 1,
+                                    name: 'Red',
+                                },
+                                {
+                                    id: 2,
+                                    name: 'Blue',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+
+        return response.data;
     }
 
-    async getProductById(id: number): Promise<SimpleProductType | VariableProductType> {
+    async getProductById(id: number): Promise<ProductDB> {
         // const response = await axios.get(`${API_URL}/${id}`);
         // TEST DATA
         const responseSimple = {
