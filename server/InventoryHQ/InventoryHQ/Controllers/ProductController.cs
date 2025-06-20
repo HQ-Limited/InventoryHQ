@@ -10,17 +10,17 @@ namespace InventoryHQ.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class SimpleProductController : ControllerBase
+    public class ProductController : ControllerBase
     {
-        private readonly SimpleProductService _productService;
+        private readonly ProductService _productService;
 
-        public SimpleProductController(SimpleProductService productService)
+        public ProductController(ProductService productService)
         {
             _productService = productService;
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<SimpleProductDto>> GetById(int id)
+        public async Task<ActionResult<ProductDto>> GetById(int id)
         {
             var product = await _productService.GetById(id);
 
@@ -33,14 +33,14 @@ namespace InventoryHQ.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SimpleProductDto>>> Get()
+        public async Task<ActionResult<IEnumerable<ProductDto>>> Get()
         {
             var products = await _productService.GetProducts();
             return Ok(products);
         }
 
         [HttpPost]
-        public async Task<ActionResult<int?>> CreateProduct(SimpleProductDto simpleProductDto)
+        public async Task<ActionResult<int?>> CreateProduct(ProductDto simpleProductDto)
         {
             var id = await _productService.CreateProduct(simpleProductDto);
 
@@ -53,7 +53,7 @@ namespace InventoryHQ.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<SimpleProductDto>> UpdateProduct(SimpleProductDto simpleProductDto)
+        public async Task<ActionResult<ProductDto>> UpdateProduct(ProductDto simpleProductDto)
         {
             var id = await _productService.UpdateProduct(simpleProductDto);
 
