@@ -1,5 +1,4 @@
-﻿using Bogus;
-using InventoryHQ.Data.Models;
+﻿using InventoryHQ.Data.Models;
 
 namespace InventoryHQ.Data
 {
@@ -7,34 +6,120 @@ namespace InventoryHQ.Data
     {
         public static void Seed(InventoryHQDbContext context)
         {
-            //if (context.Products.Any())
-            //{
-            //    return;
-            //}
+            // If database already has data, don't seed
+            if (context.Products.Any())
+            {
+                return;
+            }
 
-            //var categoryFaker = new Faker<Category>()
-            //    .RuleFor(c => c.Name, f => f.Commerce.Department());
+            var categories = new List<Category>()
+            {
+                new Category() { Id=1, Name="Category 1" },
+                new Category() { Id=2, Name="Category 2" },
+            };
 
-            //var variationFaker = new Faker<Variation>()
-            //    .RuleFor(v => v.Name, f => f.Commerce.Product())
-            //    .RuleFor(v => v.Description, f => f.Commerce.ProductDescription())
-            //    .RuleFor(v => v.SKU, f => f.Commerce.Ean8())
-            //    .RuleFor(v => v.Quantity, f => f.Random.Number())
-            //    .RuleFor(v => v.Price, f => f.Random.Number());
+            var attrs = new List<Models.Attribute>()
+            {
+                new Models.Attribute()
+                { 
+                    Id=1, 
+                    Name="Color", 
+                    AttributeValues=new List<AttributeValue> () 
+                    {
+                        new AttributeValue() { Id=1, Value="Red" },
+                        new AttributeValue() { Id=2, Value="Green" }
+                    }
+                },
+                new Models.Attribute()
+                {
+                    Id=2,
+                    Name="Size",
+                    AttributeValues=new List<AttributeValue> ()
+                    {
+                        new AttributeValue() { Id=3, Value="S" },
+                        new AttributeValue() { Id=4, Value="M" }
+                    }
+                }
+            };
 
-            //var productsFaker = new Faker<Product>()
-            //    .RuleFor(p => p.Variations, (f, p) =>
-            //    {
-            //        return variationFaker.Generate(f.Random.Int(1, 4));
-            //    })
-            //    .RuleFor(p => p.Categories, (f, p) =>
-            //    {
-            //        return categoryFaker.Generate(f.Random.Int(1, 3));
-            //    });
+            context.Attributes.AddRange(attrs);
+            context.SaveChanges();
 
-            //var products = productsFaker.Generate(50);
-            //context.Products.AddRange(products);
-            //context.SaveChanges();
+            var firstProductVariation = new Variation()
+            {
+                Id = 1,
+                Description = "First Variation",
+                RetailPrice = 30M,
+                SKU = "12312312QWE",
+                ProductId = 1,
+                InventoryUnits = new List<InventoryUnit>()
+                {
+                    new InventoryUnit() { Id=1, Quantity=30 }
+                },
+                VariationAttributeValues=new List<VariationAttributeValue> () 
+                {
+                    new VariationAttributeValue() { VariationId=1, AttributeValueId=1, IsVariational=false}
+                }
+            };
+
+            var secondProductVariation = new Variation()
+            {
+                Id = 2,
+                Description = "Second Variation",
+                RetailPrice = 30M,
+                SKU = "12312312QWE",
+                ProductId = 2,
+                InventoryUnits = new List<InventoryUnit>()
+                {
+                    new InventoryUnit() { Id=2, Quantity=40 }
+                },
+                VariationAttributeValues = new List<VariationAttributeValue>()
+                {
+                    new VariationAttributeValue() { VariationId=2, AttributeValueId=2, IsVariational=true},
+                    new VariationAttributeValue() {VariationId=2, AttributeValueId=3, IsVariational=true}
+                }
+            };
+
+            var thirdProductVariation = new Variation()
+            {
+                Id = 3,
+                Description = "Third Variation",
+                RetailPrice = 30M,
+                SKU = "12312312QWE",
+                ProductId = 2,
+                InventoryUnits = new List<InventoryUnit>()
+                {
+                    new InventoryUnit() { Id=3, Quantity=50 }
+                },
+                VariationAttributeValues = new List<VariationAttributeValue>()
+                {
+                    new VariationAttributeValue() { VariationId=3, AttributeValueId=2, IsVariational=true},
+                    new VariationAttributeValue() { VariationId=3, AttributeValueId=4, IsVariational=true}
+                }
+            };
+
+            var fourthProductVariation = new Variation()
+            {
+                Id = 4,
+                Description = "Fourth Variation",
+                RetailPrice = 30M,
+                SKU = "12356312QWE",
+                ProductId = 3,
+                InventoryUnits = new List<InventoryUnit>()
+                {
+                    new InventoryUnit() { Id=4, Quantity=30 }
+                }
+            };
+
+            var products = new List<Product>()
+            {
+                new Product() { Id = 1, Name="Product 1", Categories=new List<Category>() {categories.First() }, Variations=new List<Variation>() { firstProductVariation } },
+                new Product() { Id = 2, Name="Product 2", Categories= categories, Variations=new List<Variation>() { secondProductVariation, thirdProductVariation }},
+                new Product() { Id = 3, Name="Product 3", Variations=new List<Variation>() { fourthProductVariation }}
+            };
+
+            context.Products.AddRange(products);
+            context.SaveChanges();
         }
     }
 }

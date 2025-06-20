@@ -9,34 +9,34 @@ using System.Linq.Dynamic.Core;
 
 namespace InventoryHQ.Services
 {
-    public class SimpleProductService
+    public class ProductService
     {
         private readonly InventoryHQDbContext _data;
         private readonly IMapper _mapper;
 
-        public SimpleProductService(InventoryHQDbContext data, IMapper mapper)
+        public ProductService(InventoryHQDbContext data, IMapper mapper)
         {
             _data = data;
             _mapper = mapper;
         }
 
-        public async Task<SimpleProductDto?> GetById(int id)
+        public async Task<ProductDto?> GetById(int id)
         {
-            var product = await _data.Products.FirstOrDefaultAsync(x => x.Id == id && x.Variations.Count == 1);
-            var simpleProduct = _mapper.Map<SimpleProductDto>(product);
+            var product = await _data.Products.FirstOrDefaultAsync(x => x.Id == id);
+            var simpleProduct = _mapper.Map<ProductDto>(product);
 
             return simpleProduct;
         }
 
-        public async Task<IEnumerable<SimpleProductDto>> GetProducts()
+        public async Task<IEnumerable<ProductDto>> GetProducts()
         {
             var products = await _data.Products.ToListAsync();
-            var simpleProducts = _mapper.Map<IEnumerable<SimpleProductDto>>(products);
+            var simpleProducts = _mapper.Map<IEnumerable<ProductDto>>(products);
 
             return simpleProducts;
         }
 
-        public async Task<int?> CreateProduct(SimpleProductDto simpleProductDto)
+        public async Task<int?> CreateProduct(ProductDto simpleProductDto)
         {
             var product = _mapper.Map<Product>(simpleProductDto);
             await _data.Products.AddAsync(product);
@@ -46,7 +46,7 @@ namespace InventoryHQ.Services
             return product.Id;
         }
 
-        public async Task<int?> UpdateProduct(SimpleProductDto productDto)
+        public async Task<int?> UpdateProduct(ProductDto productDto)
         {
             var product = await _data.Products.FirstAsync(x => x.Id == productDto.Id);
 

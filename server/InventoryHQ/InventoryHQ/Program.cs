@@ -18,7 +18,7 @@ builder.Services.AddDbContext<InventoryHQDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddTransient<SimpleProductService>();
+builder.Services.AddTransient<ProductService>();
 builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile<InventoryHQProfile>();
@@ -50,7 +50,9 @@ if (app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<InventoryHQDbContext>();
+    await db.Database.EnsureDeletedAsync();
     db.Database.Migrate();
+
     DbSeeder.Seed(db);
 }
 

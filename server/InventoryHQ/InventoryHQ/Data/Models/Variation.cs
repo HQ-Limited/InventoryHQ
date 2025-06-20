@@ -10,8 +10,7 @@ namespace InventoryHQ.Data.Models
         [Required]
         public decimal RetailPrice { get; set; }
 
-        [Required]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         public int ProductId { get; set; }
