@@ -2,9 +2,11 @@
 
 namespace InventoryHQ.Data.Models
 {
-    public class Attribute : BaseEntity
+    public class Location : BaseEntity
     {
         [Required]
         public string Name { get; set; }
+
+        public string Description { get; set; }
     }
 }
