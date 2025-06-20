@@ -15,20 +15,20 @@ function App() {
             }}
         >
             <BrowserRouter>
-                {/* <MainLayout> */}
-                <Routes>
-                    <Route path="/" element={<div>Home</div>} />
-                    <Route path="/products" element={<ProductsView />} />
-                    <Route path="/products/new" element={<ProductsCreateEdit />} />
-                    <Route path="/products/:id" element={<ProductsCreateEdit />} />
+                <MainLayout>
+                    <Routes>
+                        <Route path="/" element={<div>Home</div>} />
+                        <Route path="/products" element={<ProductsView />} />
+                        <Route path="/products/new" element={<ProductsCreateEdit />} />
+                        <Route path="/products/:id" element={<ProductsCreateEdit />} />
 
-                    <Route path="/partners" element={<PartnersView />} />
-                    <Route path="/partners/new" element={<PartnersCreateEdit />} />
-                    <Route path="/partners/:id" element={<PartnersCreateEdit />} />
+                        <Route path="/partners" element={<PartnersView />} />
+                        <Route path="/partners/new" element={<PartnersCreateEdit />} />
+                        <Route path="/partners/:id" element={<PartnersCreateEdit />} />
 
-                    <Route path="*" element={<Page404 />} />
-                </Routes>
-                {/* </MainLayout> */}
+                        <Route path="*" element={<Page404 />} />
+                    </Routes>
+                </MainLayout>
             </BrowserRouter>
         </ConfigProvider>
     );

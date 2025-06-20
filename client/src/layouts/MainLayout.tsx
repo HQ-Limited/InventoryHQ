@@ -1,10 +1,10 @@
 import React from 'react';
-import { HomeOutlined, PlusOutlined, ProductOutlined, TableOutlined } from '@ant-design/icons';
+import { HomeOutlined, ProductOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, theme } from 'antd';
 import { Link } from 'react-router-dom';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Content, Footer, Sider } = Layout;
 
 const siderStyle: React.CSSProperties = {
     overflow: 'auto',
@@ -26,19 +26,12 @@ const items: MenuProps['items'] = [
     {
         key: '2',
         icon: <ProductOutlined />,
-        label: 'Products',
-        children: [
-            {
-                key: '3',
-                icon: <TableOutlined />,
-                label: <Link to="/products">All Products</Link>,
-            },
-            {
-                key: '4',
-                icon: <PlusOutlined />,
-                label: <Link to="/products/create">Create</Link>,
-            },
-        ],
+        label: <Link to="/products">Products</Link>,
+    },
+    {
+        key: '3',
+        icon: <UserOutlined />,
+        label: <Link to="/partners">Partners</Link>,
     },
 ];
 
@@ -47,16 +40,24 @@ interface Props {
 }
 
 const MainLayout = (props: Props) => {
+    const {
+        token: { colorBgContainer },
+    } = theme.useToken();
     return (
         <Layout hasSider>
             <Sider style={siderStyle} collapsible>
-                <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']} items={items} />
+                <Menu theme="dark" mode="inline" items={items} />
             </Sider>
-            <Layout>
-                <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
+            <Layout style={{ backgroundColor: colorBgContainer }}>
+                <Content
+                    style={{
+                        margin: '24px 16px 0',
+                        overflow: 'initial',
+                    }}
+                >
                     {props.children}
                 </Content>
-                <Footer style={{ textAlign: 'center' }}>
+                <Footer style={{ textAlign: 'center', backgroundColor: colorBgContainer }}>
                     VendingHQ ©{new Date().getFullYear()} Created by HQ Limited
                 </Footer>
             </Layout>

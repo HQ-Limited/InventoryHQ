@@ -1,14 +1,20 @@
-// Used in Forms
-
-export type ProductAttributes = {
+export type ProductAttributeType = {
     id: number; // id of attribute name
-    values: number[]; // id of attribute name + value (from attribute_values table)
+    name: string;
+    values: {
+        id: number;
+        name: string;
+    }[]; // id of attribute name + value (from attribute_values table)
     isVariational?: boolean;
 };
 
 export type VariationAttributeType = {
     id: number; // id of attribute name
-    value: number; // id of attribute name + value (from attribute_values table)
+    name: string;
+    value: {
+        id: number;
+        name: string;
+    }; // id of attribute name + value (from attribute_values table)
 };
 
 export type SimpleProductType = {
@@ -20,19 +26,17 @@ export type SimpleProductType = {
     quantity: number;
     manage_quantity: boolean;
     sku: string;
-    categories: number[];
-    attributes: ProductAttributes[];
-    selectedAttributes?: number[]; // All selected attributes ids (used to bind AttributesField)
+    categories: Category[];
+    attributes: ProductAttributeType[];
 };
 
 export type VariableProductType = {
     id: number;
     name: string;
     description?: string;
-    categories: number[];
-    attributes: ProductAttributes[];
+    categories: Category[];
+    attributes: ProductAttributeType[];
     variations: Variation[];
-    selectedAttributes?: number[]; // All selected attributes ids (used to bind AttributesField)
 };
 
 export type Variation = {
@@ -48,20 +52,5 @@ export type Variation = {
 export type Category = {
     id: number;
     name: string;
-    parent?: number;
-};
-
-export type CategoriesTree = {
-    value: number;
-    title: string;
-    children: CategoriesTree[];
-};
-
-export type Attribute = {
-    id: number; // id of attribute name
-    name: string;
-    values?: {
-        id: number; // id of attribute name + value (from attribute_values table)
-        value: string;
-    }[];
+    parent?: Category;
 };

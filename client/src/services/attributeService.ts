@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { Attribute } from '../types/ProductTypes';
+import { AttributeDB } from '../types/ProductTypesDB';
 
 const API_URL = 'https://localhost:44301/api/Attribute';
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
 axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
 
 class AttributeService {
-    async getAttributes(id?: number | number[]): Promise<Attribute[]> {
+    async getAttributes(id?: number | number[]): Promise<AttributeDB[]> {
         // const response = await axios.get(API_URL, id);
         // FAKE DATA
         const response = {
