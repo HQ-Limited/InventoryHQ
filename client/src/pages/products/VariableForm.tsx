@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import type { FormProps } from 'antd';
 import { Button, Form, message, Space, Steps } from 'antd';
 import {
-    Attribute,
+    AttributeDB,
     CategoriesTree,
-    VariableProductType,
-    Variation,
-    VariationAttributeType,
-} from '../../types/ProductTypes';
+    VariableProductTypeDB,
+    VariationDB,
+    VariationAttributeTypeDB,
+} from '../../types/ProductTypesDB';
 import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
 import { PlusOutlined } from '@ant-design/icons';
@@ -16,29 +16,29 @@ import CategoryField from './components/CategoryField';
 import NameField from './components/NameField';
 import DescriptionField from './components/DescriptionField';
 import attributeService from '../../services/attributeService';
-const onFinish: FormProps<VariableProductType>['onFinish'] = (values) => {
+const onFinish: FormProps<VariableProductTypeDB>['onFinish'] = (values) => {
     console.log('Success:', values);
 };
 
-const onFinishFailed: FormProps<VariableProductType>['onFinishFailed'] = (errorInfo) => {
+const onFinishFailed: FormProps<VariableProductTypeDB>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
 };
 
 const VariableForm: React.FC<{
     categoriesTree: CategoriesTree[];
-    initialAttributes: Partial<Attribute>[];
-    initialProduct: Partial<VariableProductType>;
+    initialAttributes: Partial<AttributeDB>[];
+    initialProduct: Partial<VariableProductTypeDB>;
 }> = ({ categoriesTree, initialAttributes, initialProduct }) => {
     const [form] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
-    const [values, setValues] = useState<Partial<VariableProductType>>(
+    const [values, setValues] = useState<Partial<VariableProductTypeDB>>(
         initialProduct || {
             attributes: [],
             variations: [],
             selectedAttributes: [],
         }
     );
-    const [attributes, setAttributes] = useState<Partial<Attribute>[]>(initialAttributes);
+    const [attributes, setAttributes] = useState<Partial<AttributeDB>[]>(initialAttributes);
     const [step, setStep] = useState(0);
 
     const onCategoryChange = (value: number[]) => setValues({ ...values, categories: value });
@@ -240,10 +240,10 @@ const VariableForm: React.FC<{
 
         const combinations = valueGroups.reduce(
             (acc, group) => acc.flatMap((combo) => group.map((item) => [...combo, item])),
-            [[]] as VariationAttributeType[][]
+            [[]] as VariationAttributeTypeDB[][]
         );
 
-        const variations: Variation[] = combinations.map((combo) => {
+        const variations: VariationDB[] = combinations.map((combo) => {
             return {
                 attributes: combo,
                 manage_quantity: true,
