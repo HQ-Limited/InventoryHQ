@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import type { CheckboxProps, GetProp, MenuProps, PopconfirmProps, TableProps } from 'antd';
 import {
+    Badge,
     Button,
     Checkbox,
     Dropdown,
+    Flex,
     message,
     Popconfirm,
+    Popover,
     Space,
     Table,
+    Tag,
     Tooltip,
     Typography,
 } from 'antd';
 import type { SorterResult } from 'antd/es/table/interface';
-import { createStyles } from 'antd-style';
 import { Link } from 'react-router-dom';
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import productService from '../../services/productService';
-import { SimpleProductType, VariableProductType, Variation } from '../../types/ProductTypes';
+import { Product, Variation } from '../../types/ProductTypes';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -28,49 +31,54 @@ interface TableParams {
     filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
 }
 
-type Product =
-    | (SimpleProductType & { type: 'Simple' })
-    | (VariableProductType & { type: 'Variable' });
-
 const confirm: PopconfirmProps['onConfirm'] = (e) => {
     message.success('Click on Yes');
 };
 
-function productType(product: Product) {
-    if ('quantity' in product) return 'Simple';
-    return 'Variable';
-}
+// id: number;
+// price: number;
+// wholesalePrice?: number;
+// quantity: number;
+// manage_quantity: boolean;
+// sku: string;
+// attributes: VariationAttributeType[];
 
-const columns: ColumnsType<Product> = [
-    /* {
-        key: 'image',
-        title: 'Image',
-        dataIndex: 'image',
-        render: (_, record) => {
-            if (record.images) {
-                if (typeof record.images == 'string') record.images = [record.images]; // TODO Remove this when backend API implemented. Since mockupapi returns only 1 string, instead of an array
-                return (
-                    <img
-                        src={record.images.length > 0 ? record.images[0] : ''}
-                        width="100"
-                        height="100"
-                    />
-                );
-            } else {
-                return null;
-            }
-        },
-    }, */
+const variationColumns: ColumnsType<Variation> = [
     {
-        key: 'type',
-        title: 'Type',
-        sorter: true,
-        filters: [
-            { text: 'Simple', value: 'simple' },
-            { text: 'Variable', value: 'variable' },
-        ],
-        render: (_, record) => record.type,
+        key: 'sku',
+        title: 'SKU',
+        dataIndex: 'sku',
     },
+    {
+        key: 'price',
+        title: 'Price',
+        dataIndex: 'retailPrice',
+    },
+    {
+        key: 'quantity',
+        title: 'Quantity',
+        dataIndex: 'quantity',
+    },
+    {
+        key: 'attributes',
+        title: 'Attributes',
+        render: (_, record) => {
+            return (
+                <>
+                    {record.attributes.map((attr, i) => {
+                        return (
+                            <>
+                                <Tag>{attr.value.value}</Tag>
+                            </>
+                        );
+                    })}
+                </>
+            );
+        },
+    },
+];
+
+const productColumns: ColumnsType<Product> = [
     {
         key: 'name',
         title: 'Name',
@@ -80,13 +88,26 @@ const columns: ColumnsType<Product> = [
     {
         key: 'sku',
         title: 'SKU',
-        dataIndex: 'sku',
+        render: (_, record) => {
+            if (record.variations.length === 1) {
+                return record.variations[0].sku;
+            } else {
+                return 'N/A';
+            }
+        },
     },
     {
         key: 'price',
         title: 'Price',
         dataIndex: 'price',
         sorter: true,
+        render: (_, record) => {
+            if (record.variations.length === 1) {
+                return record.variations[0].retailPrice;
+            } else {
+                return 'N/A';
+            }
+        },
     },
     {
         key: 'quantity',
@@ -94,17 +115,9 @@ const columns: ColumnsType<Product> = [
         dataIndex: 'quantity',
         sorter: true,
         render: (_, record) => {
-            if ('manage_quantity' in record && record.manage_quantity == false)
-                return (
-                    <>
-                        <Typography.Text style={{ paddingRight: '5px' }}>∞</Typography.Text>
-                        <Tooltip title="Manage quantity is turned off">
-                            <InfoCircleOutlined />
-                        </Tooltip>
-                    </>
-                );
-            if ('quantity' in record) return record.quantity;
-            else if (record.type == 'Variable')
+            if (record.variations.length === 1) {
+                return record.variations[0].quantity;
+            } else {
                 return (
                     <>
                         <Typography.Text style={{ paddingRight: '5px' }}>
@@ -115,6 +128,37 @@ const columns: ColumnsType<Product> = [
                         </Tooltip>
                     </>
                 );
+            }
+        },
+    },
+    {
+        key: 'attributes',
+        title: 'Attributes',
+        responsive: ['sm'],
+        render: (_, record) => {
+            return (
+                <>
+                    {record.attributes.map((attr, i) => {
+                        return (
+                            <>
+                                <Popover
+                                    key={i}
+                                    content={attr.value.map((v) => (
+                                        <Tag
+                                            style={{ marginLeft: 3, marginRight: 3 }}
+                                            tabIndex={-1}
+                                        >
+                                            {v.value}
+                                        </Tag>
+                                    ))}
+                                >
+                                    <Tag key={attr.id}>{attr.name}</Tag>
+                                </Popover>
+                            </>
+                        );
+                    })}
+                </>
+            );
         },
     },
     {
@@ -148,15 +192,6 @@ const columns: ColumnsType<Product> = [
             { text: 'In Stock', value: 'instock' },
             { text: 'Out of Stock', value: 'outofstock' },
         ],
-        render: (_, record) => {
-            if ('quantity' in record) {
-                return record.quantity > 0 ? 'In Stock' : 'Out of Stock';
-            } else {
-                return record.variations.some((variation) => variation.quantity > 0)
-                    ? 'In Stock'
-                    : 'Out of Stock';
-            }
-        },
     },
     {
         key: 'action',
@@ -182,30 +217,24 @@ const columns: ColumnsType<Product> = [
     },
 ];
 
-const useStyle = createStyles(({ css, token }) => {
-    const { antCls } = token;
-    return {
-        customTable: css`
-            ${antCls}-table {
-                ${antCls}-table-container {
-                    ${antCls}-table-body,
-                    ${antCls}-table-content {
-                        scrollbar-width: thin;
-                        scrollbar-color: #eaeaea transparent;
-                        scrollbar-gutter: stable;
-                    }
-                }
-            }
-        `,
-    };
-});
+const expandedRowRender = (record: Product, index) => (
+    <>
+        <Table<Variation>
+            columns={variationColumns}
+            rowKey={index}
+            size="small"
+            bordered={true}
+            dataSource={record.variations}
+            pagination={false}
+        />
+    </>
+);
 
 const View: React.FC = () => {
-    const { styles } = useStyle();
     const [data, setData] = useState<Product[]>();
     const [loading, setLoading] = useState(true);
     const [hiddenColumns, setHiddenColumns] = useState<string[]>(
-        columns.filter((item) => item?.hidden == true).map((item) => item.key as string)
+        productColumns.filter((item) => item?.hidden == true).map((item) => item.key as string)
     );
 
     const onChange: CheckboxProps['onChange'] = (e) => {
@@ -215,7 +244,7 @@ const View: React.FC = () => {
         setHiddenColumns([...hiddenColumns, e.target.value]);
     };
 
-    const items: MenuProps['items'] = columns.map((item, i) => ({
+    const items: MenuProps['items'] = productColumns.map((item, i) => ({
         key: i,
         label: (
             <Checkbox
@@ -228,7 +257,7 @@ const View: React.FC = () => {
         ),
     }));
 
-    const newColumns = columns.map((item) => ({
+    const newColumns = productColumns.map((item) => ({
         ...item,
         hidden: hiddenColumns.includes(item.key as string),
     }));
@@ -243,20 +272,7 @@ const View: React.FC = () => {
     });
 
     const fetchProducts = async (tableParams = {}) => {
-        let products = await productService.getProducts(tableParams);
-        products = products.map((product) => {
-            return {
-                ...product,
-                type: productType(product),
-                children:
-                    productType(product) === 'Variable'
-                        ? product.variations.map((variation: Variation) => {
-                              return { ...variation, type: 'Variation' };
-                          })
-                        : null,
-            };
-        });
-        return products;
+        return await productService.getProducts(tableParams);
     };
 
     useEffect(() => {
@@ -308,14 +324,14 @@ const View: React.FC = () => {
                 </Space>
 
                 <Table<Product>
-                    className={styles.customTable}
                     columns={newColumns}
                     rowKey={(record) => record.id}
                     dataSource={data}
-                    /* expandable={{
-                        rowExpandable: (record) => productType(record) === 'variable',
-                        expandedRowRender
-                    }} */
+                    size="small"
+                    expandable={{
+                        expandedRowRender,
+                        rowExpandable: (record) => record.variations.length > 1,
+                    }}
                     pagination={tableParams.pagination}
                     bordered
                     scroll={{ y: '50vh', scrollToFirstRowOnChange: false }}
