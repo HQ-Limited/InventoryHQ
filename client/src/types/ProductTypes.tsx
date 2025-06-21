@@ -3,7 +3,7 @@ export type ProductAttributeType = {
     name: string;
     values: {
         id: number;
-        name: string;
+        value: string;
     }[]; // id of attribute name + value (from attribute_values table)
     isVariational?: boolean;
 };
@@ -13,7 +13,7 @@ export type VariationAttributeType = {
     name: string;
     value: {
         id: number;
-        name: string;
+        value: string;
     }; // id of attribute name + value (from attribute_values table)
 };
 
@@ -30,7 +30,7 @@ export type SimpleProductType = {
     attributes: ProductAttributeType[];
 };
 
-export type VariableProductType = {
+export type Product = {
     id: number;
     name: string;
     description?: string;
