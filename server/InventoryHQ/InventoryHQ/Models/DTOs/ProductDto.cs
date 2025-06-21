@@ -11,5 +11,7 @@
         public List<CategoryDto> Categories { get; set; } = new();
 
         public List<VariationDto> Variations { get; set; } = new();
+
+        public List<AttributeDto> Attributes { get; set; }
     }
 }
