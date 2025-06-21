@@ -15,6 +15,6 @@ namespace InventoryHQ.Models.DTOs
         [Required]
         public int Quantity { get; set; }
 
-        public List<AttributeDto> Attributes { get; set; } = new();
+        public List<VariationAttributeDto> Attributes { get; set; } = new();
     }
 }
