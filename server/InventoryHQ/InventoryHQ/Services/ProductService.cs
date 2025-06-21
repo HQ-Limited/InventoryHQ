@@ -36,6 +36,8 @@ namespace InventoryHQ.Services
         public async Task<IEnumerable<ProductDto>> GetProducts()
         {
             var products = await _data.Products.Include(x => x.Variations)
+                                              .ThenInclude(x=>x.InventoryUnits)
+                                              .Include(x=>x.Variations)
                                               .ThenInclude(x => x.VariationAttributeValues)
                                               .ThenInclude(x => x.AttributeValue)
                                               .ThenInclude(x => x.Attribute)
