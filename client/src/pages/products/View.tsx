@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import type { CheckboxProps, GetProp, MenuProps, PopconfirmProps, TableProps } from 'antd';
 import {
-    Badge,
     Button,
     Checkbox,
     Dropdown,
-    Flex,
+    Input,
+    Menu,
     message,
     Popconfirm,
     Popover,
@@ -17,9 +17,10 @@ import {
 } from 'antd';
 import type { SorterResult } from 'antd/es/table/interface';
 import { Link } from 'react-router-dom';
-import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { DownOutlined, InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import productService from '../../services/productService';
 import { Product, Variation } from '../../types/ProductTypes';
+import Search from 'antd/es/transfer/search';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -35,13 +36,13 @@ const confirm: PopconfirmProps['onConfirm'] = (e) => {
     message.success('Click on Yes');
 };
 
-// id: number;
-// price: number;
-// wholesalePrice?: number;
-// quantity: number;
-// manage_quantity: boolean;
-// sku: string;
-// attributes: VariationAttributeType[];
+const StatusTag = ({ quantity }: { quantity: number }) => {
+    if (quantity > 0) {
+        return <Tag color="green">In Stock</Tag>;
+    } else {
+        return <Tag color="red">Out of Stock</Tag>;
+    }
+};
 
 const variationColumns: ColumnsType<Variation> = [
     {
@@ -62,19 +63,17 @@ const variationColumns: ColumnsType<Variation> = [
     {
         key: 'attributes',
         title: 'Attributes',
-        render: (_, record) => {
-            return (
-                <>
-                    {record.attributes.map((attr, i) => {
-                        return (
-                            <>
-                                <Tag>{attr.value.value}</Tag>
-                            </>
-                        );
-                    })}
-                </>
-            );
-        },
+        render: (_, record) =>
+            record.attributes.map((attr, i) => <Tag key={i}>{attr.value.value}</Tag>),
+    },
+    {
+        key: 'status',
+        title: 'Status',
+        filters: [
+            { text: 'In Stock', value: 'instock' },
+            { text: 'Out of Stock', value: 'outofstock' },
+        ],
+        render: (_, record) => <StatusTag quantity={record.quantity} />,
     },
 ];
 
@@ -136,29 +135,18 @@ const productColumns: ColumnsType<Product> = [
         title: 'Attributes',
         responsive: ['sm'],
         render: (_, record) => {
-            return (
-                <>
-                    {record.attributes.map((attr, i) => {
-                        return (
-                            <>
-                                <Popover
-                                    key={i}
-                                    content={attr.value.map((v) => (
-                                        <Tag
-                                            style={{ marginLeft: 3, marginRight: 3 }}
-                                            tabIndex={-1}
-                                        >
-                                            {v.value}
-                                        </Tag>
-                                    ))}
-                                >
-                                    <Tag key={attr.id}>{attr.name}</Tag>
-                                </Popover>
-                            </>
-                        );
-                    })}
-                </>
-            );
+            return record.attributes.map((attr, i) => (
+                <Popover
+                    key={i}
+                    content={attr.values.map((v) => (
+                        <Tag style={{ marginLeft: 3, marginRight: 3 }} tabIndex={-1}>
+                            {v.value}
+                        </Tag>
+                    ))}
+                >
+                    <Tag key={attr.id}>{attr.name}</Tag>
+                </Popover>
+            ));
         },
     },
     {
@@ -167,18 +155,11 @@ const productColumns: ColumnsType<Product> = [
         dataIndex: 'categories',
         render: (_, record) => {
             if (record.categories) {
-                return (
-                    <>
-                        {record.categories.map((category, i) => (
-                            <>
-                                <Link key={i} to={`/categories/${category.id}`}>
-                                    {category.name}
-                                </Link>
-                                <br />
-                            </>
-                        ))}
-                    </>
-                );
+                return record.categories.map((category, i) => (
+                    <Link style={{ display: 'block' }} key={i} to={`/categories/${category.id}`}>
+                        {category.name}
+                    </Link>
+                ));
             } else {
                 return null;
             }
@@ -187,11 +168,13 @@ const productColumns: ColumnsType<Product> = [
     {
         key: 'status',
         title: 'Status',
-        dataIndex: 'status',
         filters: [
             { text: 'In Stock', value: 'instock' },
             { text: 'Out of Stock', value: 'outofstock' },
         ],
+        render: (_, record) => (
+            <StatusTag quantity={record.variations.reduce((a, b) => a + b.quantity, 0)} />
+        ),
     },
     {
         key: 'action',
@@ -217,17 +200,15 @@ const productColumns: ColumnsType<Product> = [
     },
 ];
 
-const expandedRowRender = (record: Product, index) => (
-    <>
-        <Table<Variation>
-            columns={variationColumns}
-            rowKey={index}
-            size="small"
-            bordered={true}
-            dataSource={record.variations}
-            pagination={false}
-        />
-    </>
+const expandedRowRender = (record: Product, index: number) => (
+    <Table<Variation>
+        columns={variationColumns}
+        rowKey={index.toString()}
+        size="small"
+        bordered={true}
+        dataSource={record.variations}
+        pagination={false}
+    />
 );
 
 const View: React.FC = () => {
@@ -237,6 +218,46 @@ const View: React.FC = () => {
         productColumns.filter((item) => item?.hidden == true).map((item) => item.key as string)
     );
 
+    function TopMenuItems({ columns }: { columns: MenuProps['items'] }): MenuProps['items'] {
+        function onSearch(value: string) {
+            if (value === '') return;
+            // Apply search logic here
+            console.log({ value });
+        }
+        function onChange(e: ChangeEvent<HTMLInputElement>) {
+            if (e.target.value !== '') return;
+            // Apply search logic here
+            console.log('clear field');
+        }
+        const items: MenuProps['items'] = [
+            {
+                label: (
+                    <Input.Search
+                        placeholder="Search"
+                        onSearch={onSearch}
+                        onChange={onChange}
+                        loading={loading}
+                        allowClear
+                    />
+                ),
+                key: 'search',
+            },
+            {
+                label: <Link to="new">Create Product</Link>,
+                key: 'create',
+                icon: <PlusOutlined />,
+            },
+            {
+                label: 'Columns',
+                key: 'columns',
+                icon: <DownOutlined />,
+                children: columns,
+            },
+        ];
+
+        return items;
+    }
+
     const onChange: CheckboxProps['onChange'] = (e) => {
         if (hiddenColumns.includes(e.target.value)) {
             return setHiddenColumns(hiddenColumns.filter((item) => item !== e.target.value));
@@ -244,7 +265,7 @@ const View: React.FC = () => {
         setHiddenColumns([...hiddenColumns, e.target.value]);
     };
 
-    const items: MenuProps['items'] = productColumns.map((item, i) => ({
+    const columnsCheckboxes: MenuProps['items'] = productColumns.map((item, i) => ({
         key: i,
         label: (
             <Checkbox
@@ -308,21 +329,12 @@ const View: React.FC = () => {
 
     return (
         <>
+            <Menu
+                mode="horizontal"
+                items={TopMenuItems({ columns: columnsCheckboxes })}
+                selectable={false}
+            />
             <section className="table-wrapper">
-                <Space style={{ paddingBottom: '1rem' }}>
-                    <Link to="/products/new">
-                        <Button type="primary">Create new product</Button>
-                    </Link>
-                    <Dropdown menu={{ items }}>
-                        <Button type="primary">
-                            <Space>
-                                Columns
-                                <DownOutlined />
-                            </Space>
-                        </Button>
-                    </Dropdown>
-                </Space>
-
                 <Table<Product>
                     columns={newColumns}
                     rowKey={(record) => record.id}

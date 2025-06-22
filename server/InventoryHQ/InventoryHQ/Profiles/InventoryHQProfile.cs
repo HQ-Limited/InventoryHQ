@@ -51,7 +51,7 @@ namespace InventoryHQ.Profiles
                 {
                     Id = group.Key.Id,
                     Name = group.Key.Name,
-                    Value = group
+                    Values = group
                         .Select(g => g.AttributeValue)
                         .DistinctBy(av => av.Id)
                         .Select(av => new AttributeValueDto
