@@ -1,13 +1,8 @@
-import axios from 'axios';
 import { AttributeDB } from '../types/ProductTypesDB';
-
-const API_URL = 'https://localhost:44301/api/Attribute';
-axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
-axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
 
 class AttributeService {
     async getAttributes(id?: number | number[]): Promise<AttributeDB[]> {
-        // const response = await axios.get(API_URL, id);
+        // const response = await api.get('Attribute', id);
         // FAKE DATA
         const response = {
             data: [
@@ -41,7 +36,7 @@ class AttributeService {
     }
 
     async getAttributeValues(id: number): Promise<{ id: number; value: string }[]> {
-        // const response = await axios.get(`${API_URL}/${id}/values`);
+        // const response = await api.get(`Attribute/${id}/values`);
         // FAKE DATA
         const response = {
             status: 200,
@@ -65,7 +60,7 @@ class AttributeService {
     }
 
     async createAttribute(name: string): Promise<number> {
-        // const response = await axios.post(API_URL, { name });
+        // const response = await api.post('Attribute', { name });
         // TEST RESPONSE
         const response = {
             status: 200,
@@ -80,7 +75,7 @@ class AttributeService {
     }
 
     async createAttributeValue({ id: number, value: string }): Promise<number> {
-        // const response = await axios.post(API_URL, { id, value });
+        // const response = await axios.post('Attribute', { id, value });
         // TEST RESPONSE
         const response = {
             status: 200,

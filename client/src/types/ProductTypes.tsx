@@ -41,7 +41,7 @@ export type Product = {
 
 export type Variation = {
     id: number;
-    price: number;
+    retailPrice: number;
     wholesalePrice?: number;
     quantity: number;
     manage_quantity: boolean;
