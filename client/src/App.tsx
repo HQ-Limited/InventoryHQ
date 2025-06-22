@@ -15,17 +15,16 @@ function App() {
             }}
         >
             <BrowserRouter>
-                {/* <MainLayout> */}
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/products" element={<ProductsView />} />
-                    <Route path="/products/create" element={<ProductsCreate />} />
-
-                    <Route path="/partners" element={<PartnersView />} />
-                    <Route path="/partners/new" element={<PartnersCreateEdit />} />
-                    <Route path="/partners/:id" element={<PartnersCreateEdit />} />
-                </Routes>
-                {/* </MainLayout> */}
+                <MainLayout>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/products" element={<ProductsView />} />
+                        <Route path="/products/create" element={<ProductsCreate />} />
+                        <Route path="/partners" element={<PartnersView />} />
+                        <Route path="/partners/new" element={<PartnersCreateEdit />} />
+                        <Route path="/partners/:id" element={<PartnersCreateEdit />} />
+                    </Routes>
+                </MainLayout>
             </BrowserRouter>
         </ConfigProvider>
     );
