@@ -1,0 +1,42 @@
+import { SearchOutlined } from '@ant-design/icons';
+import { Button, Input, InputRef, Space, TableColumnType } from 'antd';
+import { useRef } from 'react';
+
+export const TextSearchFilter = <T,>(field: string): TableColumnType<T> => {
+    const searchInput = useRef<InputRef>(null);
+
+    const TextSearch: TableColumnType<T> = {
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, close }) => (
+            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+                <Input.Search
+                    ref={searchInput}
+                    placeholder={`Search in ${field}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => {
+                        setSelectedKeys(e.target.value ? [e.target.value] : []);
+                    }}
+                    onPressEnter={() => confirm()}
+                    onSearch={() => confirm()}
+                    allowClear
+                    style={{ marginBottom: 8, display: 'block' }}
+                />
+                <Space>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            close();
+                        }}
+                    >
+                        Close
+                    </Button>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered: boolean) => (
+            <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+        ),
+    };
+
+    return TextSearch;
+};
