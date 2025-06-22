@@ -26,7 +26,13 @@ export default function PriceField({
                 },
             ]}
         >
-            <InputNumber style={{ width: '100%' }} precision={2} step={0.01} min={0.01} />
+            <InputNumber
+                style={{ width: '100%' }}
+                precision={2}
+                step={0.01}
+                min={0.01}
+                inputMode="decimal"
+            />
         </Form.Item>
     );
 }

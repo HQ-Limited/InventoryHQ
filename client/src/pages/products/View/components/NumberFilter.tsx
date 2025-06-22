@@ -1,10 +1,7 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { Button, Input, InputRef, Select, Space, TableColumnType } from 'antd';
-import { useRef } from 'react';
+import { Button, InputNumber, Select, Space, TableColumnType } from 'antd';
 
-export const NumberFilter = <T,>(field: string): TableColumnType<T> => {
-    const searchInput = useRef<InputRef>(null);
-
+export const NumberFilter = <T,>(): TableColumnType<T> => {
     const NumberSearch: TableColumnType<T> = {
         filterIcon: (filtered: boolean) => (
             <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
@@ -25,17 +22,15 @@ export const NumberFilter = <T,>(field: string): TableColumnType<T> => {
                             setSelectedKeys([{ ...current, operator }]);
                         }}
                     />
-                    <Input.Search
-                        ref={searchInput}
-                        placeholder={`Search in ${field}`}
+                    <InputNumber
+                        controls={false}
                         value={current.input}
-                        onChange={(e) => {
-                            setSelectedKeys([{ ...current, input: e.target.value }]);
+                        inputMode="decimal"
+                        onChange={(value) => {
+                            setSelectedKeys([{ ...current, input: value }]);
                         }}
                         onPressEnter={() => confirm()}
-                        onSearch={() => confirm()}
-                        allowClear
-                        style={{ marginBottom: 8, display: 'block' }}
+                        style={{ marginBottom: 8, display: 'block', width: '100%' }}
                     />
                     <Space>
                         <Button
