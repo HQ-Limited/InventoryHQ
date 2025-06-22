@@ -1,34 +1,39 @@
-import { Button, Col, Row } from 'antd';
-import React, { useState } from 'react';
+import { Button } from 'antd';
 import { Link } from 'react-router-dom';
-const pages = [
-    {
-        name: 'Products',
-        path: '/products',
-    },
-    {
-        name: 'Partners',
-        path: '/partners',
-    },
-];
+import routes from '../Routes';
+
 const Home = () => {
     return (
-        <>
-            <Row gutter={16}>
-                {pages.map((page, index) => (
-                    <Col key={index} span={6}>
-                        <Link to={page.path}>
-                            <Button
-                                type="primary"
-                                style={{ width: '100%', height: '120px', fontSize: '2rem' }}
-                            >
-                                {page.name}
-                            </Button>
-                        </Link>
-                    </Col>
-                ))}
-            </Row>
-        </>
+        <div
+            style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 16,
+                padding: 24,
+                maxWidth: 1200,
+                margin: '0 auto',
+            }}
+        >
+            {routes!.map((page) => (
+                <Link key={page.key} to={page.url} style={{ textDecoration: 'none' }}>
+                    <Button
+                        type="primary"
+                        block
+                        style={{
+                            minHeight: 48,
+                            fontSize: 'clamp(1rem, 2vw, 1.25rem)',
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                        }}
+                    >
+                        {page.icon}
+                        <span>{page.label}</span>
+                    </Button>
+                </Link>
+            ))}
+        </div>
     );
 };
 
