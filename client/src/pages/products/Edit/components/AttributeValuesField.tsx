@@ -1,5 +1,5 @@
 import { Button, Card, Checkbox, CheckboxChangeEvent, Form, Select, Tooltip } from 'antd';
-import { AttributeDB } from '../../../types/ProductTypesDB';
+import { AttributeDB } from '../../../../types/ProductTypesDB';
 import { CloseOutlined } from '@ant-design/icons';
 
 export default function AttributeValuesField({

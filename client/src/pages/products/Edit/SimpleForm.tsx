@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import type { CheckboxChangeEvent, FormProps } from 'antd';
 import { Button, Form, message, Space } from 'antd';
-import { WHOLESALE_ENABLED } from '../../global';
-import { AttributeDB, CategoriesTree, SimpleProductTypeDB } from '../../types/ProductTypesDB';
+import { WHOLESALE_ENABLED } from '../../../global';
+import { AttributeDB, CategoriesTree, SimpleProductTypeDB } from '../../../types/ProductTypesDB';
 import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
 import PriceField from './components/PriceField';
@@ -12,7 +12,7 @@ import NameField from './components/NameField';
 import DescriptionField from './components/DescriptionField';
 import ManageQuantityField from './components/ManageQuantityField';
 import QuantityField from './components/QuantityField';
-import attributeService from '../../services/attributeService';
+import attributeService from '../../../services/attributeService';
 const onFinish: FormProps<SimpleProductTypeDB>['onFinish'] = (values) => {
     console.log('Success:', values);
 };

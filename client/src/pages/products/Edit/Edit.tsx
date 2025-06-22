@@ -10,10 +10,10 @@ import {
     CategoryDB,
     SimpleProductTypeDB,
     VariableProductTypeDB,
-} from '../../types/ProductTypesDB';
-import productService from '../../services/productService';
-import categoryService from '../../services/categoryService';
-import attributeService from '../../services/attributeService';
+} from '../../../types/ProductTypesDB';
+import productService from '../../../services/productService';
+import categoryService from '../../../services/categoryService';
+import attributeService from '../../../services/attributeService';
 const CreateEdit: React.FC = () => {
     const [type, setType] = useState<'simple' | 'variable' | undefined>();
     const params = useParams();

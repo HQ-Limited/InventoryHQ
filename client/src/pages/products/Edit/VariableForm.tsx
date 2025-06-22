@@ -7,7 +7,7 @@ import {
     VariableProductTypeDB,
     VariationDB,
     VariationAttributeTypeDB,
-} from '../../types/ProductTypesDB';
+} from '../../../types/ProductTypesDB';
 import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
 import { PlusOutlined } from '@ant-design/icons';
@@ -15,7 +15,7 @@ import VariationCard from './components/VariationCard';
 import CategoryField from './components/CategoryField';
 import NameField from './components/NameField';
 import DescriptionField from './components/DescriptionField';
-import attributeService from '../../services/attributeService';
+import attributeService from '../../../services/attributeService';
 const onFinish: FormProps<VariableProductTypeDB>['onFinish'] = (values) => {
     console.log('Success:', values);
 };

@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import { ConfigProvider, theme } from 'antd';
-import ProductsView from './pages/products/View';
-import ProductsCreateEdit from './pages/products/CreateEdit';
+import ProductsView from './pages/products/View/View';
+import ProductsCreateEdit from './pages/products/Edit/Edit';
 import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
 import Home from './pages/Home';
