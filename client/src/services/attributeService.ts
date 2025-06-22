@@ -2,6 +2,7 @@ import { AttributeDB } from '../types/ProductTypesDB';
 
 class AttributeService {
     async getAttributes(id?: number | number[]): Promise<AttributeDB[]> {
+        //FIXME
         // const response = await api.get('Attribute', id);
         // FAKE DATA
         const response = {
@@ -36,27 +37,31 @@ class AttributeService {
     }
 
     async getAttributeValues(id: number): Promise<{ id: number; value: string }[]> {
-        // const response = await api.get(`Attribute/${id}/values`);
+        // const response = await api.get(`Attribute/${id}`);
         // FAKE DATA
         const response = {
             status: 200,
-            data: [
-                {
-                    id: 1,
-                    value: 'Red',
-                },
-                {
-                    id: 2,
-                    value: 'Blue',
-                },
-                {
-                    id: 3,
-                    value: 'Green',
-                },
-            ],
+            data: {
+                id: 1,
+                name: 'Color',
+                values: [
+                    {
+                        id: 1,
+                        value: 'Red',
+                    },
+                    {
+                        id: 2,
+                        value: 'Blue',
+                    },
+                    {
+                        id: 3,
+                        value: 'Green',
+                    },
+                ],
+            },
         };
 
-        return response.data;
+        return response.data.values;
     }
 
     async createAttribute(name: string): Promise<number> {

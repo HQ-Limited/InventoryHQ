@@ -19,6 +19,7 @@ builder.Services.AddDbContext<InventoryHQDbContext>(options =>
 });
 
 builder.Services.AddTransient<ProductService>();
+builder.Services.AddTransient<AttributeService>();
 builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile<InventoryHQProfile>();

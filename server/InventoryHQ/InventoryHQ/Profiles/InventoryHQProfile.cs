@@ -17,6 +17,11 @@ namespace InventoryHQ.Profiles
 
             CreateMap<Data.Models.Attribute, AttributeDto>()
                 .ForMember(x => x.Name, s => s.MapFrom(src => src.Name))
+                .ForMember(x => x.Values, s => s.MapFrom(src => src.AttributeValues.Select(av => new AttributeValueDto
+                {
+                    Id = av.Id,
+                    Value = av.Value
+                }).ToList()))
                 .ReverseMap();
 
             CreateMap<AttributeValue, AttributeValueDto>().ReverseMap();
