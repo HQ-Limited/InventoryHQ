@@ -84,7 +84,7 @@ const View: React.FC = () => {
             title: 'Name',
             dataIndex: 'name',
             sorter: true,
-            ...TextFilter('name'),
+            ...TextFilter(),
         },
         {
             key: 'sku',
@@ -96,7 +96,7 @@ const View: React.FC = () => {
                     return 'N/A';
                 }
             },
-            ...TextFilter('sku'),
+            ...TextFilter(),
         },
         {
             key: 'price',
@@ -110,7 +110,7 @@ const View: React.FC = () => {
                     return 'N/A';
                 }
             },
-            ...NumberFilter('price'),
+            ...NumberFilter(),
         },
         {
             key: 'quantity',
