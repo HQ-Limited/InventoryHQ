@@ -2,7 +2,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Button, Input, InputRef, Space, TableColumnType } from 'antd';
 import { useRef } from 'react';
 
-export const TextSearchFilter = <T,>(field: string): TableColumnType<T> => {
+export const TextFilter = <T,>(field: string): TableColumnType<T> => {
     const searchInput = useRef<InputRef>(null);
 
     const TextSearch: TableColumnType<T> = {

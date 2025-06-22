@@ -19,7 +19,8 @@ import { Link } from 'react-router-dom';
 import { DownOutlined, InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import productService from '../../../services/productService';
 import { Product, Variation } from '../../../types/ProductTypes';
-import { TextSearchFilter } from './components/TextSearchFilter';
+import { TextFilter } from './components/TextFilter';
+import { NumberFilter } from './components/NumberFilter';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -83,7 +84,7 @@ const View: React.FC = () => {
             title: 'Name',
             dataIndex: 'name',
             sorter: true,
-            ...TextSearchFilter('name'),
+            ...TextFilter('name'),
         },
         {
             key: 'sku',
@@ -95,7 +96,7 @@ const View: React.FC = () => {
                     return 'N/A';
                 }
             },
-            ...TextSearchFilter('sku'),
+            ...TextFilter('sku'),
         },
         {
             key: 'price',
@@ -109,6 +110,7 @@ const View: React.FC = () => {
                     return 'N/A';
                 }
             },
+            ...NumberFilter('price'),
         },
         {
             key: 'quantity',
