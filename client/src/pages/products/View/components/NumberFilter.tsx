@@ -9,23 +9,6 @@ export const NumberFilter = <T,>(field: string): TableColumnType<T> => {
         filterIcon: (filtered: boolean) => (
             <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
         ),
-        onFilter: (value, record) => {
-            if (!value || typeof value !== 'object') return true;
-            const { input, operator } = value as { input: string; operator: string };
-            const recordValue = Number((record as any)[field]);
-            const filterValue = Number(input);
-            if (isNaN(recordValue) || isNaN(filterValue)) return false;
-            switch (operator) {
-                case 'eq':
-                    return recordValue === filterValue;
-                case 'gt':
-                    return recordValue > filterValue;
-                case 'lt':
-                    return recordValue < filterValue;
-                default:
-                    return true;
-            }
-        },
         filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, close }) => {
             const current = (selectedKeys[0] as any) || { input: '', operator: 'eq' };
             return (
