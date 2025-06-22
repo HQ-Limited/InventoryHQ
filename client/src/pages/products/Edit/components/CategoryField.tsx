@@ -1,6 +1,6 @@
 import { Form, TreeSelect } from 'antd';
 import { DataNode } from 'antd/es/tree';
-import { CategoriesTree } from '../../../types/ProductTypesDB';
+import { CategoriesTree } from '../../../../types/ProductTypesDB';
 
 export default function CategoryField({
     categoriesTree,

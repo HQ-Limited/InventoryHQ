@@ -4,13 +4,13 @@ import {
     ProductAttributeDB,
     VariationDB,
     VariationAttributeTypeDB,
-} from '../../../types/ProductTypesDB';
+} from '../../../../types/ProductTypesDB';
 import PriceField from './PriceField';
 import React from 'react';
 import SKUField from './SKUField';
 import ManageQuantityField from './ManageQuantityField';
 import QuantityField from './QuantityField';
-import { WHOLESALE_ENABLED } from '../../../global';
+import { WHOLESALE_ENABLED } from '../../../../global';
 
 function SelectField({
     attribute,
