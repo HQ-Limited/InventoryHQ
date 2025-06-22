@@ -1,13 +1,5 @@
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
-import type {
-    CheckboxProps,
-    GetProp,
-    InputRef,
-    MenuProps,
-    PopconfirmProps,
-    TableColumnType,
-    TableProps,
-} from 'antd';
+import React, { ChangeEvent, useEffect, useState } from 'react';
+import type { CheckboxProps, GetProp, MenuProps, PopconfirmProps, TableProps } from 'antd';
 import {
     Button,
     Checkbox,
@@ -22,11 +14,12 @@ import {
     Tooltip,
     Typography,
 } from 'antd';
-import type { FilterDropdownProps, SorterResult } from 'antd/es/table/interface';
+import type { SorterResult } from 'antd/es/table/interface';
 import { Link } from 'react-router-dom';
-import { DownOutlined, InfoCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { DownOutlined, InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import productService from '../../../services/productService';
 import { Product, Variation } from '../../../types/ProductTypes';
+import { TextSearchFilter } from './components/TextSearchFilter';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -51,76 +44,6 @@ const StatusTag = ({ quantity }: { quantity: number }) => {
 };
 
 const View: React.FC = () => {
-    const [searchText, setSearchText] = useState('');
-    const [searchedColumn, setSearchedColumn] = useState('');
-    const searchInput = useRef<InputRef>(null);
-
-    type DataIndex = keyof Product;
-    const handleSearch = (
-        selectedKeys: string[],
-        confirm: FilterDropdownProps['confirm'],
-        dataIndex: DataIndex
-    ) => {
-        confirm();
-        setSearchText(selectedKeys[0]);
-        setSearchedColumn(dataIndex);
-    };
-
-    const handleReset = (clearFilters: () => void) => {
-        clearFilters();
-        setSearchText('');
-    };
-
-    const textSearch = (dataIndex: DataIndex): TableColumnType<Product> => ({
-        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-                <Input.Search
-                    ref={searchInput}
-                    placeholder={`Search ${dataIndex}`}
-                    value={selectedKeys[0]}
-                    onChange={(e) => {
-                        setSelectedKeys(e.target.value ? [e.target.value] : []);
-                        if (e.target.value === '' && clearFilters) {
-                            handleReset(clearFilters);
-                            return handleSearch(selectedKeys as string[], confirm, dataIndex);
-                        }
-                    }}
-                    onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
-                    onSearch={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
-                    loading={loading}
-                    allowClear
-                    style={{ marginBottom: 8, display: 'block' }}
-                />
-                <Space>
-                    <Button
-                        type="link"
-                        size="small"
-                        onClick={() => {
-                            close();
-                        }}
-                    >
-                        Close
-                    </Button>
-                </Space>
-            </div>
-        ),
-        filterIcon: (filtered: boolean) => (
-            <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
-        ),
-        onFilter: (value, record) =>
-            record[dataIndex]
-                .toString()
-                .toLowerCase()
-                .includes((value as string).toLowerCase()),
-        filterDropdownProps: {
-            onOpenChange(open) {
-                if (open) {
-                    setTimeout(() => searchInput.current?.select(), 100);
-                }
-            },
-        },
-    });
-
     const variationColumns: ColumnsType<Variation> = [
         {
             key: 'sku',
@@ -160,7 +83,7 @@ const View: React.FC = () => {
             title: 'Name',
             dataIndex: 'name',
             sorter: true,
-            ...textSearch('name'),
+            ...TextSearchFilter('name'),
         },
         {
             key: 'sku',
@@ -172,6 +95,7 @@ const View: React.FC = () => {
                     return 'N/A';
                 }
             },
+            ...TextSearchFilter('sku'),
         },
         {
             key: 'price',
@@ -399,6 +323,7 @@ const View: React.FC = () => {
         };
 
         setTableParams(newTableParams);
+        console.log(newTableParams);
 
         fetchProducts(newTableParams)
             .then((products) => {
