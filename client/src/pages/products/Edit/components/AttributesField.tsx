@@ -14,11 +14,7 @@ export default function AttributesField({
     required?: boolean;
 }) {
     return (
-        <Form.Item
-            name={'selectedAttributes'}
-            label="Attributes"
-            rules={required ? [{ required: true }] : []}
-        >
+        <Form.Item name={'selectedAttributes'} label="Attributes" rules={[{ required }]}>
             <Select
                 mode="tags"
                 allowClear

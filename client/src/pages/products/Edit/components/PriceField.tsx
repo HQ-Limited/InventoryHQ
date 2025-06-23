@@ -1,7 +1,7 @@
 import { Form, InputNumber } from 'antd';
 
 export default function PriceField({
-    fieldName = 'price',
+    fieldName = ['variations', 0, 'retailPrice'],
     label = 'Price',
 }: {
     fieldName?: string | (string | number)[];

@@ -2,7 +2,7 @@ import { Checkbox, CheckboxChangeEvent, Form } from 'antd';
 
 export default function ManageQuantityField({
     onChange,
-    fieldName = 'manage_quantity',
+    fieldName = ['variations', 0, 'manage_quantity'],
 }: {
     onChange?: (e: CheckboxChangeEvent) => void;
     fieldName?: string | (string | number)[];

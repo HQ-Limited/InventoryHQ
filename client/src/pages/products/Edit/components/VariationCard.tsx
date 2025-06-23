@@ -1,4 +1,4 @@
-import { Card, Form, Select } from 'antd';
+import { Button, Card, Form, Select, Tooltip } from 'antd';
 import {
     AttributeDB,
     VariationDB,
@@ -11,6 +11,7 @@ import SKUField from './SKUField';
 import ManageQuantityField from './ManageQuantityField';
 import QuantityField from './QuantityField';
 import { WHOLESALE_ENABLED } from '../../../../global';
+import { CloseOutlined } from '@ant-design/icons';
 
 function SelectField({
     attribute,
@@ -69,6 +70,9 @@ export default function VariationCard({
     attributes: Partial<ProductAttribute>[];
     selectedAttributes: Partial<ProductAttribute>[];
     functions: {
+        variation: {
+            onVariationRemove: (variationKey: number) => void;
+        };
         attribute: {
             onSelect: ({
                 id,
@@ -83,7 +87,19 @@ export default function VariationCard({
     };
 }) {
     return (
-        <Card title={`Variation ${variationKey + 1}`}>
+        <Card
+            title={`Variation ${variationKey + 1}`}
+            extra={
+                <Tooltip title="Remove variation" color="red">
+                    <Button
+                        type="text"
+                        danger
+                        icon={<CloseOutlined />}
+                        onClick={() => functions.variation.onVariationRemove(variationKey)}
+                    />
+                </Tooltip>
+            }
+        >
             {selectedAttributes
                 .filter((a) => a.isVariational === true)
                 .map((attr, i) => {
