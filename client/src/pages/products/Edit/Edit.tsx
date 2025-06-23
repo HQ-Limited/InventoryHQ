@@ -4,12 +4,7 @@ import VariableForm from './VariableForm';
 import { Button, Flex, Space } from 'antd';
 import Title from 'antd/es/typography/Title';
 import { useParams } from 'react-router-dom';
-import {
-    AttributeDB,
-    CategoryDB,
-    SimpleProductTypeDB,
-    VariableProductTypeDB,
-} from '../../../types/ProductTypesDB';
+import { AttributeDB } from '../../../types/ProductTypesDB';
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
 import attributeService from '../../../services/attributeService';
@@ -73,7 +68,7 @@ const CreateEdit: React.FC = () => {
             if (product.attributes)
                 product.selectedAttributes = product.attributes.map((a: ProductAttribute) => a.id);
 
-            const attrs: Partial<AttributeDB>[] = await attributeService.getAttributes({
+            const attrs: Partial<ProductAttribute>[] = await attributeService.getAttributes({
                 includeValues: true,
                 ids: product!.attributes!.map((a) => a.id),
             });
@@ -85,7 +80,7 @@ const CreateEdit: React.FC = () => {
             return;
         }
 
-        const attrs: Partial<AttributeDB>[] = id
+        const attrs: Partial<ProductAttribute>[] = id
             ? await attributeService.getAttributes({
                   includeValues: true,
                   ids: product!.attributes!.map((a) => a.id),
