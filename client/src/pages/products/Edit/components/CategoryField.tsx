@@ -9,11 +9,7 @@ export default function CategoryField({
     onChange?: (value: number[]) => void;
 }) {
     return (
-        <Form.Item
-            label="Categories"
-            rules={[{ required: true, message: 'Please select at least one category' }]}
-            name="selectedCategories"
-        >
+        <Form.Item label="Categories" name="selectedCategories">
             <TreeSelect
                 showSearch
                 style={{ width: '100%' }}

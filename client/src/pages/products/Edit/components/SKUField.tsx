@@ -1,7 +1,7 @@
 import { Form, Input } from 'antd';
 
 export default function SKUField({
-    fieldName = 'sku',
+    fieldName = ['variations', 0, 'sku'],
 }: {
     fieldName?: string | (string | number)[];
 }) {

@@ -1,7 +1,7 @@
 import { Form, InputNumber } from 'antd';
 
 export default function QuantityField({
-    fieldName = 'quantity',
+    fieldName = ['variations', 0, 'quantity'],
 }: {
     fieldName?: string | (string | number)[];
 }) {

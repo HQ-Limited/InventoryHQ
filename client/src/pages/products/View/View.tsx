@@ -159,15 +159,15 @@ const View: React.FC = () => {
             dataIndex: 'categories',
             render: (_, record) => {
                 if (record.categories) {
-                    return record.categories.map((category, i) => (
-                        <Link
-                            style={{ display: 'block' }}
-                            key={i}
-                            to={`/categories/${category.id}`}
-                        >
-                            {category.name}
-                        </Link>
-                    ));
+                    return (
+                        <Space>
+                            {record.categories.map((category, i) => (
+                                <Link key={i} to={`/categories/${category.id}`}>
+                                    {category.name}
+                                </Link>
+                            ))}
+                        </Space>
+                    );
                 } else {
                     return null;
                 }
