@@ -1,35 +1,45 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { FormProps } from 'antd';
 import { Button, Form, Input, InputNumber, Select } from 'antd';
-import { PartnerType } from './common';
+import { CreatePartnerType } from '../../types/PartnerTypes';
+import axios from 'axios';
 
-const onFinish: FormProps<PartnerType>['onFinish'] = (values) => {
+const onFinish: FormProps<CreatePartnerType>['onFinish'] = (values) => {
     console.log('Success:', values);
 };
 
-const onFinishFailed: FormProps<PartnerType>['onFinishFailed'] = (errorInfo) => {
+const onFinishFailed: FormProps<CreatePartnerType>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
 };
 
 const CreateEdit: React.FC = () => {
+    const navigate = useNavigate();
     const params = useParams();
     const id = params.id;
-    const [values, setValues] = useState({
+    const [values, setValues] = useState<CreatePartnerType>({
         company: '',
-        legalRepresentative: '',
-        city: '',
-        address: '',
-        uic: '',
-        vat: '',
-        phone: '',
-        email: '',
-        bank: '',
-        bic: '',
-        iban: '',
         discount: 0,
         priceGroup: 'wholesale',
         type: 'customer',
+    });
+
+    useEffect(() => {
+        if (id) {
+            const fetchData = async () => {
+                try {
+                    const req = await axios.get(`/api/partners/${id}`);
+                    if (req.status === 200) {
+                        setValues(req.data);
+                    } else {
+                        navigate('/404');
+                    }
+                } catch (e) {
+                    navigate('/404');
+                }
+            };
+            fetchData();
+        }
     });
 
     // TODO: Create a function to get the data from the API if id is not null
@@ -45,7 +55,7 @@ const CreateEdit: React.FC = () => {
             scrollToFirstError
             initialValues={values}
         >
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="Company"
                 name="company"
                 rules={[
@@ -56,7 +66,7 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="Legal Representative"
                 name="legalRepresentative"
                 rules={[{ max: 100 }]}
@@ -64,15 +74,15 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType> label="City" name="city" rules={[{ max: 50 }]}>
+            <Form.Item<CreatePartnerType> label="City" name="city" rules={[{ max: 50 }]}>
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType> label="Address" name="address" rules={[{ max: 100 }]}>
+            <Form.Item<CreatePartnerType> label="Address" name="address" rules={[{ max: 100 }]}>
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="Unified Identification Code (UIC)"
                 name="uic"
                 rules={[
@@ -83,11 +93,11 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType> label="VAT Number" name="vat" rules={[{ max: 20 }]}>
+            <Form.Item<CreatePartnerType> label="VAT Number" name="vat" rules={[{ max: 20 }]}>
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="Phone Number"
                 name="phone"
                 rules={[
@@ -102,7 +112,7 @@ const CreateEdit: React.FC = () => {
                 <Input type="tel" />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="Email"
                 name="email"
                 rules={[
@@ -116,11 +126,11 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType> label="Bank" name="bank" rules={[{ max: 50 }]}>
+            <Form.Item<CreatePartnerType> label="Bank" name="bank" rules={[{ max: 50 }]}>
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="BIC"
                 name="bic"
                 rules={[
@@ -143,7 +153,7 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="IBAN"
                 name="iban"
                 rules={[
@@ -157,7 +167,7 @@ const CreateEdit: React.FC = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="Discount %"
                 name="discount"
                 rules={[
@@ -184,7 +194,7 @@ const CreateEdit: React.FC = () => {
                 />
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="Price group"
                 name="priceGroup"
                 rules={[{ required: true, message: 'Please select a price group!' }]}
@@ -195,7 +205,7 @@ const CreateEdit: React.FC = () => {
                 </Select>
             </Form.Item>
 
-            <Form.Item<PartnerType>
+            <Form.Item<CreatePartnerType>
                 label="Type"
                 name="type"
                 rules={[{ required: true, message: 'Please select a type!' }]}
