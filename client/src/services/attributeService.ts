@@ -1,67 +1,28 @@
+import { VariationAttribute } from '../types/ProductTypes';
 import { AttributeDB } from '../types/ProductTypesDB';
+import api from './api';
 
 class AttributeService {
-    async getAttributes(id?: number | number[]): Promise<AttributeDB[]> {
-        //FIXME
-        // const response = await api.get('Attribute', id);
-        // FAKE DATA
-        const response = {
-            data: [
-                {
-                    id: 1,
-                    name: 'Color',
-                    values: [
-                        {
-                            id: 1,
-                            value: 'Red',
-                        },
-                        {
-                            id: 2,
-                            value: 'Blue',
-                        },
-                        {
-                            id: 3,
-                            value: 'Green',
-                        },
-                    ],
-                },
-                {
-                    id: 2,
-                    name: 'Size',
-                },
-            ],
-            status: 200,
-        };
-
+    async getAttributes(options?: {
+        includeValues?: boolean;
+        ids?: number[];
+    }): Promise<AttributeDB[]> {
+        const { includeValues = false, ids = [] } = options || {};
+        const response = await api.get('Attribute', {
+            params: {
+                includeValues,
+                ids: ids.length > 0 ? ids : undefined,
+            },
+            paramsSerializer: {
+                indexes: true,
+            },
+        });
         return response.data;
     }
 
-    async getAttributeValues(id: number): Promise<{ id: number; value: string }[]> {
-        // const response = await api.get(`Attribute/${id}`);
-        // FAKE DATA
-        const response = {
-            status: 200,
-            data: {
-                id: 1,
-                name: 'Color',
-                values: [
-                    {
-                        id: 1,
-                        value: 'Red',
-                    },
-                    {
-                        id: 2,
-                        value: 'Blue',
-                    },
-                    {
-                        id: 3,
-                        value: 'Green',
-                    },
-                ],
-            },
-        };
-
-        return response.data.values;
+    async getAttributeValues(id: number): Promise<VariationAttribute[]> {
+        const response = await api.get(`Attribute/${id}`);
+        return response.data;
     }
 
     async createAttribute(name: string): Promise<number> {
@@ -69,7 +30,7 @@ class AttributeService {
         // TEST RESPONSE
         const response = {
             status: 200,
-            data: Math.random() * 100,
+            data: Math.floor(Math.random() * 100),
         };
 
         if (response.status !== 200) {
@@ -84,7 +45,7 @@ class AttributeService {
         // TEST RESPONSE
         const response = {
             status: 200,
-            data: Math.random() * 100,
+            data: Math.floor(Math.random() * 100),
         };
 
         if (response.status !== 200) {

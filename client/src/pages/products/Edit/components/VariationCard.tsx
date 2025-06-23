@@ -1,10 +1,10 @@
 import { Card, Form, Select } from 'antd';
 import {
     AttributeDB,
-    ProductAttributeDB,
     VariationDB,
     VariationAttributeTypeDB,
 } from '../../../../types/ProductTypesDB';
+import { ProductAttribute } from '../../../../types/ProductTypes';
 import PriceField from './PriceField';
 import React from 'react';
 import SKUField from './SKUField';
@@ -18,7 +18,7 @@ function SelectField({
     attributeKey,
     onSelect,
 }: {
-    attribute: AttributeDB;
+    attribute: ProductAttribute;
     variationKey: number;
     attributeKey: number;
     onSelect: ({
@@ -66,8 +66,8 @@ export default function VariationCard({
 }: {
     manage_quantity: boolean;
     variationKey: number;
-    attributes: AttributeDB[];
-    selectedAttributes: ProductAttributeDB[];
+    attributes: Partial<ProductAttribute>[];
+    selectedAttributes: Partial<ProductAttribute>[];
     functions: {
         attribute: {
             onSelect: ({
@@ -92,7 +92,7 @@ export default function VariationCard({
                         <React.Fragment key={i}>
                             <SelectField
                                 variationKey={variationKey}
-                                attribute={attribute}
+                                attribute={attribute as ProductAttribute}
                                 attributeKey={i}
                                 onSelect={functions.attribute.onSelect}
                             />
@@ -101,7 +101,7 @@ export default function VariationCard({
                 })}
             <SKUField fieldName={['variations', variationKey, 'sku']} />
 
-            <PriceField fieldName={['variations', variationKey, 'price']} />
+            <PriceField fieldName={['variations', variationKey, 'retailPrice']} />
 
             {WHOLESALE_ENABLED && (
                 <PriceField

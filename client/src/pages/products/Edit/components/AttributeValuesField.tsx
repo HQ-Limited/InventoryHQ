@@ -20,7 +20,7 @@ export default function AttributeValuesField({
     attribute: Partial<AttributeDB>;
     onSelect: ({ id, parent }: { id: number; parent: number }) => void;
     onDeselect: ({ id, parent }: { id: number; parent: number }) => void;
-    onClear: () => void;
+    onClear: (id: number) => void;
     onIsVariationalChange?: ({ id, value }: { id: number; value: boolean }) => void;
     showVariationCheckbox?: boolean;
     onRemoveAttribute?: (id: number) => void;
@@ -43,7 +43,10 @@ export default function AttributeValuesField({
             }
             style={{ width: 300 }}
         >
-            <Form.Item name={['attributes', attributeKey, 'values']} rules={[{ required: true }]}>
+            <Form.Item
+                name={['attributes', attributeKey, 'values']}
+                rules={[{ required: true, message: 'Please select at least one value' }]}
+            >
                 <Select
                     mode="tags"
                     allowClear
@@ -52,7 +55,7 @@ export default function AttributeValuesField({
                     optionFilterProp="value"
                     onSelect={(id: number) => onSelect({ id, parent: parentId })}
                     onDeselect={(id: number) => onDeselect({ id, parent: parentId })}
-                    onClear={() => onClear()}
+                    onClear={() => onClear(parentId)}
                     options={options}
                 />
             </Form.Item>
