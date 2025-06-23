@@ -6,7 +6,6 @@ import Title from 'antd/es/typography/Title';
 import { useParams } from 'react-router-dom';
 import {
     AttributeDB,
-    CategoriesTree,
     CategoryDB,
     SimpleProductTypeDB,
     VariableProductTypeDB,
@@ -14,18 +13,17 @@ import {
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
 import attributeService from '../../../services/attributeService';
+import { Product, ProductAttribute, Category, CategoriesTree } from '../../../types/ProductTypes';
 const CreateEdit: React.FC = () => {
     const [type, setType] = useState<'simple' | 'variable' | undefined>();
     const params = useParams();
     const id = params.id;
-    const [product, setProduct] = useState<
-        Partial<SimpleProductTypeDB> | Partial<VariableProductTypeDB>
-    >({});
+    const [product, setProduct] = useState<Partial<Product>>({});
     const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
-    const [attributes, setAttributes] = useState<Partial<AttributeDB>[]>([]);
+    const [attributes, setAttributes] = useState<Partial<ProductAttribute>[]>([]);
 
     const fetchData = async () => {
-        const categories: CategoryDB[] = await categoryService.getCategories();
+        const categories: Category[] = await categoryService.getCategories();
 
         const newTree: CategoriesTree[] = [];
         categories.map((category) => {
@@ -41,7 +39,7 @@ const CreateEdit: React.FC = () => {
                     });
             } else {
                 // Check if parent exists in categoriesTree
-                const parentExists = newTree.find((c) => c.value === category.parent);
+                const parentExists = newTree.find((c) => c.value === category.parent!.id);
                 if (parentExists) {
                     parentExists.children.push({
                         value: category.id,
@@ -50,11 +48,9 @@ const CreateEdit: React.FC = () => {
                     });
                 } else {
                     // Create parent first
-                    const parent = categories.find((c) => c.id === category.parent)!;
-
                     newTree.push({
-                        value: parent.id,
-                        title: parent.name,
+                        value: category.parent.id,
+                        title: category.parent.name,
                         children: [
                             {
                                 value: category.id,
@@ -68,15 +64,35 @@ const CreateEdit: React.FC = () => {
         });
         setCategoriesTree(newTree);
 
+        let product: Product | undefined;
         if (id) {
-            const product = await productService.getProductById(Number(id));
+            product = await productService.getProductById(Number(id));
+            if (product.categories)
+                product.selectedCategories = product.categories.map((c: Category) => c.id);
+
+            if (product.attributes)
+                product.selectedAttributes = product.attributes.map((a: ProductAttribute) => a.id);
+
+            const attrs: Partial<AttributeDB>[] = await attributeService.getAttributes({
+                includeValues: true,
+                ids: product!.attributes!.map((a) => a.id),
+            });
+
             setProduct(product);
-            setType(product?.variations?.length > 0 ? 'variable' : 'simple');
+            setCategoriesTree(newTree);
+            setAttributes(attrs);
+            setType(product.isVariable ? 'variable' : 'simple');
+            return;
         }
 
         const attrs: Partial<AttributeDB>[] = id
-            ? await attributeService.getAttributes(Number(id))
+            ? await attributeService.getAttributes({
+                  includeValues: true,
+                  ids: product!.attributes!.map((a) => a.id),
+              })
             : await attributeService.getAttributes();
+        setProduct(product || {});
+        setCategoriesTree(newTree);
         setAttributes(attrs);
     };
 
@@ -103,14 +119,14 @@ const CreateEdit: React.FC = () => {
                 <SimpleForm
                     categoriesTree={categoriesTree}
                     initialAttributes={attributes}
-                    initialProduct={product as SimpleProductTypeDB}
+                    initialProduct={product}
                 />
             )}
             {type === 'variable' && (
                 <VariableForm
                     categoriesTree={categoriesTree}
                     initialAttributes={attributes}
-                    initialProduct={product as VariableProductTypeDB}
+                    initialProduct={product}
                 />
             )}
         </>

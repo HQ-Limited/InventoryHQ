@@ -17,14 +17,22 @@ namespace InventoryHQ.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AttributeDto>>> Get(bool includeValues = false)
+        public async Task<ActionResult<IEnumerable<AttributeDto>>> Get(
+            [FromQuery] bool includeValues = false, 
+            [FromQuery(Name = "ids")] int[] ids = null)
         {
-            var attributes = await _attributeService.GetAttributes(includeValues);
+            var attributes = await _attributeService.GetAttributes(includeValues, ids);
+
+            if (attributes == null || !attributes.Any())
+            {
+            return NotFound();
+            }
+
             return Ok(attributes);
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<IEnumerable<AttributeDto>>> GetAttributeValues(int id)
+        public async Task<ActionResult<IEnumerable<AttributeValueDto>>> GetAttributeValues(int id)
         {
             var values = await _attributeService.GetAttributeValues(id);
 

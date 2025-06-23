@@ -1,6 +1,5 @@
 import { Form, TreeSelect } from 'antd';
-import { DataNode } from 'antd/es/tree';
-import { CategoriesTree } from '../../../../types/ProductTypesDB';
+import { CategoriesTree } from '../../../../types/ProductTypes';
 
 export default function CategoryField({
     categoriesTree,
@@ -12,8 +11,8 @@ export default function CategoryField({
     return (
         <Form.Item
             label="Categories"
-            name="categories"
-            rules={[{ required: true, message: 'Please select atleast one category!' }]}
+            rules={[{ required: true, message: 'Please select at least one category' }]}
+            name="selectedCategories"
         >
             <TreeSelect
                 showSearch
