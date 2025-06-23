@@ -110,7 +110,6 @@ const VariableForm: React.FC<{
                         }
                         return a;
                     });
-                    console.log(newAttrs);
                     newAttributes = newAttrs;
                     return newAttrs;
                 });
