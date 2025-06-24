@@ -5,6 +5,7 @@ import {
     Form,
     FormProps,
     message,
+    Popover,
     Select,
     Space,
     Spin,
@@ -156,10 +157,6 @@ const CreateEdit: React.FC = () => {
         fetchData();
     }, []);
 
-    useEffect(() => {
-        console.log(values);
-    }, [values]);
-
     const onCategoryChange = (value: number[]) => {
         setValues((prev) => {
             const newValues = {
@@ -249,10 +246,17 @@ const CreateEdit: React.FC = () => {
                 attributes: (prev.attributes || []).filter((a) => a.id !== id),
                 selectedAttributes: (prev.selectedAttributes || []).filter((a) => a !== id),
             };
-            form.setFieldValue('attributes', newValues.attributes);
             return newValues;
         });
     };
+
+    useEffect(() => {
+        form.setFieldValue('selectedAttributes', values.selectedAttributes);
+    }, [values.selectedAttributes, form]);
+
+    useEffect(() => {
+        form.setFieldValue('attributes', values.attributes);
+    }, [values.attributes, form]);
 
     const onAttributeClear = () => {
         setValues((prev) => {
@@ -261,13 +265,20 @@ const CreateEdit: React.FC = () => {
                 attributes: [],
                 selectedAttributes: [],
             };
-            form.setFieldValue('attributes', []);
             return newValues;
         });
     };
 
     const onAttributeValueSelect = ({ id, parent }: { id: number | string; parent: number }) => {
-        function addAttributeValue({ id, parent }: { id: number; parent: number }) {
+        function addAttributeValue({
+            id,
+            parent,
+            attributes,
+        }: {
+            id: number;
+            parent: number;
+            attributes: ProductAttribute[];
+        }) {
             {
                 setValues((prev) => {
                     const newValues = {
@@ -295,7 +306,6 @@ const CreateEdit: React.FC = () => {
                             return a;
                         }),
                     };
-                    form.setFieldValue('attributes', newValues.attributes);
                     return newValues;
                 });
             }
@@ -304,7 +314,7 @@ const CreateEdit: React.FC = () => {
         if (typeof id === 'string') {
             // Create attribute and get id from response
             const createAttributeValue = async () => {
-                const attributeValues = values.attributes.find((a) => a.id === parent);
+                const attribute = values.attributes.find((a) => a.id === parent);
                 try {
                     const newId: number = await attributeService.createAttributeValue({
                         id: parent,
@@ -322,14 +332,14 @@ const CreateEdit: React.FC = () => {
                         return newAttributes;
                     });
                 } catch (e) {
-                    messageApi.error('Failed to create attribute');
+                    messageApi.error('Failed to create attribute value');
                     form.setFieldValue(
                         [
                             'attributes',
-                            values.attributes!.findIndex((a) => a.id === parent),
+                            values.attributes!.findIndex((a) => a.id === attribute.id),
                             'values',
                         ],
-                        attributeValues
+                        attribute.values
                     );
                 }
             };
@@ -339,7 +349,7 @@ const CreateEdit: React.FC = () => {
         }
 
         // Add attribute value to product attribute
-        addAttributeValue({ id, parent });
+        addAttributeValue({ id, parent, attributes });
     };
 
     const onAttributeValueDeselect = ({ id, parent }: { id: number; parent: number }) => {
@@ -446,6 +456,7 @@ const CreateEdit: React.FC = () => {
                                         onClear={onAttributeValueClear}
                                         onIsVariationalChange={onIsVariationalChange}
                                         onRemove={remove}
+                                        onAttributeRemove={onAttributeDeselect}
                                         showVariationCheckbox={isVariable}
                                     />
                                 ))}
@@ -532,9 +543,25 @@ const CreateEdit: React.FC = () => {
         ...commonProductItems,
         {
             key: '4',
-            label: 'Variations',
+            label: (
+                <Tooltip
+                    color="red"
+                    title={
+                        values.attributes.length == 0
+                            ? 'Select atleast one attribute'
+                            : !values.attributes?.some((a) => a.isVariational == true)
+                              ? 'Mark atleast one attribute as variational'
+                              : ''
+                    }
+                >
+                    Variations
+                </Tooltip>
+            ),
             icon: <ProductFilled />,
             children: <VariationsCards />,
+            disabled: () => {
+                return true;
+            },
         },
     ];
 

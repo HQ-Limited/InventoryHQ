@@ -10,6 +10,7 @@ export default function AttributeValuesField({
     onDeselect,
     onClear,
     onIsVariationalChange,
+    onAttributeRemove,
     onRemove,
     showVariationCheckbox = false,
 }: {
@@ -20,6 +21,7 @@ export default function AttributeValuesField({
     onClear: (id: number) => void;
     onIsVariationalChange?: ({ id, value }: { id: number; value: boolean }) => void;
     onRemove: (id: number) => void;
+    onAttributeRemove: (id: number) => void;
     showVariationCheckbox?: boolean;
 }) {
     const attribute: ProductAttribute = attributes[name];
@@ -27,6 +29,10 @@ export default function AttributeValuesField({
         label: value.value,
         value: value.id,
     }));
+
+    const form = Form.useFormInstance();
+
+    const selectedAttributes = form.getFieldValue('selectedAttributes');
 
     return (
         <Card
@@ -41,6 +47,7 @@ export default function AttributeValuesField({
                         onClick={() => {
                             onRemove(name);
                             onClear(attribute.id);
+                            onAttributeRemove(attribute.id);
                         }}
                     />
                 </Tooltip>
@@ -64,6 +71,7 @@ export default function AttributeValuesField({
                 />
             </Form.Item>
             {showVariationCheckbox && (
+                // FIXME onChange not updating this checked
                 <Form.Item
                     onChange={(e: CheckboxChangeEvent) =>
                         onIsVariationalChange!({ id: name, value: e.target.checked })

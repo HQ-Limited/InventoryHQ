@@ -30,7 +30,10 @@ class AttributeService {
     }
 
     async createAttributeValue({ id, value }: { id: number; value: string }): Promise<number> {
-        const response = await api.post(`Attribute/${id}`, { params: { value } });
+        // const response = await api.post(`Attribute/${id}`, { params: { value } });
+        //FIXME
+        throw new Error('asd');
+        return 3;
 
         return response.data;
     }
