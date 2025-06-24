@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps, Tooltip } from 'antd';
+import { Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps } from 'antd';
 import { useParams } from 'react-router-dom';
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
@@ -43,11 +43,12 @@ const CreateEdit: React.FC = () => {
     const id = params.id;
     const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
     const [attributes, setAttributes] = useState<ProductAttribute[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [form] = Form.useForm();
     const [values, setValues] = useState<Partial<Product>>({
+        categories: [],
         attributes: [],
         variations: [],
-        selectedAttributes: [],
         isVariable: false,
     });
     const [loading, setLoading] = useState(false);
@@ -55,7 +56,8 @@ const CreateEdit: React.FC = () => {
     // TODO: Add some check for variable products, that checks if any attribute value combo is already used and display an error message if so
 
     const fetchData = async () => {
-        const categories: Category[] = await categoryService.getCategories();
+        const categories = await categoryService.getCategories();
+        setCategories(categories);
 
         const newTree: CategoriesTree[] = [];
         categories.map((category) => {
@@ -99,11 +101,9 @@ const CreateEdit: React.FC = () => {
         if (id) {
             setLoading(true);
             product = await productService.getProductById(Number(id));
-            if (product.categories)
-                product.selectedCategories = product.categories.map((c: Category) => c.id);
-
-            if (product.attributes)
-                product.selectedAttributes = product.attributes.map((a: ProductAttribute) => a.id);
+            if (product.categories) {
+                product.selectedCategories = product.categories.map((c: Category) => c.id); // for form
+            }
 
             const attrs: ProductAttribute[] = await attributeService.getAttributes({
                 includeValues: true,
@@ -281,7 +281,7 @@ const CreateEdit: React.FC = () => {
 
                         <DescriptionField />
 
-                        <CategoryField categoriesTree={categoriesTree} />
+                        <CategoryField categoriesTree={categoriesTree} categories={categories} />
 
                         <Form.Item
                             name={'isVariable'}
