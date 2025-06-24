@@ -1,14 +1,10 @@
 import { Form, InputNumber } from 'antd';
 
-export default function QuantityField({
-    fieldName = ['variations', 0, 'quantity'],
-}: {
-    fieldName?: string | (string | number)[];
-}) {
+export default function QuantityField({ name = 0 }: { name?: number }) {
     return (
         <Form.Item
             label="Quantity"
-            name={fieldName}
+            name={[name, 'quantity']}
             rules={[
                 {
                     required: true,

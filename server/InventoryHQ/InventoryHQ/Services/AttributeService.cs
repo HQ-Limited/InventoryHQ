@@ -19,7 +19,7 @@ namespace InventoryHQ.Services
             _data = data;
             _mapper = mapper;
         }
-        
+
 
         // TODO: REFACTOR
         public async Task<IEnumerable<AttributeDto>> GetAttributes(bool includeValues = false, int[] ids = null)
@@ -76,6 +76,50 @@ namespace InventoryHQ.Services
 
             var result = _mapper.Map<IEnumerable<AttributeValueDto>>(attributeValues);
             return result;
+        }
+
+        public async Task<int?> CreateAttribute(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return null;
+
+            var attribute = new Data.Models.Attribute
+            {
+                Name = name
+            };
+
+            await _data.Attributes.AddAsync(attribute);
+            await _data.SaveChangesAsync();
+
+            return attribute.Id;
+        }
+
+        public async Task<int?> CreateAttributeValue(int id, string value)
+        {
+            //FIXME THIS IS NOT WORKING FOR SOME REASON
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+
+            var attribute = await _data.Attributes.FindAsync(id);
+            if (attribute == null)
+                return null;
+
+                // Check if an attribute value with this value already exists for the attribute
+                var exists = await _data.AttributeValues
+                    .AnyAsync(av => av.AttributeId == id && av.Value == value);
+                if (exists)
+                    return null;
+
+            var attributeValue = new AttributeValue
+            {
+                AttributeId = id,
+                Value = value
+            };
+
+            await _data.AttributeValues.AddAsync(attributeValue);
+            await _data.SaveChangesAsync();
+
+            return attributeValue.Id;
         }
     }
 }

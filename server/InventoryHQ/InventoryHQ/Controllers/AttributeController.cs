@@ -18,14 +18,14 @@ namespace InventoryHQ.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AttributeDto>>> Get(
-            [FromQuery] bool includeValues = false, 
+            [FromQuery] bool includeValues = false,
             [FromQuery(Name = "ids")] int[] ids = null)
         {
             var attributes = await _attributeService.GetAttributes(includeValues, ids);
 
             if (attributes == null || !attributes.Any())
             {
-            return NotFound();
+                return NotFound();
             }
 
             return Ok(attributes);
@@ -42,6 +42,32 @@ namespace InventoryHQ.Controllers
             }
 
             return Ok(values);
+        }
+        
+        [HttpPost]
+        public async Task<ActionResult<int?>> CreateAttribute(string name)
+        {
+            var id = await _attributeService.CreateAttribute(name);
+
+            if (id == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(id);
+        }
+
+        [HttpPost("{id:int}")]
+        public async Task<ActionResult<int?>> CreateAttributeValue(int id, [FromQuery] string value)
+        {
+            var valueId = await _attributeService.CreateAttributeValue(id, value);
+
+            if (valueId == null)
+            {
+            return BadRequest();
+            }
+
+            return Ok(valueId);
         }
 
     }
