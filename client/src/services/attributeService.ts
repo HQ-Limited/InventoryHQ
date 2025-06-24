@@ -25,7 +25,9 @@ class AttributeService {
     }
 
     async createAttribute(name: string): Promise<number> {
-        const response = await api.post('Attribute', null, { params: { name } });
+        // const response = await api.post('Attribute', null, { params: { name } });
+        //FIXME
+        return 3;
         return response.data;
     }
 

@@ -9,7 +9,6 @@ export default function AttributeValuesField({
     onSelect,
     onDeselect,
     onClear,
-    onIsVariationalChange,
     onAttributeRemove,
     onRemove,
     showVariationCheckbox = false,
@@ -19,24 +18,18 @@ export default function AttributeValuesField({
     onSelect: ({ id, parent }: { id: number; parent: number }) => void;
     onDeselect: ({ id, parent }: { id: number; parent: number }) => void;
     onClear: (id: number) => void;
-    onIsVariationalChange?: ({ id, value }: { id: number; value: boolean }) => void;
     onRemove: (id: number) => void;
     onAttributeRemove: (id: number) => void;
     showVariationCheckbox?: boolean;
 }) {
-    const attribute: ProductAttribute = attributes[name];
-    const options: DefaultOptionType[] = attribute.values.map((value) => ({
-        label: value.value,
-        value: value.id,
-    }));
-
     const form = Form.useFormInstance();
 
-    const selectedAttributes = form.getFieldValue('selectedAttributes');
+    const currentAttribute: ProductAttribute = form.getFieldValue('attributes')[name];
+    const availableValues = attributes.find((x) => x.id == currentAttribute.id)!.values;
 
     return (
         <Card
-            title={attribute.name}
+            title={currentAttribute.name}
             extra={
                 <Tooltip title="Remove">
                     <Button
@@ -46,8 +39,6 @@ export default function AttributeValuesField({
                         icon={<CloseOutlined />}
                         onClick={() => {
                             onRemove(name);
-                            onClear(attribute.id);
-                            onAttributeRemove(attribute.id);
                         }}
                     />
                 </Tooltip>
@@ -64,21 +55,11 @@ export default function AttributeValuesField({
                     showSearch
                     placeholder="Select value/s"
                     optionFilterProp="value"
-                    options={options}
-                    onSelect={(id: number) => onSelect({ id, parent: attribute.id })}
-                    onDeselect={(id: number) => onDeselect({ id, parent: attribute.id })}
-                    onClear={() => onClear(attribute.id)}
+                    options={availableValues}
                 />
             </Form.Item>
             {showVariationCheckbox && (
-                // FIXME onChange not updating this checked
-                <Form.Item
-                    onChange={(e: CheckboxChangeEvent) =>
-                        onIsVariationalChange!({ id: name, value: e.target.checked })
-                    }
-                    name={[name, 'isVariational']}
-                    valuePropName="checked"
-                >
+                <Form.Item name={[name, 'isVariational']} valuePropName="checked">
                     <Checkbox>Used for variations</Checkbox>
                 </Form.Item>
             )}

@@ -91,27 +91,7 @@ export default function VariationsCards() {
                                         label="Wholesale Price"
                                     />
                                 )}
-
-                                <ManageQuantityField name={field.name} />
-
-                                <Form.Item
-                                    noStyle
-                                    shouldUpdate={(prev, curr) =>
-                                        prev.variations?.[variationKey]?.manage_quantity !==
-                                        curr.variations?.[variationKey]?.manage_quantity
-                                    }
-                                >
-                                    {({ getFieldValue }) => {
-                                        const manage_quantity = getFieldValue([
-                                            'variations',
-                                            variationKey,
-                                            'manage_quantity',
-                                        ]);
-                                        return (
-                                            manage_quantity && <QuantityField name={field.name} />
-                                        );
-                                    }}
-                                </Form.Item>
+                                <QuantityField name={[field.name]} variation={true} />
                             </Card>
                         ))}
                     </Flex>

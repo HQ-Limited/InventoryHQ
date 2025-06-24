@@ -1,7 +1,7 @@
 import { Form, InputNumber } from 'antd';
 
 export default function PriceField({
-    name = [0, 'retailPrice'],
+    name = ['variations', 0, 'retailPrice'],
     label = 'Price',
 }: {
     name?: (number | string)[];
@@ -10,7 +10,7 @@ export default function PriceField({
     return (
         <Form.Item
             label={label}
-            name={name}
+            name={[...name]}
             rules={[
                 {
                     required: true,

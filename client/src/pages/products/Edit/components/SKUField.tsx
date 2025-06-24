@@ -1,6 +1,6 @@
 import { Form, Input } from 'antd';
 
-export default function SKUField({ name }: { name: number }) {
+export default function SKUField({ name = 0 }: { name?: number }) {
     return (
         <Form.Item
             label="SKU"
