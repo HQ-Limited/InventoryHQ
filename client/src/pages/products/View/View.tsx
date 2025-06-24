@@ -229,7 +229,6 @@ const View: React.FC = () => {
         function onSearch(value: string) {
             if (value === '') return;
             // Apply search logic here
-            console.log({ value });
         }
         function onChange(e: ChangeEvent<HTMLInputElement>) {
             if (e.target.value !== '') return;
@@ -325,7 +324,6 @@ const View: React.FC = () => {
         };
 
         setTableParams(newTableParams);
-        console.log(newTableParams);
 
         fetchProducts(newTableParams)
             .then((products) => {

@@ -1,29 +1,67 @@
-import { Form, Select } from 'antd';
+import { Form, message, Select } from 'antd';
+import { StoreValue } from 'antd/es/form/interface';
+import { ProductAttribute } from '../../../../types/ProductTypes';
+import attributeService from '../../../../services/attributeService';
 
 export default function AttributesField({
-    onSelect,
-    onDeselect,
-    onClear,
-    options,
+    attributes,
+    onAdd,
+    fetchValues,
     required = false,
 }: {
-    onSelect: (id: number) => void;
-    onDeselect: (id: number) => void;
-    onClear: () => void;
-    options: { value: number; label: string }[];
+    attributes: ProductAttribute[];
+    onAdd: (defaultValue?: StoreValue) => void;
+    fetchValues: (id: number) => void;
     required?: boolean;
 }) {
+    const [messageApi, contextHolder] = message.useMessage();
+    const form = Form.useFormInstance();
+
     return (
-        <Form.Item name={'selectedAttributes'} label="Attributes" rules={[{ required }]}>
+        <Form.Item
+            label="Attributes"
+            rules={[
+                {
+                    required /* TODO: Add required validation, because it currently doesnt work since we dont have a "name" property on the Form.Item */,
+                },
+            ]}
+        >
             <Select
                 mode="tags"
                 allowClear
                 showSearch
                 optionFilterProp="value"
-                onSelect={(v: number) => onSelect(v)}
-                onDeselect={(v: number) => onDeselect(v)}
-                onClear={onClear}
-                options={options}
+                value={form.getFieldValue('attributes').map((a) => a.id)}
+                onSelect={async (value: number | string) => {
+                    if (typeof value == 'string') {
+                        // Create attribute
+                        try {
+                            const id: number = await attributeService.createAttribute(value);
+
+                            onAdd({
+                                id: id,
+                                name: value,
+                                values: [],
+                            });
+                            return;
+                        } catch (e) {
+                            messageApi.error('Failed to create attribute');
+                            return;
+                        }
+                    }
+
+                    const attr = attributes.find((a) => a.id == value)!;
+                    if (attr.values.length == 0) fetchValues(attr.id);
+
+                    onAdd({
+                        ...attr,
+                        values: [],
+                    });
+                }}
+                options={attributes.map((v) => ({
+                    label: v.name!,
+                    value: v.id!,
+                }))}
             />
         </Form.Item>
     );

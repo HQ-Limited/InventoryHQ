@@ -44,7 +44,6 @@ import PriceField from './components/PriceField';
 import { WHOLESALE_ENABLED } from '../../../global';
 import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
-import ManageQuantityField from './components/ManageQuantityField';
 
 const onFinish: FormProps<Product>['onFinish'] = (values) => {
     console.log('Success:', values);
@@ -167,6 +166,25 @@ const CreateEdit: React.FC = () => {
         });
     };
 
+    const fetchAttributeValues = async (id: number) => {
+        const fetchData = async () => {
+            const values: { id: number; value: string }[] =
+                await attributeService.getAttributeValues(id);
+            // Add all possible values to the attribute
+            setAttributes((prev) => {
+                const newAttrs = prev.map((a) => {
+                    if (a.id === id) {
+                        a.values = values;
+                    }
+                    return a;
+                });
+                return newAttrs;
+            });
+        };
+
+        fetchData();
+    };
+
     const onAttributeSelect = (value: number | string) => {
         function addAttribute(id: number, attributes: ProductAttribute[]) {
             // Add attribute to product
@@ -250,13 +268,13 @@ const CreateEdit: React.FC = () => {
         });
     };
 
-    useEffect(() => {
+    /* useEffect(() => {
         form.setFieldValue('selectedAttributes', values.selectedAttributes);
     }, [values.selectedAttributes, form]);
 
     useEffect(() => {
         form.setFieldValue('attributes', values.attributes);
-    }, [values.attributes, form]);
+    }, [values.attributes, form]); */
 
     const onAttributeClear = () => {
         setValues((prev) => {
@@ -381,21 +399,6 @@ const CreateEdit: React.FC = () => {
         });
     };
 
-    const onIsVariationalChange = ({ id, value }: { id: number; value: boolean }) => {
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: (prev.attributes || []).map((a) => {
-                    if (a.id === id) {
-                        a.isVariational = value;
-                    }
-                    return a;
-                }),
-            };
-            return newValues;
-        });
-    };
-
     const onGenerateVariations = () => {
         const variationalAttributes = values.attributes!.filter((attr) => attr.isVariational);
 
@@ -433,62 +436,35 @@ const CreateEdit: React.FC = () => {
             icon: <UnorderedListOutlined />,
             children: (
                 <>
-                    <AttributesField
-                        onSelect={onAttributeSelect}
-                        onDeselect={onAttributeDeselect}
-                        onClear={onAttributeClear}
-                        options={attributes.map((v) => ({
-                            label: v.name!,
-                            value: v.id!,
-                        }))}
-                        required={isVariable}
-                    />
                     <Form.List name="attributes">
                         {(fields, { add, remove }) => (
-                            <Space>
-                                {fields.map((field, attributeKey) => (
-                                    <AttributeValuesField
-                                        key={field.key}
-                                        name={attributeKey}
-                                        attributes={attributes}
-                                        onSelect={onAttributeValueSelect}
-                                        onDeselect={onAttributeValueDeselect}
-                                        onClear={onAttributeValueClear}
-                                        onIsVariationalChange={onIsVariationalChange}
-                                        onRemove={remove}
-                                        onAttributeRemove={onAttributeDeselect}
-                                        showVariationCheckbox={isVariable}
-                                    />
-                                ))}
-                            </Space>
+                            <>
+                                <AttributesField
+                                    fetchValues={fetchAttributeValues}
+                                    attributes={attributes}
+                                    onAdd={add}
+                                    required={isVariable}
+                                />
+                                <Space>
+                                    {fields.map((field, attributeKey) => (
+                                        <>
+                                            <AttributeValuesField
+                                                key={field.key}
+                                                name={attributeKey}
+                                                attributes={attributes}
+                                                onSelect={onAttributeValueSelect}
+                                                onDeselect={onAttributeValueDeselect}
+                                                onClear={onAttributeValueClear}
+                                                onRemove={remove}
+                                                onAttributeRemove={onAttributeDeselect}
+                                                showVariationCheckbox={isVariable}
+                                            />
+                                        </>
+                                    ))}
+                                </Space>
+                            </>
                         )}
                     </Form.List>
-                    {/* {values.attributes && (
-                        <Space>
-                            {values.attributes?.map((a, i) => {
-                                const attr = attributes.find((o) => o.id === a.id)!;
-                                return (
-                                    <AttributeValuesField
-                                        showVariationCheckbox
-                                        isVariational={a.isVariational}
-                                        key={i}
-                                        attributeKey={i}
-                                        parentId={a.id}
-                                        options={attr.values!.map((v) => ({
-                                            label: v.value,
-                                            value: v.id,
-                                        }))}
-                                        attribute={attr}
-                                        onSelect={onAttributeValueSelect}
-                                        onDeselect={onAttributeValueDeselect}
-                                        onClear={onAttributeValueClear}
-                                        onIsVariationalChange={onIsVariationalChange}
-                                        onRemoveAttribute={onAttributeDeselect}
-                                    />
-                                );
-                            })}
-                        </Space>
-                    )} */}
                 </>
             ),
         },
@@ -504,7 +480,7 @@ const CreateEdit: React.FC = () => {
                     <PriceField />
 
                     {WHOLESALE_ENABLED && (
-                        <PriceField fieldName="wholesalePrice" label="Wholesale price" />
+                        <PriceField name={[0, 'wholesalePrice']} label="Wholesale price" />
                     )}
                 </>
             ),
@@ -515,22 +491,7 @@ const CreateEdit: React.FC = () => {
             icon: <TruckFilled />,
             children: (
                 <>
-                    <ManageQuantityField
-                        onChange={(e) => {
-                            setValues((prev) => {
-                                const newValues = {
-                                    ...prev,
-                                    variations: prev.variations!.map((v) => ({
-                                        ...v,
-                                        manage_quantity: e.target.checked,
-                                    })),
-                                };
-                                return newValues;
-                            });
-                        }}
-                    />
-
-                    {values.variations![0].manage_quantity && <QuantityField />}
+                    <QuantityField />
 
                     <SKUField />
                 </>
@@ -559,9 +520,9 @@ const CreateEdit: React.FC = () => {
             ),
             icon: <ProductFilled />,
             children: <VariationsCards />,
-            disabled: () => {
-                return true;
-            },
+            disabled:
+                values.attributes.length == 0 &&
+                !values.attributes?.some((a) => a.isVariational == true),
         },
     ];
 
@@ -599,23 +560,24 @@ const CreateEdit: React.FC = () => {
                         >
                             <Select
                                 style={{ width: 120 }}
-                                value={isVariable}
-                                onChange={(e) => {
-                                    setIsVariable(e);
-                                    setValues((prev) => ({
-                                        ...prev,
-                                        isVariable: e,
-                                    }));
-                                }}
                                 options={[
                                     { value: false, label: 'Simple' },
                                     { value: true, label: 'Variable' },
                                 ]}
+                                value={isVariable}
+                                onChange={(value) => {
+                                    setIsVariable(value);
+                                    form.setFieldValue('isVariable', value);
+                                }}
                             />
                         </Form.Item>
 
                         <Tabs
-                            items={isVariable ? variableProductItems : simpleProductItems}
+                            items={
+                                form.getFieldValue('isVariable')
+                                    ? variableProductItems
+                                    : simpleProductItems
+                            }
                             tabPosition="left"
                         />
                     </Space>
