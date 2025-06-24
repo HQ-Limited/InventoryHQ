@@ -1,12 +1,11 @@
-import { VariationAttribute } from '../types/ProductTypes';
-import { AttributeDB } from '../types/ProductTypesDB';
+import { ProductAttribute, VariationAttribute } from '../types/ProductTypes';
 import api from './api';
 
 class AttributeService {
     async getAttributes(options?: {
         includeValues?: boolean;
         ids?: number[];
-    }): Promise<AttributeDB[]> {
+    }): Promise<ProductAttribute[]> {
         const { includeValues = false, ids = [] } = options || {};
         const response = await api.get('Attribute', {
             params: {
@@ -26,31 +25,12 @@ class AttributeService {
     }
 
     async createAttribute(name: string): Promise<number> {
-        // const response = await api.post('Attribute', { name });
-        // TEST RESPONSE
-        const response = {
-            status: 200,
-            data: Math.floor(Math.random() * 100),
-        };
-
-        if (response.status !== 200) {
-            throw new Error('Failed to create attribute');
-        }
-
+        const response = await api.post('Attribute', null, { params: { name } });
         return response.data;
     }
 
-    async createAttributeValue({ id: number, value: string }): Promise<number> {
-        // const response = await axios.post('Attribute', { id, value });
-        // TEST RESPONSE
-        const response = {
-            status: 200,
-            data: Math.floor(Math.random() * 100),
-        };
-
-        if (response.status !== 200) {
-            throw new Error('Failed to create attribute');
-        }
+    async createAttributeValue({ id, value }: { id: number; value: string }): Promise<number> {
+        const response = await api.post(`Attribute/${id}`, { params: { value } });
 
         return response.data;
     }

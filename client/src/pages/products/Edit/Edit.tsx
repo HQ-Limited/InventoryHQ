@@ -29,7 +29,7 @@ import DescriptionField from './components/DescriptionField';
 import CategoryField from './components/CategoryField';
 import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
-import VariationCard from './components/VariationCard';
+import VariationsCards from './components/VariationCard';
 import {
     ControlFilled,
     FolderFilled,
@@ -74,7 +74,6 @@ const CreateEdit: React.FC = () => {
         isVariable: false,
     });
     const [loading, setLoading] = useState(false);
-    let variationId: number = 0;
 
     // TODO: Add some check for variable products, that checks if any attribute value combo is already used and display an error message if so
 
@@ -157,6 +156,10 @@ const CreateEdit: React.FC = () => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        console.log(values);
+    }, [values]);
+
     const onCategoryChange = (value: number[]) => {
         setValues((prev) => {
             const newValues = {
@@ -190,6 +193,7 @@ const CreateEdit: React.FC = () => {
         if (typeof value === 'string') {
             // Create attribute and get id from response
             const createAttribute = async () => {
+                const selectedAttributes = values.selectedAttributes;
                 try {
                     const id: number = await attributeService.createAttribute(value);
 
@@ -199,7 +203,8 @@ const CreateEdit: React.FC = () => {
                         return newAttributes;
                     });
                 } catch (e) {
-                    message.error('Failed to create attribute');
+                    messageApi.error('Failed to create attribute');
+                    form.setFieldValue('selectedAttributes', selectedAttributes);
                 }
             };
 
@@ -242,8 +247,9 @@ const CreateEdit: React.FC = () => {
             const newValues = {
                 ...prev,
                 attributes: (prev.attributes || []).filter((a) => a.id !== id),
-                selectedAttributes: (prev.attributes || []).filter((a) => a.id !== id),
+                selectedAttributes: (prev.selectedAttributes || []).filter((a) => a !== id),
             };
+            form.setFieldValue('attributes', newValues.attributes);
             return newValues;
         });
     };
@@ -255,20 +261,13 @@ const CreateEdit: React.FC = () => {
                 attributes: [],
                 selectedAttributes: [],
             };
+            form.setFieldValue('attributes', []);
             return newValues;
         });
     };
 
     const onAttributeValueSelect = ({ id, parent }: { id: number | string; parent: number }) => {
-        function addAttributeValue({
-            id,
-            parent,
-            attributes,
-        }: {
-            id: number;
-            parent: number;
-            attributes: ProductAttribute[];
-        }) {
+        function addAttributeValue({ id, parent }: { id: number; parent: number }) {
             {
                 setValues((prev) => {
                     const newValues = {
@@ -296,6 +295,7 @@ const CreateEdit: React.FC = () => {
                             return a;
                         }),
                     };
+                    form.setFieldValue('attributes', newValues.attributes);
                     return newValues;
                 });
             }
@@ -304,6 +304,7 @@ const CreateEdit: React.FC = () => {
         if (typeof id === 'string') {
             // Create attribute and get id from response
             const createAttributeValue = async () => {
+                const attributeValues = values.attributes.find((a) => a.id === parent);
                 try {
                     const newId: number = await attributeService.createAttributeValue({
                         id: parent,
@@ -321,7 +322,15 @@ const CreateEdit: React.FC = () => {
                         return newAttributes;
                     });
                 } catch (e) {
-                    message.error('Failed to create attribute');
+                    messageApi.error('Failed to create attribute');
+                    form.setFieldValue(
+                        [
+                            'attributes',
+                            values.attributes!.findIndex((a) => a.id === parent),
+                            'values',
+                        ],
+                        attributeValues
+                    );
                 }
             };
 
@@ -330,7 +339,7 @@ const CreateEdit: React.FC = () => {
         }
 
         // Add attribute value to product attribute
-        addAttributeValue({ id, parent, attributes });
+        addAttributeValue({ id, parent });
     };
 
     const onAttributeValueDeselect = ({ id, parent }: { id: number; parent: number }) => {
@@ -377,24 +386,6 @@ const CreateEdit: React.FC = () => {
         });
     };
 
-    const onAddVariation = () => {
-        let newValues;
-        setValues((prev) => {
-            // Get the latest variations from the form, in case user has created variations that are not in state
-            const formVariations = form.getFieldValue('variations') || [];
-
-            newValues = {
-                ...prev,
-                variations: [
-                    ...(formVariations.filter((v) => !v.INITIAL) || []),
-                    { attributes: [], manage_quantity: true },
-                ],
-            };
-            return newValues;
-        });
-        form.setFieldValue('variations', newValues.variations);
-    };
-
     const onGenerateVariations = () => {
         const variationalAttributes = values.attributes!.filter((attr) => attr.isVariational);
 
@@ -425,66 +416,6 @@ const CreateEdit: React.FC = () => {
         form.setFieldsValue({ variations });
     };
 
-    const onVariationAttributeValueSelect = ({
-        id,
-        parent,
-        variation,
-    }: {
-        id: number;
-        parent: number;
-        variation: number;
-    }) => {
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                variations: prev.variations!.map((v, i) => {
-                    if (i === variation) {
-                        v.attributes = v.attributes.map((a) => {
-                            if (a.id === parent) {
-                                a.value = {
-                                    id,
-                                    value: attributes
-                                        .find((a) => a.id === parent)!
-                                        .values!.find((v) => v.id === id)!.value,
-                                };
-                            }
-                            return a;
-                        });
-                    }
-                    return v;
-                }),
-            };
-            return newValues;
-        });
-    };
-
-    const onVariationRemove = (variationKey: number) => {
-        let newValues;
-        setValues((prev) => {
-            // Get the latest variations from the form, in case user has created variations that are not in state
-            const formVariations = form.getFieldValue('variations') || [];
-            const filteredVariations = formVariations.filter(
-                (_: any, i: number) => i !== variationKey
-            );
-
-            newValues = {
-                ...prev,
-                variations:
-                    filteredVariations.length > 0
-                        ? filteredVariations
-                        : [
-                              {
-                                  attributes: [],
-                                  manage_quantity: true,
-                                  INITIAL: true, // Used to hide default variation thats created on product creation, because it shows up in the Variations tab
-                              },
-                          ],
-            };
-            return newValues;
-        });
-        form.setFieldValue('variations', newValues.variations);
-    };
-
     const commonProductItems: TabsProps['items'] = [
         {
             key: '3',
@@ -502,7 +433,26 @@ const CreateEdit: React.FC = () => {
                         }))}
                         required={isVariable}
                     />
-                    {values.attributes && (
+                    <Form.List name="attributes">
+                        {(fields, { add, remove }) => (
+                            <Space>
+                                {fields.map((field, attributeKey) => (
+                                    <AttributeValuesField
+                                        key={field.key}
+                                        name={attributeKey}
+                                        attributes={attributes}
+                                        onSelect={onAttributeValueSelect}
+                                        onDeselect={onAttributeValueDeselect}
+                                        onClear={onAttributeValueClear}
+                                        onIsVariationalChange={onIsVariationalChange}
+                                        onRemove={remove}
+                                        showVariationCheckbox={isVariable}
+                                    />
+                                ))}
+                            </Space>
+                        )}
+                    </Form.List>
+                    {/* {values.attributes && (
                         <Space>
                             {values.attributes?.map((a, i) => {
                                 const attr = attributes.find((o) => o.id === a.id)!;
@@ -527,7 +477,7 @@ const CreateEdit: React.FC = () => {
                                 );
                             })}
                         </Space>
-                    )}
+                    )} */}
                 </>
             ),
         },
@@ -584,93 +534,7 @@ const CreateEdit: React.FC = () => {
             key: '4',
             label: 'Variations',
             icon: <ProductFilled />,
-            children: (
-                <>
-                    <Flex style={{ paddingBottom: '20px' }} gap={10}>
-                        <Tooltip
-                            title={
-                                values.attributes!.length === 0
-                                    ? 'Add attributes first'
-                                    : !values.attributes!.find((a) => a.isVariational === true)
-                                      ? 'Select at least one attribute as variational'
-                                      : !values.attributes!.find(
-                                              (a) =>
-                                                  a.values!.length > 0 && a.isVariational === true
-                                          )
-                                        ? 'Select atleast one value for variational attribute'
-                                        : ''
-                            }
-                        >
-                            <Button
-                                type="primary"
-                                onClick={onGenerateVariations}
-                                icon={<PlusOutlined />}
-                                disabled={
-                                    values.attributes!.length === 0 ||
-                                    !values.attributes!.find((a) => a.isVariational === true) ||
-                                    !values.attributes!.find(
-                                        (a) => a.values!.length > 0 && a.isVariational === true
-                                    )
-                                }
-                            >
-                                Generate all possible variations
-                            </Button>
-                        </Tooltip>
-
-                        <Tooltip
-                            title={
-                                values.attributes!.length === 0
-                                    ? 'Add attributes first'
-                                    : !values.attributes!.find((a) => a.isVariational === true)
-                                      ? 'Select at least one attribute as variational'
-                                      : !values.attributes!.find(
-                                              (a) =>
-                                                  a.values!.length > 0 && a.isVariational === true
-                                          )
-                                        ? 'Select atleast one value for variational attribute'
-                                        : ''
-                            }
-                        >
-                            <Button
-                                type="primary"
-                                onClick={onAddVariation}
-                                icon={<PlusOutlined />}
-                                disabled={
-                                    values.attributes!.length === 0 ||
-                                    !values.attributes!.find((a) => a.isVariational === true) ||
-                                    !values.attributes!.find(
-                                        (a) => a.values!.length > 0 && a.isVariational === true
-                                    )
-                                }
-                            >
-                                Add variation
-                            </Button>
-                        </Tooltip>
-                    </Flex>
-                    <Flex gap={20} wrap="wrap">
-                        {!values?.variations[0]?.INITIAL &&
-                            values.variations?.map((v, i) => {
-                                return (
-                                    <VariationCard
-                                        key={i}
-                                        variationKey={i}
-                                        manage_quantity={v.manage_quantity}
-                                        attributes={attributes}
-                                        selectedAttributes={values.attributes!}
-                                        functions={{
-                                            variation: {
-                                                onVariationRemove,
-                                            },
-                                            attribute: {
-                                                onSelect: onVariationAttributeValueSelect,
-                                            },
-                                        }}
-                                    />
-                                );
-                            })}
-                    </Flex>
-                </>
-            ),
+            children: <VariationsCards />,
         },
     ];
 
@@ -702,26 +566,28 @@ const CreateEdit: React.FC = () => {
                         />
 
                         <Form.Item
-                            name="isVariable"
-                            valuePropName="checked"
+                            name={'isVariable'}
                             label="Product type"
                             rules={[{ required: true }]}
                         >
                             <Select
-                                defaultValue={isVariable ? 'variable' : 'simple'}
                                 style={{ width: 120 }}
+                                value={isVariable}
                                 onChange={(e) => {
-                                    setIsVariable(e === 'variable');
+                                    setIsVariable(e);
+                                    setValues((prev) => ({
+                                        ...prev,
+                                        isVariable: e,
+                                    }));
                                 }}
                                 options={[
-                                    { value: 'simple', label: 'Simple' },
-                                    { value: 'variable', label: 'Variable' },
+                                    { value: false, label: 'Simple' },
+                                    { value: true, label: 'Variable' },
                                 ]}
                             />
                         </Form.Item>
 
                         <Tabs
-                            defaultActiveKey="1"
                             items={isVariable ? variableProductItems : simpleProductItems}
                             tabPosition="left"
                         />

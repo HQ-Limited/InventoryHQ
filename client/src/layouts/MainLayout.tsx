@@ -48,15 +48,14 @@ const MainLayout = (props: Props) => {
                             className="mainlayout-bottom-nav"
                             selectedKeys={[location.pathname]}
                             style={{ justifyContent: 'center' }}
-                        >
-                            {routes
+                            items={routes
                                 .filter((route) => route.pinned)
-                                .map((route) => (
-                                    <Menu.Item key={route.url} icon={route.icon}>
-                                        <Link to={route.url}>{route.label}</Link>
-                                    </Menu.Item>
-                                ))}
-                        </Menu>
+                                .map((route) => ({
+                                    key: route.url,
+                                    icon: route.icon,
+                                    label: <Link to={route.url}>{route.label}</Link>,
+                                }))}
+                        />
                     </div>
                 </Footer>
             </Layout>

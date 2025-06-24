@@ -1,32 +1,33 @@
 import { Button, Card, Checkbox, CheckboxChangeEvent, Form, Select, Tooltip } from 'antd';
-import { AttributeDB } from '../../../../types/ProductTypesDB';
 import { CloseOutlined } from '@ant-design/icons';
+import { ProductAttribute } from '../../../../types/ProductTypes';
+import { DefaultOptionType } from 'antd/es/select';
 
 export default function AttributeValuesField({
-    attributeKey,
-    parentId,
-    attribute,
+    name,
+    attributes,
     onSelect,
     onDeselect,
     onClear,
-    showVariationCheckbox = false,
     onIsVariationalChange,
-    onRemoveAttribute,
-    isVariational,
-    options,
+    onRemove,
+    showVariationCheckbox = false,
 }: {
-    attributeKey: number;
-    parentId: number;
-    attribute: Partial<AttributeDB>;
+    name: number;
+    attributes: ProductAttribute[];
     onSelect: ({ id, parent }: { id: number; parent: number }) => void;
     onDeselect: ({ id, parent }: { id: number; parent: number }) => void;
     onClear: (id: number) => void;
     onIsVariationalChange?: ({ id, value }: { id: number; value: boolean }) => void;
+    onRemove: (id: number) => void;
     showVariationCheckbox?: boolean;
-    onRemoveAttribute?: (id: number) => void;
-    isVariational?: boolean;
-    options?: { value: number; label: string }[];
 }) {
+    const attribute: ProductAttribute = attributes[name];
+    const options: DefaultOptionType[] = attribute.values.map((value) => ({
+        label: value.value,
+        value: value.id,
+    }));
+
     return (
         <Card
             title={attribute.name}
@@ -37,14 +38,17 @@ export default function AttributeValuesField({
                         type="text"
                         shape="circle"
                         icon={<CloseOutlined />}
-                        onClick={() => onRemoveAttribute!(parentId)}
+                        onClick={() => {
+                            onRemove(name);
+                            onClear(attribute.id);
+                        }}
                     />
                 </Tooltip>
             }
             style={{ width: 300 }}
         >
             <Form.Item
-                name={['attributes', attributeKey, 'values']}
+                name={[name, 'values']}
                 rules={[{ required: true, message: 'Please select at least one value' }]}
             >
                 <Select
@@ -53,25 +57,21 @@ export default function AttributeValuesField({
                     showSearch
                     placeholder="Select value/s"
                     optionFilterProp="value"
-                    onSelect={(id: number) => onSelect({ id, parent: parentId })}
-                    onDeselect={(id: number) => onDeselect({ id, parent: parentId })}
-                    onClear={() => onClear(parentId)}
                     options={options}
+                    onSelect={(id: number) => onSelect({ id, parent: attribute.id })}
+                    onDeselect={(id: number) => onDeselect({ id, parent: attribute.id })}
+                    onClear={() => onClear(attribute.id)}
                 />
             </Form.Item>
             {showVariationCheckbox && (
                 <Form.Item
-                    name={['attributes', attributeKey, 'isVariational']}
+                    onChange={(e: CheckboxChangeEvent) =>
+                        onIsVariationalChange!({ id: name, value: e.target.checked })
+                    }
+                    name={[name, 'isVariational']}
                     valuePropName="checked"
                 >
-                    <Checkbox
-                        checked={isVariational}
-                        onChange={(e: CheckboxChangeEvent) =>
-                            onIsVariationalChange!({ id: parentId, value: e.target.checked })
-                        }
-                    >
-                        Used for variations
-                    </Checkbox>
+                    <Checkbox>Used for variations</Checkbox>
                 </Form.Item>
             )}
         </Card>
