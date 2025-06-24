@@ -6,9 +6,6 @@ export type ProductAttribute = {
         value: string;
     }[]; // id of attribute name + value (from attribute_values table)
     isVariational: boolean;
-
-    // Used in Forms to bind data correctly
-    selectedAttributes?: number[];
 };
 
 export type AttributeValue = {
@@ -33,7 +30,6 @@ export type Product = {
 
     // Used in forms to bind data correctly
     selectedCategories?: number[];
-    selectedAttributes?: number[];
 };
 
 export type Variation = {

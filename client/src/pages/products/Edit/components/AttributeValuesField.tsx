@@ -49,6 +49,7 @@ export default function AttributeValuesField({
         >
             <Form.Item
                 name={[name, 'values']}
+                label="Values"
                 rules={[{ required: true, message: 'Please select at least one value' }]}
             >
                 <Select

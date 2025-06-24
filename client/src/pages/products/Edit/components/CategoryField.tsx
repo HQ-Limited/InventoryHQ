@@ -2,7 +2,9 @@ import { Form, TreeSelect } from 'antd';
 import { CategoriesTree } from '../../../../types/ProductTypes';
 
 export default function CategoryField({ categoriesTree }: { categoriesTree: CategoriesTree[] }) {
-    const form = Form.useFormInstance();
+    //TODO: Try to map the categories to form.categories instead of selectedCategories
+
+    //TODO: Check out treeDataSimpleMode property (https://ant.design/components/tree-select?theme=dark#tree-props)
     return (
         <Form.Item label="Categories" name="selectedCategories">
             <TreeSelect
@@ -15,7 +17,6 @@ export default function CategoryField({ categoriesTree }: { categoriesTree: Cate
                 multiple
                 treeDefaultExpandAll
                 treeData={categoriesTree}
-                value={form.getFieldValue('categories')?.map((a) => a.id)}
             />
         </Form.Item>
     );

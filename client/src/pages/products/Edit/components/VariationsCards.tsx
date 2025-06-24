@@ -23,6 +23,13 @@ function SelectField({
     return (
         <Form.Item
             name={[name, 'value']}
+            label={form.getFieldValue([
+                'variations',
+                variationFieldName,
+                'attributes',
+                attributeFieldName,
+                'name',
+            ])}
             rules={[{ required: true, message: 'This field is required' }]}
         >
             <Select
@@ -153,27 +160,12 @@ export default function VariationsCards() {
                                                 );
 
                                                 return (
-                                                    <div
-                                                        key={attrField.key}
-                                                        style={{ marginBottom: 16 }}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                marginBottom: 4,
-                                                                fontWeight: 500,
-                                                            }}
-                                                        >
-                                                            {globalAttribute?.name ||
-                                                                variationAttribute?.name ||
-                                                                'Attribute'}
-                                                        </div>
-                                                        <SelectField
-                                                            name={attrField.name}
-                                                            options={globalAttribute?.values || []}
-                                                            variationFieldName={field.name}
-                                                            attributeFieldName={attrField.name}
-                                                        />
-                                                    </div>
+                                                    <SelectField
+                                                        name={attrField.name}
+                                                        options={globalAttribute?.values || []}
+                                                        variationFieldName={field.name}
+                                                        attributeFieldName={attrField.name}
+                                                    />
                                                 );
                                             })}
                                         </>
