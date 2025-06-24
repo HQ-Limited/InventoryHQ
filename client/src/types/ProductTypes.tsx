@@ -5,19 +5,21 @@ export type ProductAttribute = {
         id: number;
         value: string;
     }[]; // id of attribute name + value (from attribute_values table)
-    isVariational?: boolean;
+    isVariational: boolean;
 
     // Used in Forms to bind data correctly
     selectedAttributes?: number[];
 };
 
+export type AttributeValue = {
+    id: number;
+    value: string;
+};
+
 export type VariationAttribute = {
     id: number; // id of attribute name
     name: string;
-    value: {
-        id: number;
-        value: string;
-    }; // id of attribute name + value (from attribute_values table)
+    value: AttributeValue; // id of attribute name + value (from attribute_values table)
 };
 
 export type Product = {
