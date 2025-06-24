@@ -6,11 +6,13 @@ import attributeService from '../../../../services/attributeService';
 export default function AttributesField({
     attributes,
     onAdd,
+    onRemove,
     fetchValues,
     required = false,
 }: {
     attributes: ProductAttribute[];
     onAdd: (defaultValue?: StoreValue) => void;
+    onRemove: (index: number) => void;
     fetchValues: (id: number) => void;
     required?: boolean;
 }) {
@@ -42,7 +44,24 @@ export default function AttributesField({
                                 id: id,
                                 name: value,
                                 values: [],
+                                isVariational: false,
                             });
+
+                            // Add to all variations with empty value
+                            const variations = form.getFieldValue('variations') || [];
+                            const updatedVariations = variations.map((variation: any) => ({
+                                ...variation,
+                                attributes: [
+                                    ...(variation.attributes || []),
+                                    {
+                                        id,
+                                        name: value,
+                                        value: {},
+                                    },
+                                ],
+                            }));
+                            form.setFieldValue('variations', updatedVariations);
+
                             return;
                         } catch (e) {
                             messageApi.error('Failed to create attribute');
@@ -57,6 +76,46 @@ export default function AttributesField({
                         ...attr,
                         values: [],
                     });
+
+                    // Add to all variations with empty value
+                    const variations = form.getFieldValue('variations') || [];
+                    const updatedVariations = variations.map((variation: any) => ({
+                        ...variation,
+                        attributes: [
+                            ...(variation.attributes || []),
+                            {
+                                id: attr.id,
+                                name: attr.name,
+                                value: {},
+                            },
+                        ],
+                    }));
+                    form.setFieldValue('variations', updatedVariations);
+                }}
+                onDeselect={(value: number) => {
+                    const index = form
+                        .getFieldValue('attributes')
+                        .findIndex((a: ProductAttribute) => a.id === value);
+                    onRemove(index);
+
+                    // Remove this attribute from all variations' attributes
+                    const variations = form.getFieldValue('variations') || [];
+                    const updatedVariations = variations.map((variation: any) => ({
+                        ...variation,
+                        attributes: (variation.attributes || []).filter(
+                            (attr: any) => attr.id !== value
+                        ),
+                    }));
+                    form.setFieldValue('variations', updatedVariations);
+
+                    // If no attributes left, remove all variations
+                    const remainingAttributes = form.getFieldValue('attributes') || [];
+                    if (remainingAttributes.length === 0) {
+                        form.setFieldValue('variations', []);
+                    }
+                }}
+                onClear={() => {
+                    form.setFieldValue('attributes', []);
                 }}
                 options={attributes.map((v) => ({
                     label: v.name!,

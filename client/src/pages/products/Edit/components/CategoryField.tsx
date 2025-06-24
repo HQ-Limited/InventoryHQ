@@ -1,13 +1,8 @@
 import { Form, TreeSelect } from 'antd';
 import { CategoriesTree } from '../../../../types/ProductTypes';
 
-export default function CategoryField({
-    categoriesTree,
-    onChange,
-}: {
-    categoriesTree: CategoriesTree[];
-    onChange?: (value: number[]) => void;
-}) {
+export default function CategoryField({ categoriesTree }: { categoriesTree: CategoriesTree[] }) {
+    const form = Form.useFormInstance();
     return (
         <Form.Item label="Categories" name="selectedCategories">
             <TreeSelect
@@ -20,7 +15,7 @@ export default function CategoryField({
                 multiple
                 treeDefaultExpandAll
                 treeData={categoriesTree}
-                onChange={onChange}
+                value={form.getFieldValue('categories')?.map((a) => a.id)}
             />
         </Form.Item>
     );

@@ -1,4 +1,4 @@
-import { ProductAttribute, VariationAttribute } from '../types/ProductTypes';
+import { AttributeValue, ProductAttribute, VariationAttribute } from '../types/ProductTypes';
 import api from './api';
 
 class AttributeService {
@@ -19,7 +19,7 @@ class AttributeService {
         return response.data;
     }
 
-    async getAttributeValues(id: number): Promise<VariationAttribute[]> {
+    async getAttributeValues(id: number): Promise<AttributeValue[]> {
         const response = await api.get(`Attribute/${id}`);
         return response.data;
     }

@@ -1,18 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-    Button,
-    Flex,
-    Form,
-    FormProps,
-    message,
-    Popover,
-    Select,
-    Space,
-    Spin,
-    Tabs,
-    TabsProps,
-    Tooltip,
-} from 'antd';
+import { Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps, Tooltip } from 'antd';
 import { useParams } from 'react-router-dom';
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
@@ -30,14 +17,11 @@ import DescriptionField from './components/DescriptionField';
 import CategoryField from './components/CategoryField';
 import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
-import VariationsCards from './components/VariationCard';
+import VariationsCards from './components/VariationsCards';
 import {
     ControlFilled,
-    FolderFilled,
-    PlusOutlined,
     ProductFilled,
     TruckFilled,
-    TruckOutlined,
     UnorderedListOutlined,
 } from '@ant-design/icons';
 import PriceField from './components/PriceField';
@@ -58,18 +42,11 @@ const CreateEdit: React.FC = () => {
     const params = useParams();
     const id = params.id;
     const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
-    const [attributes, setAttributes] = useState<Partial<ProductAttribute>[]>([]);
+    const [attributes, setAttributes] = useState<ProductAttribute[]>([]);
     const [form] = Form.useForm();
-    const [messageApi, contextHolder] = message.useMessage();
     const [values, setValues] = useState<Partial<Product>>({
         attributes: [],
-        variations: [
-            {
-                attributes: [],
-                manage_quantity: true,
-                INITIAL: true, // Used to hide default variation thats created on product creation, because it shows up in the Variations tab
-            },
-        ],
+        variations: [],
         selectedAttributes: [],
         isVariable: false,
     });
@@ -128,7 +105,7 @@ const CreateEdit: React.FC = () => {
             if (product.attributes)
                 product.selectedAttributes = product.attributes.map((a: ProductAttribute) => a.id);
 
-            const attrs: Partial<ProductAttribute>[] = await attributeService.getAttributes({
+            const attrs: ProductAttribute[] = await attributeService.getAttributes({
                 includeValues: true,
                 ids: product!.attributes!.map((a) => a.id),
             });
@@ -142,7 +119,7 @@ const CreateEdit: React.FC = () => {
             return;
         }
 
-        const attrs: Partial<ProductAttribute>[] = id
+        const attrs: ProductAttribute[] = id
             ? await attributeService.getAttributes({
                   includeValues: true,
                   ids: product!.attributes!.map((a) => a.id),
@@ -155,16 +132,6 @@ const CreateEdit: React.FC = () => {
     useEffect(() => {
         fetchData();
     }, []);
-
-    const onCategoryChange = (value: number[]) => {
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                selectedCategories: value,
-            };
-            return newValues;
-        });
-    };
 
     const fetchAttributeValues = async (id: number) => {
         const fetchData = async () => {
@@ -183,220 +150,6 @@ const CreateEdit: React.FC = () => {
         };
 
         fetchData();
-    };
-
-    const onAttributeSelect = (value: number | string) => {
-        function addAttribute(id: number, attributes: ProductAttribute[]) {
-            // Add attribute to product
-            setValues((prev) => {
-                const newValues = {
-                    ...prev,
-                    attributes: [
-                        ...(prev.attributes || []),
-                        {
-                            id,
-                            name: attributes.find((a) => a.id === id)!.name,
-                            values: [],
-                        },
-                    ],
-                    selectedAttributes: [...(prev.selectedAttributes || []), id],
-                };
-                return newValues;
-            });
-        }
-
-        if (typeof value === 'string') {
-            // Create attribute and get id from response
-            const createAttribute = async () => {
-                const selectedAttributes = values.selectedAttributes;
-                try {
-                    const id: number = await attributeService.createAttribute(value);
-
-                    setAttributes((prev) => {
-                        const newAttributes = [...prev, { id, name: value, values: [] }];
-                        addAttribute(id, newAttributes);
-                        return newAttributes;
-                    });
-                } catch (e) {
-                    messageApi.error('Failed to create attribute');
-                    form.setFieldValue('selectedAttributes', selectedAttributes);
-                }
-            };
-
-            createAttribute();
-            return;
-        }
-
-        // Load all values for selected attribute
-        const fetchData = async () => {
-            const id: number = value;
-            // Check if attribute wasnt re-added (already has fetched values)
-            const wasFetched = attributes.find((a) => a.id === id)?.values?.length > 0;
-            let newAttributes: ProductAttribute[] = attributes;
-
-            if (!wasFetched) {
-                const values: { id: number; value: string }[] =
-                    await attributeService.getAttributeValues(id);
-                // Add all possible values to the attribute
-                setAttributes((prev) => {
-                    const newAttrs = prev.map((a) => {
-                        if (a.id === id) {
-                            a.values = values;
-                        }
-                        return a;
-                    });
-                    newAttributes = newAttrs;
-                    return newAttrs;
-                });
-            }
-
-            addAttribute(id, newAttributes);
-        };
-
-        fetchData();
-    };
-
-    const onAttributeDeselect = (id: number) => {
-        // Remove attribute from product
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: (prev.attributes || []).filter((a) => a.id !== id),
-                selectedAttributes: (prev.selectedAttributes || []).filter((a) => a !== id),
-            };
-            return newValues;
-        });
-    };
-
-    /* useEffect(() => {
-        form.setFieldValue('selectedAttributes', values.selectedAttributes);
-    }, [values.selectedAttributes, form]);
-
-    useEffect(() => {
-        form.setFieldValue('attributes', values.attributes);
-    }, [values.attributes, form]); */
-
-    const onAttributeClear = () => {
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: [],
-                selectedAttributes: [],
-            };
-            return newValues;
-        });
-    };
-
-    const onAttributeValueSelect = ({ id, parent }: { id: number | string; parent: number }) => {
-        function addAttributeValue({
-            id,
-            parent,
-            attributes,
-        }: {
-            id: number;
-            parent: number;
-            attributes: ProductAttribute[];
-        }) {
-            {
-                setValues((prev) => {
-                    const newValues = {
-                        ...prev,
-                        attributes: (prev.attributes || []).map((a) => {
-                            if (a.id === parent) {
-                                if (!a.values)
-                                    a.values = [
-                                        {
-                                            id,
-                                            value: attributes
-                                                .find((a) => a.id === parent)!
-                                                .values!.find((v) => v.id === id)!.value,
-                                        },
-                                    ];
-                                else if (!a.values!.find((v) => v.id === id)) {
-                                    a.values!.push({
-                                        id,
-                                        value: attributes
-                                            .find((a) => a.id === parent)!
-                                            .values!.find((v) => v.id === id)!.value,
-                                    });
-                                }
-                            }
-                            return a;
-                        }),
-                    };
-                    return newValues;
-                });
-            }
-        }
-
-        if (typeof id === 'string') {
-            // Create attribute and get id from response
-            const createAttributeValue = async () => {
-                const attribute = values.attributes.find((a) => a.id === parent);
-                try {
-                    const newId: number = await attributeService.createAttributeValue({
-                        id: parent,
-                        value: id,
-                    });
-
-                    setAttributes((prev) => {
-                        const newAttributes = prev.map((a) =>
-                            a.id === parent
-                                ? { ...a, values: [...(a.values || []), { id: newId, value: id }] }
-                                : a
-                        );
-
-                        addAttributeValue({ id: newId, parent, attributes: newAttributes });
-                        return newAttributes;
-                    });
-                } catch (e) {
-                    messageApi.error('Failed to create attribute value');
-                    form.setFieldValue(
-                        [
-                            'attributes',
-                            values.attributes!.findIndex((a) => a.id === attribute.id),
-                            'values',
-                        ],
-                        attribute.values
-                    );
-                }
-            };
-
-            createAttributeValue();
-            return;
-        }
-
-        // Add attribute value to product attribute
-        addAttributeValue({ id, parent, attributes });
-    };
-
-    const onAttributeValueDeselect = ({ id, parent }: { id: number; parent: number }) => {
-        // Remove attribute value from product attribute
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: (prev.attributes || []).map((a) => {
-                    if (a.id === parent) {
-                        a.values = (a.values || []).filter((v) => v.id !== id);
-                    }
-                    return a;
-                }),
-            };
-            return newValues;
-        });
-    };
-
-    const onAttributeValueClear = (id: number) => {
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                attributes: (prev.attributes || []).map((a) => {
-                    if (a.id === id) a.values = [];
-                    return a;
-                }),
-            };
-            return newValues;
-        });
     };
 
     const onGenerateVariations = () => {
@@ -443,6 +196,7 @@ const CreateEdit: React.FC = () => {
                                     fetchValues={fetchAttributeValues}
                                     attributes={attributes}
                                     onAdd={add}
+                                    onRemove={remove}
                                     required={isVariable}
                                 />
                                 <Space>
@@ -452,11 +206,7 @@ const CreateEdit: React.FC = () => {
                                                 key={field.key}
                                                 name={attributeKey}
                                                 attributes={attributes}
-                                                onSelect={onAttributeValueSelect}
-                                                onDeselect={onAttributeValueDeselect}
-                                                onClear={onAttributeValueClear}
                                                 onRemove={remove}
-                                                onAttributeRemove={onAttributeDeselect}
                                                 showVariationCheckbox={isVariable}
                                             />
                                         </>
@@ -504,31 +254,14 @@ const CreateEdit: React.FC = () => {
         ...commonProductItems,
         {
             key: '4',
-            label: (
-                <Tooltip
-                    color="red"
-                    title={
-                        values.attributes.length == 0
-                            ? 'Select atleast one attribute'
-                            : !values.attributes?.some((a) => a.isVariational == true)
-                              ? 'Mark atleast one attribute as variational'
-                              : ''
-                    }
-                >
-                    Variations
-                </Tooltip>
-            ),
+            label: 'Variations',
             icon: <ProductFilled />,
             children: <VariationsCards />,
-            disabled:
-                values.attributes.length == 0 &&
-                !values.attributes?.some((a) => a.isVariational == true),
         },
     ];
 
     return (
         <>
-            {contextHolder}
             {loading ? (
                 <Spin size="large" fullscreen />
             ) : (
@@ -548,10 +281,7 @@ const CreateEdit: React.FC = () => {
 
                         <DescriptionField />
 
-                        <CategoryField
-                            categoriesTree={categoriesTree}
-                            onChange={onCategoryChange}
-                        />
+                        <CategoryField categoriesTree={categoriesTree} />
 
                         <Form.Item
                             name={'isVariable'}
@@ -567,7 +297,6 @@ const CreateEdit: React.FC = () => {
                                 value={isVariable}
                                 onChange={(value) => {
                                     setIsVariable(value);
-                                    form.setFieldValue('isVariable', value);
                                 }}
                             />
                         </Form.Item>
