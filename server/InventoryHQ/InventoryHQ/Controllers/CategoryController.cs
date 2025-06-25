@@ -16,6 +16,9 @@ namespace InventoryHQ.Controllers
             _categoryService = categoryService;
         }
 
+        /// <summary>
+        /// Retrieves a list of all categories.
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> Get()
         {
