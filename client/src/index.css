@@ -8,7 +8,7 @@ body {
 
 @media (max-width: 768px) {
     .mainlayout-links {
-        display: none !important;
+        display: none;
     }
 
     .bottom-navigation {
@@ -23,9 +23,8 @@ body {
         display: none;
     }
 
-    .mainlayout-logo {
-        justify-content: center !important;
-        margin-right: 0 !important;
+    .mainlayout-header {
+        justify-content: center;
     }
 }
 
@@ -33,21 +32,10 @@ body {
     .bottom-navigation {
         display: none;
     }
-
-    .hq-footer-info {
-        display: block;
-    }
 }
 
 .bottom-navigation {
     font-size: 2rem;
-}
-
-.mainlayout-root {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
 }
 
 .mainlayout-header {
@@ -58,78 +46,6 @@ body {
     top: 0;
     z-index: 1;
     width: 100%;
-}
-
-.mainlayout-logo {
-    display: flex;
-    align-items: center;
-    font-size: 22px;
-    font-weight: 700;
-    margin-right: 32px;
-    letter-spacing: 1px;
-    user-select: none;
-    flex: 1;
-    justify-content: flex-start;
-}
-
-.mainlayout-logo-hq {
-    color: var(--ant-primary-color);
-    font-weight: 700;
-}
-
-.mainlayout-logo-limited {
-    color: var(--ant-color-text-secondary);
-    font-weight: 400;
-    margin-left: 2px;
-}
-
-.mainlayout-link {
-    font-size: 16px;
-    margin: 0 16px;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.mainlayout-content {
-    padding: 24px 16px;
-    flex: 1 1 auto;
-    overflow: auto;
-}
-
-.mainlayout-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 1;
-    width: 100%;
-    text-align: center;
-}
-
-.mainlayout-logo a,
-.mainlayout-logo a:hover {
-    all: unset;
-    cursor: pointer;
-}
-
-.home-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    padding: 24px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.home-link {
-    text-decoration: none;
-}
-
-.home-button {
-    min-height: 48px;
-    font-size: clamp(1rem, 2vw, 1.25rem);
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 * {

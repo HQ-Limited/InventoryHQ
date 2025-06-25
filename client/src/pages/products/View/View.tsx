@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import type { CheckboxProps, GetProp, MenuProps, PopconfirmProps, TableProps } from 'antd';
+import type { CheckboxProps, GetProp, MenuProps, TableProps } from 'antd';
 import {
     Button,
     Checkbox,
@@ -16,7 +16,13 @@ import {
 } from 'antd';
 import type { SorterResult } from 'antd/es/table/interface';
 import { Link } from 'react-router-dom';
-import { DownOutlined, InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+    DeleteOutlined,
+    DownOutlined,
+    EditOutlined,
+    InfoCircleOutlined,
+    PlusOutlined,
+} from '@ant-design/icons';
 import productService from '../../../services/productService';
 import { Product, Variation } from '../../../types/ProductTypes';
 import { TextFilter } from './components/TextFilter';
@@ -32,10 +38,6 @@ interface TableParams {
     filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
 }
 
-const confirm: PopconfirmProps['onConfirm'] = (e) => {
-    message.success('Click on Yes');
-};
-
 const StatusTag = ({ quantity }: { quantity: number }) => {
     if (quantity > 0) {
         return <Tag color="green">In Stock</Tag>;
@@ -47,27 +49,35 @@ const StatusTag = ({ quantity }: { quantity: number }) => {
 const View: React.FC = () => {
     const variationColumns: ColumnsType<Variation> = [
         {
+            width: 100,
             key: 'sku',
             title: 'SKU',
             dataIndex: 'sku',
         },
         {
+            // responsive: ['md'],
+            width: 100,
             key: 'price',
             title: 'Price',
             dataIndex: 'retailPrice',
         },
         {
+            // responsive: ['md'],
+            width: 100,
             key: 'quantity',
             title: 'Quantity',
             dataIndex: 'quantity',
         },
         {
+            // responsive: ['sm'],
+            width: 100,
             key: 'attributes',
             title: 'Attributes',
             render: (_, record) =>
                 record.attributes.map((attr, i) => <Tag key={i}>{attr.value.value}</Tag>),
         },
         {
+            width: 100,
             key: 'status',
             title: 'Status',
             filters: [
@@ -80,6 +90,7 @@ const View: React.FC = () => {
 
     const productColumns: ColumnsType<Product> = [
         {
+            width: 100,
             key: 'name',
             title: 'Name',
             dataIndex: 'name',
@@ -87,6 +98,8 @@ const View: React.FC = () => {
             ...TextFilter(),
         },
         {
+            // responsive: ['md'],
+            width: 100,
             key: 'sku',
             title: 'SKU',
             render: (_, record) => {
@@ -99,6 +112,8 @@ const View: React.FC = () => {
             ...TextFilter(),
         },
         {
+            // responsive: ['md'],
+            width: 100,
             key: 'price',
             title: 'Price',
             dataIndex: 'price',
@@ -113,6 +128,8 @@ const View: React.FC = () => {
             ...NumberFilter(),
         },
         {
+            // responsive: ['lg'],
+            width: 100,
             key: 'quantity',
             title: 'Quantity',
             dataIndex: 'quantity',
@@ -135,9 +152,10 @@ const View: React.FC = () => {
             },
         },
         {
+            responsive: ['lg'],
+            width: 100,
             key: 'attributes',
             title: 'Attributes',
-            responsive: ['sm'],
             render: (_, record) => {
                 return record.attributes.map((attr, i) => (
                     <Popover
@@ -154,6 +172,8 @@ const View: React.FC = () => {
             },
         },
         {
+            responsive: ['lg'],
+            width: 100,
             key: 'categories',
             title: 'Categories',
             dataIndex: 'categories',
@@ -174,6 +194,8 @@ const View: React.FC = () => {
             },
         },
         {
+            responsive: ['sm', 'md'],
+            width: 100,
             key: 'status',
             title: 'Status',
             filters: [
@@ -185,37 +207,49 @@ const View: React.FC = () => {
             ),
         },
         {
+            fixed: 'right',
             key: 'action',
             title: 'Action',
+            width: 100,
             render: (_, record) => (
                 <Space size="middle">
                     <Link to={`/products/${record.id}`}>
-                        <Button type="primary">Edit</Button>
+                        <Tooltip title="Edit" color="blue">
+                            <Button type="primary" shape="circle" icon={<EditOutlined />}></Button>
+                        </Tooltip>
                     </Link>
                     <Popconfirm
-                        title="Confirmation"
-                        description="Are you sure you want to delete this record?"
-                        onConfirm={confirm}
+                        title="Delete"
+                        description="Are you sure you want to delete this product?"
+                        onConfirm={() => onDeleteProduct(record.id)}
                         okText="Yes"
+                        okType="danger"
                         cancelText="No"
+                        cancelButtonProps={{ type: 'primary' }}
                     >
-                        <Button type="primary" danger>
-                            Delete
-                        </Button>
+                        <Tooltip title="Delete" color="red">
+                            <Button
+                                variant="solid"
+                                color="danger"
+                                shape="circle"
+                                icon={<DeleteOutlined />}
+                            ></Button>
+                        </Tooltip>
                     </Popconfirm>
                 </Space>
             ),
         },
     ];
 
-    const expandedRowRender = (record: Product, index: number) => (
+    const expandedRowRender = (record: Product, index: number, indent) => (
         <Table<Variation>
             columns={variationColumns}
             rowKey={index.toString()}
             size="small"
-            bordered={true}
-            dataSource={record.variations}
+            bordered
             pagination={false}
+            scroll={{ x: 'max-content', scrollToFirstRowOnChange: false }}
+            dataSource={record.variations}
         />
     );
 
@@ -224,6 +258,21 @@ const View: React.FC = () => {
     const [hiddenColumns, setHiddenColumns] = useState<string[]>(
         productColumns.filter((item) => item?.hidden == true).map((item) => item.key as string)
     );
+
+    const onDeleteProduct = (id: number) => {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                productService.deleteProduct(id).then(() => {
+                    setData(data?.filter((product) => product.id !== id));
+                    message.success('Product deleted successfully');
+                    resolve();
+                });
+            } catch (e) {
+                message.error('Error deleting product');
+                reject(e);
+            }
+        });
+    };
 
     function TopMenuItems({ columns }: { columns: MenuProps['items'] }): MenuProps['items'] {
         function onSearch(value: string) {
@@ -238,6 +287,7 @@ const View: React.FC = () => {
             {
                 label: (
                     <Input.Search
+                        style={{ paddingTop: '6px' }}
                         placeholder="Search"
                         onSearch={onSearch}
                         onChange={onChange}
@@ -248,9 +298,14 @@ const View: React.FC = () => {
                 key: 'search',
             },
             {
-                label: <Link to="new">Create Product</Link>,
+                label: (
+                    <Link to="new">
+                        <Button type="primary" icon={<PlusOutlined />}>
+                            Create Product
+                        </Button>
+                    </Link>
+                ),
                 key: 'create',
-                icon: <PlusOutlined />,
             },
             {
                 label: 'Columns',
@@ -339,23 +394,22 @@ const View: React.FC = () => {
                 items={TopMenuItems({ columns: columnsCheckboxes })}
                 selectable={false}
             />
-            <section className="table-wrapper">
-                <Table<Product>
-                    columns={newColumns}
-                    rowKey={(record) => record.id}
-                    dataSource={data}
-                    size="small"
-                    expandable={{
-                        expandedRowRender,
-                        rowExpandable: (record) => record.variations.length > 1,
-                    }}
-                    pagination={tableParams.pagination}
-                    bordered
-                    scroll={{ y: '50vh', scrollToFirstRowOnChange: false }}
-                    loading={loading}
-                    onChange={onTableChange}
-                />
-            </section>
+            <Table<Product>
+                columns={newColumns}
+                rowKey={(record) => record.id}
+                dataSource={data}
+                size="small"
+                expandable={{
+                    expandedRowRender,
+                    rowExpandable: (record) => record.variations.length > 1,
+                }}
+                sticky
+                pagination={tableParams.pagination}
+                bordered
+                scroll={{ x: 'max-content', scrollToFirstRowOnChange: false }}
+                loading={loading}
+                onChange={onTableChange}
+            />
         </>
     );
 };

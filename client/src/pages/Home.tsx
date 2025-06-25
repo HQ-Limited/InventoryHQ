@@ -1,21 +1,38 @@
-import { Button } from 'antd';
+import { Button, Col, Row } from 'antd';
 import { Link } from 'react-router-dom';
 import routes from '../Routes';
 
 const Home = () => {
     return (
-        <div className="home-grid">
+        <Row gutter={[32, { xs: 30, sm: 40, md: 40, lg: 50 }]}>
             {routes!
                 .filter((page) => page.url !== '/')
-                .map((page) => (
-                    <Link key={page.key} to={page.url} className="home-link">
-                        <Button type="primary" block className="home-button">
-                            {page.icon}
-                            <span>{page.label}</span>
-                        </Button>
-                    </Link>
+                .map((page, i) => (
+                    <Col
+                        key={i}
+                        className="gutter-row"
+                        xs={{ flex: '100%' }}
+                        sm={{ flex: '50%' }}
+                        md={{ flex: '33%' }}
+                        lg={{ flex: '20%' }}
+                    >
+                        <Link key={page.key} to={page.url}>
+                            <Button
+                                style={{
+                                    display: 'flex',
+                                    minHeight: '48px',
+                                }}
+                                type="primary"
+                                block
+                                className="home-button"
+                            >
+                                {page.icon}
+                                <span>{page.label}</span>
+                            </Button>
+                        </Link>
+                    </Col>
                 ))}
-        </div>
+        </Row>
     );
 };
 
