@@ -6,16 +6,25 @@ import ProductsEdit from './pages/products/Edit/Edit';
 import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
 import Home from './pages/Home';
+import { useState } from 'react';
 
 function App() {
+    const [isDark, setIsDark] = useState(true);
     return (
         <ConfigProvider
             theme={{
-                algorithm: theme.darkAlgorithm,
+                components: {
+                    Layout: {
+                        headerBg: isDark ? '#141414' : '#fff',
+                    },
+                },
+                cssVar: true,
+                hashed: false,
+                algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
             }}
         >
             <BrowserRouter>
-                <MainLayout>
+                <MainLayout isDark={isDark} setIsDark={setIsDark}>
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/products" element={<ProductsView />} />

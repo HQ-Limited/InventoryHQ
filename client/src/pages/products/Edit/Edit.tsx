@@ -44,7 +44,7 @@ const CreateEdit: React.FC = () => {
         variations: [],
         isVariable: false,
     });
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(id ? true : false);
 
     // TODO: Add some check for variable products, that checks if any attribute value combo is already used and display an error message if so
 
