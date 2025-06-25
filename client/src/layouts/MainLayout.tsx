@@ -1,9 +1,8 @@
 import React from 'react';
-import { Button, Layout, Menu } from 'antd';
+import { Button, Flex, Layout, Menu } from 'antd';
 import routes from '../Routes';
 import { Link, useLocation } from 'react-router-dom';
 import { MoonFilled, SunFilled } from '@ant-design/icons';
-
 const { Header, Content, Footer } = Layout;
 
 interface Props {
@@ -18,7 +17,7 @@ const MainLayout = (props: Props) => {
         .filter((route) => route.pinned)
         .map((route) => ({
             key: route.url,
-            icon: route.icon,
+            icon: route.icon(),
             label: <Link to={route.url}>{route.label}</Link>,
         }));
 
@@ -26,13 +25,19 @@ const MainLayout = (props: Props) => {
         <>
             <Layout
                 style={{
-                    height: '100vh',
+                    height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'hidden',
                 }}
             >
-                <Header className="mainlayout-header" style={{ paddingRight: '0px' }}>
+                <Header
+                    className="mainlayout-header"
+                    style={{
+                        position: 'sticky',
+                        top: 0,
+                    }}
+                >
                     <Link
                         to="/"
                         style={{
@@ -56,29 +61,31 @@ const MainLayout = (props: Props) => {
                         </span>
                         <span style={{ color: 'var(--ant-color-text-secondary)' }}>Limited</span>
                     </Link>
-                    <Menu
+                    <Flex
                         className="mainlayout-links"
-                        mode="horizontal"
-                        items={[
-                            ...items,
-                            {
-                                key: 'theme',
-                                label: (
-                                    <Button
-                                        type="link"
-                                        style={{
-                                            padding: 0,
-                                            color: 'var(--ant-color-text-secondary)',
-                                        }}
-                                        icon={props.isDark ? <SunFilled /> : <MoonFilled />}
-                                        onClick={() => props.setIsDark(!props.isDark)}
-                                    ></Button>
-                                ),
-                            },
-                        ]}
-                        style={{ flex: 1, minWidth: 0, justifyContent: 'end' }}
-                        selectable={false}
-                    />
+                        flex={1}
+                        justify={'end'}
+                        align={'center'}
+                        gap={'10px'}
+                    >
+                        {items.map((item) => (
+                            <Link key={item.key} to={item.key}>
+                                <Button color={'default'} variant={'link'} icon={item.icon}>
+                                    {item.label}
+                                </Button>
+                            </Link>
+                        ))}
+                        <Button
+                            color={'default'}
+                            variant={'link'}
+                            style={{
+                                padding: 0,
+                                color: 'var(--ant-color-text-secondary)',
+                            }}
+                            icon={props.isDark ? <SunFilled /> : <MoonFilled />}
+                            onClick={() => props.setIsDark(!props.isDark)}
+                        ></Button>
+                    </Flex>
                 </Header>
                 <Content
                     style={{
@@ -108,13 +115,33 @@ const MainLayout = (props: Props) => {
                             mode="horizontal"
                             className="mainlayout-bottom-nav"
                             selectedKeys={[location.pathname]}
-                            style={{ justifyContent: 'center' }}
+                            style={{
+                                justifyContent: 'space-evenly',
+                                backgroundColor: 'var(--ant-layout-header-bg)',
+                            }}
                             items={routes
                                 .filter((route) => route.pinned)
                                 .map((route) => ({
                                     key: route.url,
-                                    icon: route.icon,
-                                    label: <Link to={route.url}>{route.label}</Link>,
+                                    label: (
+                                        <Link to={route.url}>
+                                            <Flex
+                                                vertical
+                                                align={'center'}
+                                                style={{
+                                                    paddingTop: '10px',
+                                                    paddingBottom: '10px',
+                                                }}
+                                            >
+                                                {route.icon({ fontSize: '1.6rem' })}
+                                                <div
+                                                    style={{ fontSize: '12px', lineHeight: '25px' }}
+                                                >
+                                                    {route.label}
+                                                </div>
+                                            </Flex>
+                                        </Link>
+                                    ),
                                 }))}
                         />
                     </div>

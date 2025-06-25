@@ -21,6 +21,9 @@ function App() {
                 cssVar: true,
                 hashed: false,
                 algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                token: {
+                    colorBgBase: isDark ? '#111' : '#fff',
+                },
             }}
         >
             <BrowserRouter>
