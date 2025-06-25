@@ -36,6 +36,7 @@ const MainLayout = (props: Props) => {
                     style={{
                         position: 'sticky',
                         top: 0,
+                        gap: '8px',
                     }}
                 >
                     <Link
@@ -75,17 +76,19 @@ const MainLayout = (props: Props) => {
                                 </Button>
                             </Link>
                         ))}
-                        <Button
-                            color={'default'}
-                            variant={'link'}
-                            style={{
-                                padding: 0,
-                                color: 'var(--ant-color-text-secondary)',
-                            }}
-                            icon={props.isDark ? <SunFilled /> : <MoonFilled />}
-                            onClick={() => props.setIsDark(!props.isDark)}
-                        ></Button>
                     </Flex>
+                    <Button
+                        className="header-darkModeButton"
+                        color={'default'}
+                        variant={'link'}
+                        size="large"
+                        style={{
+                            padding: 0,
+                            color: 'var(--ant-color-text-secondary)',
+                        }}
+                        icon={props.isDark ? <SunFilled /> : <MoonFilled />}
+                        onClick={() => props.setIsDark(!props.isDark)}
+                    ></Button>
                 </Header>
                 <Content
                     style={{
