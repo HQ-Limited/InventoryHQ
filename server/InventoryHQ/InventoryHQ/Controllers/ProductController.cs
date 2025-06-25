@@ -19,6 +19,11 @@ namespace InventoryHQ.Controllers
             _productService = productService;
         }
 
+        /// <summary>
+        /// Retrieves a product by ID.
+        /// </summary>
+        /// <param name="id">The ID of the product to retrieve.</param>
+        /// <returns>The product with the given ID.</returns>
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductDto>> GetById(int id)
         {
@@ -32,6 +37,10 @@ namespace InventoryHQ.Controllers
             return Ok(product);
         }
 
+        /// <summary>
+        /// Retrieves all products.
+        /// </summary>
+        /// <returns>A list of all products.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductDto>>> Get()
         {
@@ -39,6 +48,11 @@ namespace InventoryHQ.Controllers
             return Ok(products);
         }
 
+        /// <summary>
+        /// Creates a new product.
+        /// </summary>
+        /// <param name="simpleProductDto">The product to create.</param>
+        /// <returns>The ID of the created product.</returns>
         [HttpPost]
         public async Task<ActionResult<int?>> CreateProduct(ProductDto simpleProductDto)
         {
@@ -52,6 +66,11 @@ namespace InventoryHQ.Controllers
             return Ok(id);
         }
 
+        /// <summary>
+        /// Updates an existing product.
+        /// </summary>
+        /// <param name="simpleProductDto">The product to update.</param>
+        /// <returns>The ID of the updated product.</returns>
         [HttpPut]
         public async Task<ActionResult<ProductDto>> UpdateProduct(ProductDto simpleProductDto)
         {
@@ -65,6 +84,11 @@ namespace InventoryHQ.Controllers
             return Ok(id);  
         }
 
+        /// <summary>
+        /// Deletes a product.
+        /// </summary>
+        /// <param name="id">The ID of the product to delete.</param>
+        /// <returns>The ID of the deleted product.</returns>
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<int?>> DeleteProduct(int id)
         {
@@ -80,3 +104,4 @@ namespace InventoryHQ.Controllers
 
     }
 }
+

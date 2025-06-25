@@ -6,12 +6,36 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "InventoryHQ",
+        Version = "v1",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "HQ Limited",
+            Email = "contact@hq-limited.com",
+            Url = new Uri("https://hq-limited.com")
+        },
+        License = new Microsoft.OpenApi.Models.OpenApiLicense
+        {
+            Name = "EULA",
+            Url = new Uri("https://hq-limited.com/eula")
+        }
+     });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
 
 builder.Services.AddDbContext<InventoryHQDbContext>(options =>
 {
