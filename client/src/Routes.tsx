@@ -1,16 +1,25 @@
 import { HomeOutlined, ProductOutlined } from '@ant-design/icons';
+import { CSSProperties } from 'react';
 
-const routes = [
+type Route = {
+    key: number;
+    icon: (style?: CSSProperties) => JSX.Element;
+    label: string;
+    url: string;
+    pinned: boolean;
+};
+
+const routes: Route[] = [
     {
-        key: '1',
-        icon: <HomeOutlined />,
+        key: 1,
+        icon: (style?: CSSProperties) => <HomeOutlined style={{ ...style }} />,
         label: 'Home',
         url: '/',
         pinned: true,
     },
     {
-        key: '2',
-        icon: <ProductOutlined />,
+        key: 2,
+        icon: (style?: CSSProperties) => <ProductOutlined style={{ ...style }} />,
         label: 'Products',
         url: '/products',
         pinned: true,
