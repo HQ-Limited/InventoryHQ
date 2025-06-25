@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps } from 'antd';
+import { Button, Form, FormProps, message, Select, Space, Spin, Tabs, TabsProps } from 'antd';
 import { useParams } from 'react-router-dom';
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
@@ -29,15 +29,8 @@ import { WHOLESALE_ENABLED } from '../../../global';
 import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
 
-const onFinish: FormProps<Product>['onFinish'] = (values) => {
-    console.log('Success:', values);
-};
-
-const onFinishFailed: FormProps<Product>['onFinishFailed'] = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-};
-
 const CreateEdit: React.FC = () => {
+    const [messageApi, contextHolder] = message.useMessage();
     const [isVariable, setIsVariable] = useState(false);
     const params = useParams();
     const id = params.id;
@@ -182,6 +175,110 @@ const CreateEdit: React.FC = () => {
         form.setFieldsValue({ variations });
     };
 
+    const onFinish: FormProps<Product>['onFinish'] = (values) => {
+        console.log('Success:', values);
+        form.validateFields()
+            .then((values) => {
+                console.log('all fields validated', values);
+            })
+            .catch((errorInfo) => {});
+    };
+
+    const onFinishFailed: FormProps<Product>['onFinishFailed'] = (errorInfo) => {
+        console.log('Failed:', errorInfo);
+    };
+
+    function removeAttributeFromVariations(id: number) {
+        // Remove attribute from all variations
+        const variations = form.getFieldValue('variations') || [];
+        if (variations.length > 0) {
+            const updatedVariations = variations.map((variation: Variation) => {
+                const attrs = (variation.attributes || []).filter(
+                    (a: VariationAttribute) => a.id !== id
+                );
+                return { ...variation, attributes: attrs };
+            });
+            form.setFieldValue('variations', updatedVariations);
+        }
+    }
+
+    function addAttributeToVariations(id: number) {
+        // Add to all variations with empty value
+        const variations = form.getFieldValue('variations') || [];
+        const attribute = attributes.find((a) => a.id === id)!;
+        if (variations.length > 0) {
+            const updatedVariations = variations.map((variation: Variation) => ({
+                ...variation,
+                attributes: [
+                    ...(variation.attributes || []),
+                    {
+                        id: attribute.id,
+                        name: attribute.name,
+                        value: {},
+                    },
+                ],
+            }));
+            form.setFieldValue('variations', updatedVariations);
+        }
+    }
+
+    async function createNewAttribute(name: string) {
+        try {
+            const id: number = await attributeService.createAttribute(name);
+            setAttributes((prev) => {
+                return [...prev, { id, name, values: [] }];
+            });
+
+            const index = form
+                .getFieldValue('attributes')
+                .findIndex((a: ProductAttribute) => a.name === name);
+
+            form.setFieldValue(['attributes', index], {
+                id,
+                name,
+                values: [],
+                isVariable,
+            });
+            messageApi.success('Attribute created');
+        } catch (e) {
+            messageApi.error('Failed to create attribute');
+        }
+    }
+
+    async function createNewAttributeValue({ value, id }: { value: string; id: number }) {
+        try {
+            const valueId: number = await attributeService.createAttributeValue({ id, value });
+            setAttributes((prev) => {
+                const newAttrs = prev.map((a) => {
+                    if (a.id === id) {
+                        a.values = [
+                            ...a.values.filter((a) => a.value !== value),
+                            { id: valueId, value },
+                        ];
+                    }
+                    return a;
+                });
+                return newAttrs;
+            });
+
+            const index = form
+                .getFieldValue('attributes')
+                .findIndex((a: ProductAttribute) => a.id === id);
+
+            const newValues = [
+                ...form
+                    .getFieldValue(['attributes', index, 'values'])
+                    .filter((a) => a.value !== value),
+                { id: valueId, value },
+            ];
+
+            form.setFieldValue(['attributes', index, 'values'], newValues);
+            messageApi.success('Attribute value created');
+        } catch (e) {
+            messageApi.error('Failed to create attribute value');
+        }
+    }
+
     const commonProductItems: TabsProps['items'] = [
         {
             key: '3',
@@ -189,17 +286,17 @@ const CreateEdit: React.FC = () => {
             icon: <UnorderedListOutlined />,
             children: (
                 <>
+                    <AttributesField
+                        attributes={attributes}
+                        createNewAttribute={createNewAttribute}
+                        fetchValues={fetchAttributeValues}
+                        removeAttributeFromVariations={removeAttributeFromVariations}
+                        required={isVariable}
+                    />
                     <Form.List name="attributes">
                         {(fields, { add, remove }) => (
                             <>
-                                <AttributesField
-                                    fetchValues={fetchAttributeValues}
-                                    attributes={attributes}
-                                    onAdd={add}
-                                    onRemove={remove}
-                                    required={isVariable}
-                                />
-                                <Space>
+                                <Space wrap>
                                     {fields.map((field, attributeKey) => (
                                         <>
                                             <AttributeValuesField
@@ -207,6 +304,11 @@ const CreateEdit: React.FC = () => {
                                                 name={attributeKey}
                                                 attributes={attributes}
                                                 onRemove={remove}
+                                                createNewAttributeValue={createNewAttributeValue}
+                                                removeAttributeFromVariations={
+                                                    removeAttributeFromVariations
+                                                }
+                                                addAttributeToVariations={addAttributeToVariations}
                                                 showVariationCheckbox={isVariable}
                                             />
                                         </>
@@ -217,6 +319,7 @@ const CreateEdit: React.FC = () => {
                     </Form.List>
                 </>
             ),
+            forceRender: true,
         },
     ];
 
@@ -234,6 +337,7 @@ const CreateEdit: React.FC = () => {
                     )}
                 </>
             ),
+            forceRender: true,
         },
         {
             key: '2',
@@ -242,10 +346,10 @@ const CreateEdit: React.FC = () => {
             children: (
                 <>
                     <QuantityField />
-
                     <SKUField />
                 </>
             ),
+            forceRender: true,
         },
         ...commonProductItems,
     ];
@@ -257,11 +361,13 @@ const CreateEdit: React.FC = () => {
             label: 'Variations',
             icon: <ProductFilled />,
             children: <VariationsCards />,
+            forceRender: true,
         },
     ];
 
     return (
         <>
+            {contextHolder}
             {loading ? (
                 <Spin size="large" fullscreen />
             ) : (
@@ -316,6 +422,45 @@ const CreateEdit: React.FC = () => {
                             Save
                         </Button>
                     </Form.Item>
+
+                    {/* <Form.Item
+                        name="attributes"
+                        rules={[
+                            {
+                                validator: (_, value) => {
+                                    // Only require if isVariable is true
+                                    if (form.getFieldValue('isVariable')) {
+                                        if (!value || value.length === 0) {
+                                            return Promise.reject(
+                                                new Error('At least one variation is required.')
+                                            );
+                                        }
+                                    }
+                                    return Promise.resolve();
+                                },
+                            },
+                        ]}
+                        style={{ display: 'none' }} // Hide from UI
+                    ></Form.Item>
+                    <Form.Item
+                        name="variations"
+                        rules={[
+                            {
+                                validator: (_, value) => {
+                                    // Only require if isVariable is true
+                                    if (form.getFieldValue('isVariable')) {
+                                        if (!value || value.length === 0) {
+                                            return Promise.reject(
+                                                new Error('At least one variation is required.')
+                                            );
+                                        }
+                                    }
+                                    return Promise.resolve();
+                                },
+                            },
+                        ]}
+                        style={{ display: 'none' }} // Hide from UI
+                    ></Form.Item> */}
                 </Form>
             )}
         </>

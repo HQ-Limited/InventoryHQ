@@ -30,7 +30,7 @@ function SelectField({
                 attributeFieldName,
                 'name',
             ])}
-            rules={[{ required: true, message: 'This field is required' }]}
+            rules={[{ required: true, message: 'Select a value' }]}
         >
             <Select
                 placeholder="Select value"
@@ -67,7 +67,19 @@ export default function VariationsCards() {
     const attributes = Form.useWatch('attributes') || [];
 
     return (
-        <Form.List name={['variations']}>
+        <Form.List
+            name={['variations']}
+            rules={[
+                {
+                    validator: (_, value) => {
+                        if (!value || value.length === 0) {
+                            return Promise.reject(new Error('At least one variation is required.'));
+                        }
+                        return Promise.resolve();
+                    },
+                },
+            ]}
+        >
             {(fields, { add, remove }) => (
                 <>
                     <Flex style={{ paddingBottom: '20px' }} gap={10}>
@@ -128,7 +140,6 @@ export default function VariationsCards() {
                             );
                         })()}
                     </Flex>
-
                     <Flex gap={20} wrap="wrap">
                         {fields.map((field, variationKey) => (
                             <Card
@@ -148,7 +159,7 @@ export default function VariationsCards() {
                                 <Form.List name={[field.name, 'attributes']}>
                                     {(fields) => (
                                         <>
-                                            {fields.map((attrField) => {
+                                            {fields.map((attrField, attrKey) => {
                                                 const variationAttribute = form.getFieldValue([
                                                     'variations',
                                                     field.name,
@@ -161,6 +172,7 @@ export default function VariationsCards() {
 
                                                 return (
                                                     <SelectField
+                                                        key={attrKey}
                                                         name={attrField.name}
                                                         options={globalAttribute?.values || []}
                                                         variationFieldName={field.name}
