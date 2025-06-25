@@ -35,6 +35,11 @@ body {
     .mainlayout-bottom-nav::before {
         display: none;
     }
+
+    .header-darkModeButton {
+        position: absolute;
+        right: 20px;
+    }
 }
 
 @media (min-width: 768px) {
