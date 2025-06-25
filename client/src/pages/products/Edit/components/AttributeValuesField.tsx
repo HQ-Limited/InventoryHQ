@@ -1,25 +1,33 @@
 import { Button, Card, Checkbox, Form, Select, Tooltip } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
-import { ProductAttribute } from '../../../../types/ProductTypes';
+import { ProductAttribute, VariationAttribute } from '../../../../types/ProductTypes';
 
 export default function AttributeValuesField({
     name,
     attributes,
     onRemove,
     showVariationCheckbox = false,
+    removeAttributeFromVariations,
+    addAttributeToVariations,
+    createNewAttributeValue,
 }: {
     name: number;
     attributes: ProductAttribute[];
     onRemove: (id: number) => void;
     showVariationCheckbox?: boolean;
+    removeAttributeFromVariations: (id: number) => void;
+    addAttributeToVariations: (id: number) => void;
+    createNewAttributeValue: ({ id, value }: { id: number; value: string }) => Promise<void>;
 }) {
     const form = Form.useFormInstance();
 
     const currentAttribute: ProductAttribute = form.getFieldValue('attributes')[name];
     const availableValues = attributes.find((x) => x.id == currentAttribute?.id)?.values || [];
+    const prevValues = Form.useWatch(['attributes', name, 'values']);
 
     return (
         <Card
+            key={name}
             title={currentAttribute?.name || 'Attribute'}
             extra={
                 <Tooltip title="Remove">
@@ -51,40 +59,56 @@ export default function AttributeValuesField({
                 name={[name, 'values']}
                 label="Values"
                 rules={[{ required: true, message: 'Please select at least one value' }]}
+                getValueFromEvent={(values: (number | string)[]) => {
+                    if (values.length == 0) {
+                        return [];
+                    }
+                    // find out which value was added/removed
+                    const added = values.find((v) => !prevValues.find((a) => a.id == v));
+                    const removed = prevValues.find((a) => !values.find((v) => v == a.id));
+
+                    if (removed) {
+                        return prevValues.filter((a: VariationAttribute) => a.id != removed.id);
+                    }
+
+                    const attribute = attributes.find((a) => a.id == currentAttribute?.id)!;
+
+                    if (added) {
+                        if (typeof added === 'string') {
+                            createNewAttributeValue({ id: attribute.id, value: added });
+                            return [
+                                ...prevValues,
+                                {
+                                    value: added,
+                                },
+                            ];
+                        }
+
+                        return [
+                            ...prevValues,
+                            {
+                                id: added,
+                                value: attribute.values.find((v) => v.id == added)?.value,
+                            },
+                        ];
+                    }
+                }}
+                getValueProps={(value) => {
+                    return {
+                        value: value.map((v: { id: number; value: string }) => v.id),
+                    };
+                }}
             >
                 <Select
                     mode="tags"
                     allowClear
                     showSearch
                     placeholder="Select value/s"
-                    optionFilterProp="value"
-                    options={availableValues}
-                    // No value prop!
-                    onChange={(selectedValues) => {
-                        // Map selected string values back to the original objects
-                        const selectedObjects = availableValues
-                            .filter((av) => selectedValues.includes(av.value))
-                            .map(({ id, value }) => ({ id, value }));
-                        form.setFieldValue(['attributes', name, 'values'], selectedObjects);
-
-                        // Remove values from all variations that are not in selectedValues
-                        const attributeId = currentAttribute?.id;
-                        const variations = form.getFieldValue('variations') || [];
-                        const updatedVariations = variations.map((variation: any) => {
-                            const attrs = (variation.attributes || []).map((attr: any) => {
-                                if (
-                                    attr.id === attributeId &&
-                                    attr.value &&
-                                    !selectedValues.includes(attr.value.value)
-                                ) {
-                                    return { ...attr, value: {} };
-                                }
-                                return attr;
-                            });
-                            return { ...variation, attributes: attrs };
-                        });
-                        form.setFieldValue('variations', updatedVariations);
-                    }}
+                    optionFilterProp="label"
+                    options={availableValues.map((v) => ({
+                        label: v.value,
+                        value: v.id,
+                    }))}
                 />
             </Form.Item>
             {showVariationCheckbox && (
@@ -94,22 +118,11 @@ export default function AttributeValuesField({
                             const isChecked = e.target.checked;
                             const attributes = form.getFieldValue('attributes');
                             const attribute = attributes[name];
-                            const variations = form.getFieldValue('variations') || [];
-                            if (variations.length > 0) {
-                                const updatedVariations = variations.map((variation: any) => {
-                                    let attrs = variation.attributes || [];
-                                    if (isChecked) {
-                                        // Add attribute if not present
-                                        if (!attrs.some((a: any) => a.id === attribute.id)) {
-                                            attrs = [...attrs, { id: attribute.id, value: '' }];
-                                        }
-                                    } else {
-                                        // Remove attribute if present
-                                        attrs = attrs.filter((a: any) => a.id !== attribute.id);
-                                    }
-                                    return { ...variation, attributes: attrs };
-                                });
-                                form.setFieldValue('variations', updatedVariations);
+
+                            if (isChecked) {
+                                addAttributeToVariations(attribute.id);
+                            } else {
+                                removeAttributeFromVariations(attribute.id);
                             }
                         }}
                     >

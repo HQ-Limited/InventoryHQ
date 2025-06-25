@@ -233,7 +233,6 @@ const View: React.FC = () => {
         function onChange(e: ChangeEvent<HTMLInputElement>) {
             if (e.target.value !== '') return;
             // Apply search logic here
-            console.log('clear field');
         }
         const items: MenuProps['items'] = [
             {
