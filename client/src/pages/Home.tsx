@@ -26,7 +26,7 @@ const Home = () => {
                                 block
                                 className="home-button"
                             >
-                                {page.icon}
+                                {page.icon()}
                                 <span>{page.label}</span>
                             </Button>
                         </Link>
