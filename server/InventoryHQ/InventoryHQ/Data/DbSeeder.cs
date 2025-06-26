@@ -13,6 +13,7 @@ namespace InventoryHQ.Data
             }
 
             var categories = new List<Category>();
+            /* 
             for (int i = 1; i <= 100; i++)
             {
                 categories.Add(new Category()
@@ -22,9 +23,18 @@ namespace InventoryHQ.Data
                     Parent = i % 3 == 0 ? categories.FirstOrDefault(c => c.Id == new Random().Next(1, i - 1)) : null
                 });
             }
+ */
+            var cat1 = new Category { Id = 1, Name = "Category 1" };
+var cat2 = new Category { Id = 2, Name = "Category 2", Parent = cat1, ParentId = cat1.Id };
+var cat3 = new Category { Id = 3, Name = "Category 3", Parent = cat2, ParentId = cat2.Id };
 
-            context.Categories.AddRange(categories);
-            context.SaveChanges();
+cat1.Children.Add(cat2);
+cat2.Children.Add(cat3);
+
+ categories = new List<Category> { cat1, cat2, cat3 };
+
+context.Categories.AddRange(categories);
+context.SaveChanges();
 
             var attrs = new List<Models.Attribute>()
             {

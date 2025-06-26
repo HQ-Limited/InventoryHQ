@@ -27,9 +27,6 @@ export type Product = {
     attributes: ProductAttribute[];
     variations: Variation[];
     isVariable: boolean;
-
-    // Used in forms to bind data correctly
-    selectedCategories?: number[];
 };
 
 export type Variation = {
@@ -45,12 +42,7 @@ export type Variation = {
 export type Category = {
     id: number;
     name: string;
+    parentId?: number;
     parent?: Category;
-};
-
-export type CategoriesTree = {
-    // Used in Forms Select elements
-    value: number;
-    title: string;
-    children: CategoriesTree[];
+    children?: Category[];
 };

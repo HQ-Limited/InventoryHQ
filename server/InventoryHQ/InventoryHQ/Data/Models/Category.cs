@@ -4,6 +4,7 @@ namespace InventoryHQ.Data.Models
 {
     public class Category : BaseEntity
     {
+        public int Id { get; set; }
         [Required]
         public string Name { get; set; }
 
@@ -11,7 +12,7 @@ namespace InventoryHQ.Data.Models
 
         public Category Parent { get; set; }
 
-        public List<Category> Children { get; set; }
+        public List<Category> Children { get; set; } = new();
 
         public List<Product> Products { get; set; } = new();
     }

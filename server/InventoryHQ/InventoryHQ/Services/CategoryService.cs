@@ -22,10 +22,24 @@ namespace InventoryHQ.Services
 
         public async Task<IEnumerable<CategoryDto>> GetCategories()
         {
-            var data = await _data.Categories.ToListAsync();
-            var categories = _mapper.Map<IEnumerable<CategoryDto>>(data);
+            var data = await _data.Categories
+                .Select(c => new CategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    ParentId = c.ParentId
+                })
+                .ToListAsync();
 
-            return categories;
+            return data;
+        }
+
+        public async Task<IEnumerable<CategoryDto>> GetCategoriesTree()
+        {
+            var data = await _data.Categories.ToListAsync();
+            var categories = _mapper.Map<List<CategoryDto>>(data);
+
+            return categories.Where(c => c.ParentId == null).ToList();
         }
     }
 }

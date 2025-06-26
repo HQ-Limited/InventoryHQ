@@ -1,4 +1,4 @@
-import { Form, message, Select } from 'antd';
+import { Form, Select } from 'antd';
 import { ProductAttribute } from '../../../../types/ProductTypes';
 
 export default function AttributesField({

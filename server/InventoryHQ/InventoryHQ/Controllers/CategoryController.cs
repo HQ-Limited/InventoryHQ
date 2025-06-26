@@ -26,7 +26,23 @@ namespace InventoryHQ.Controllers
 
             if (categories == null || !categories.Any())
             {
-            return NotFound();
+                return NotFound();
+            }
+
+            return Ok(categories);
+        }
+        
+        /// <summary>
+        /// Retrieves a list of all categories with their children as a tree.
+        /// </summary>
+        [HttpGet("tree")]
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetTree()
+        {
+            var categories = await _categoryService.GetCategoriesTree();
+
+            if (categories == null || !categories.Any())
+            {
+                return NotFound();
             }
 
             return Ok(categories);

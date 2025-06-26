@@ -27,6 +27,8 @@ import productService from '../../../services/productService';
 import { Product, Variation } from '../../../types/ProductTypes';
 import { TextFilter } from './components/TextFilter';
 import { NumberFilter } from './components/NumberFilter';
+import { generateCategoriesTree, Tree } from '../../../utils/generate';
+import categoryService from '../../../services/categoryService';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -47,6 +49,8 @@ const StatusTag = ({ quantity }: { quantity: number }) => {
 };
 
 const View: React.FC = () => {
+    const [categoriesTree, setCategoriesTree] = useState<Tree[]>([]);
+
     const variationColumns: ColumnsType<Variation> = [
         {
             width: 100,
@@ -177,6 +181,9 @@ const View: React.FC = () => {
             key: 'categories',
             title: 'Categories',
             dataIndex: 'categories',
+            filterMode: 'tree',
+            filterSearch: true,
+            filters: categoriesTree,
             render: (_, record) => {
                 if (record.categories) {
                     return (
@@ -241,10 +248,13 @@ const View: React.FC = () => {
         },
     ];
 
-    const expandedRowRender = (record: Product, index: number, indent) => (
+    const expandedRowRender = (record: Product, index: number) => (
         <Table<Variation>
+            key={index}
             columns={variationColumns}
-            rowKey={index.toString()}
+            rowKey={(record) => {
+                return record.id;
+            }}
             size="small"
             bordered
             pagination={false}
@@ -359,9 +369,16 @@ const View: React.FC = () => {
     useEffect(() => {
         setLoading(true);
 
+        const fetchCategories = async () => {
+            return await categoryService.getCategoriesTree();
+        };
+
         fetchProducts()
             .then((products) => {
                 setData(products);
+                fetchCategories().then((categories) => {
+                    setCategoriesTree(generateCategoriesTree(categories));
+                });
             })
             .catch(console.error)
             .finally(() => setLoading(false));

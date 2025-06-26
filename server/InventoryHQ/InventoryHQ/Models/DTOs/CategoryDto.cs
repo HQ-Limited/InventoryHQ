@@ -6,6 +6,8 @@
 
         public string Name { get; set; }
 
-        public CategoryDto Parent { get; set; }
+        public int? ParentId { get; set; }
+
+        public List<CategoryDto> Children { get; set; } = new List<CategoryDto>();
     }
 }
