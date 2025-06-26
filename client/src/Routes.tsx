@@ -3,10 +3,11 @@ import { CSSProperties } from 'react';
 
 type Route = {
     key: number;
-    icon: (style?: CSSProperties) => JSX.Element;
+    icon?: (style?: CSSProperties) => JSX.Element;
     label: string;
     url: string;
-    pinned: boolean;
+    pinned?: boolean;
+    children?: Route[];
 };
 
 const routes: Route[] = [

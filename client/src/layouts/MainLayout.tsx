@@ -17,8 +17,8 @@ const MainLayout = (props: Props) => {
         .filter((route) => route.pinned)
         .map((route) => ({
             key: route.url,
-            icon: route.icon(),
-            label: <Link to={route.url}>{route.label}</Link>,
+            icon: route.icon ? route.icon() : null,
+            label: route.label,
         }));
 
     return (
