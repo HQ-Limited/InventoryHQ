@@ -12,11 +12,19 @@ namespace InventoryHQ.Data
                 return;
             }
 
-            var categories = new List<Category>()
+            var categories = new List<Category>();
+            for (int i = 1; i <= 100; i++)
             {
-                new Category() { Id=1, Name="Category 1" },
-                new Category() { Id=2, Name="Category 2" },
-            };
+                categories.Add(new Category()
+                {
+                    Id = i,
+                    Name = $"Category {i}",
+                    Parent = i % 3 == 0 ? categories.FirstOrDefault(c => c.Id == new Random().Next(1, i - 1)) : null
+                });
+            }
+
+            context.Categories.AddRange(categories);
+            context.SaveChanges();
 
             var attrs = new List<Models.Attribute>()
             {
@@ -114,7 +122,7 @@ namespace InventoryHQ.Data
             var products = new List<Product>()
             {
                 new Product() { Id = 1, Name="Product 1", Categories=new List<Category>() {categories.First() }, Variations=new List<Variation>() { firstProductVariation } },
-                new Product() { Id = 2, Name="Product 2", Categories= categories, Variations=new List<Variation>() { secondProductVariation, thirdProductVariation }},
+                new Product() { Id = 2, Name="Product 2", Categories= {categories.First(), categories.Last()}, Variations=new List<Variation>() { secondProductVariation, thirdProductVariation }},
                 new Product() { Id = 3, Name="Product 3", Variations=new List<Variation>() { fourthProductVariation }}
             };
 
