@@ -1,4 +1,4 @@
-import { Checkbox, CheckboxChangeEvent, Form } from 'antd';
+import { Checkbox, Form } from 'antd';
 
 export default function ManageQuantityField({ name = 0 }: { name?: number }) {
     return (

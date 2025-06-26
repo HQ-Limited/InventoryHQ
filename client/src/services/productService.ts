@@ -1,5 +1,5 @@
 import { Product } from '../types/ProductTypes';
-import api from './api';
+import api from '../utils/api';
 
 class ProductService {
     async getProducts(): Promise<Product[]> {

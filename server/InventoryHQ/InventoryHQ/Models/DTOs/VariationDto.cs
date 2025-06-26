@@ -4,6 +4,8 @@ namespace InventoryHQ.Models.DTOs
 {
     public class VariationDto
     {
+        public int Id { get; set; }
+        
         [Required]
         public string SKU { get; set; }
 

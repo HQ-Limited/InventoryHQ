@@ -7,6 +7,7 @@ import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
 import Home from './pages/Home';
 import { useState } from 'react';
+import Page404 from './pages/404';
 
 function App() {
     const [isDark, setIsDark] = useState(true);
@@ -36,6 +37,7 @@ function App() {
                         <Route path="/partners" element={<PartnersView />} />
                         <Route path="/partners/new" element={<PartnersCreateEdit />} />
                         <Route path="/partners/:id" element={<PartnersCreateEdit />} />
+                        <Route path="*" element={<Page404 />} />
                     </Routes>
                 </MainLayout>
             </BrowserRouter>

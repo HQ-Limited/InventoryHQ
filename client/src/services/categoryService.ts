@@ -1,10 +1,21 @@
 import { Category } from '../types/ProductTypes';
-import api from './api';
+import api from '../utils/api';
 
 class ProductService {
     async getCategories(): Promise<Category[]> {
         const response = await api.get('/Category');
         return response.data;
+    }
+
+    async getCategoriesTree(): Promise<Category[]> {
+        const response = await api.get('/Category/tree');
+        return response.data;
+    }
+
+    async createCategory(name: string): Promise<number> {
+        // const response = await api.post('/Category', null, { params: { name } });
+        // return response.data;
+        return Math.floor(Math.random() * 100);
     }
 }
 

@@ -8,7 +8,6 @@ import {
     Product,
     ProductAttribute,
     Category,
-    CategoriesTree,
     Variation,
     VariationAttribute,
 } from '../../../types/ProductTypes';
@@ -34,7 +33,6 @@ const CreateEdit: React.FC = () => {
     const [isVariable, setIsVariable] = useState(false);
     const params = useParams();
     const id = params.id;
-    const [categoriesTree, setCategoriesTree] = useState<CategoriesTree[]>([]);
     const [attributes, setAttributes] = useState<ProductAttribute[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [form] = Form.useForm();
@@ -52,58 +50,16 @@ const CreateEdit: React.FC = () => {
         const categories = await categoryService.getCategories();
         setCategories(categories);
 
-        const newTree: CategoriesTree[] = [];
-        categories.map((category) => {
-            if (!category.parent) {
-                // Check if already exists
-                const exists = newTree.find((c) => c.value === category.id);
-
-                if (!exists)
-                    newTree.push({
-                        value: category.id,
-                        title: category.name,
-                        children: [],
-                    });
-            } else {
-                // Check if parent exists in categoriesTree
-                const parentExists = newTree.find((c) => c.value === category.parent!.id);
-                if (parentExists) {
-                    parentExists.children.push({
-                        value: category.id,
-                        title: category.name,
-                        children: [],
-                    });
-                } else {
-                    // Create parent first
-                    newTree.push({
-                        value: category.parent.id,
-                        title: category.parent.name,
-                        children: [
-                            {
-                                value: category.id,
-                                title: category.name,
-                                children: [],
-                            },
-                        ],
-                    });
-                }
-            }
-        });
-
         let product: Product | undefined;
         if (id) {
             setLoading(true);
             product = await productService.getProductById(Number(id));
-            if (product.categories) {
-                product.selectedCategories = product.categories.map((c: Category) => c.id); // for form
-            }
 
             const attrs: ProductAttribute[] = await attributeService.getAttributes({
                 includeValues: true,
                 ids: product!.attributes!.map((a) => a.id),
             });
 
-            setCategoriesTree(newTree);
             setAttributes(attrs);
             setIsVariable(product.isVariable);
             setValues(product);
@@ -118,7 +74,6 @@ const CreateEdit: React.FC = () => {
                   ids: product!.attributes!.map((a) => a.id),
               })
             : await attributeService.getAttributes();
-        setCategoriesTree(newTree);
         setAttributes(attrs);
     };
 
@@ -219,6 +174,28 @@ const CreateEdit: React.FC = () => {
                 ],
             }));
             form.setFieldValue('variations', updatedVariations);
+        }
+    }
+
+    async function createNewCategory(name: string) {
+        try {
+            const id: number = await categoryService.createCategory(name);
+            setCategories((prev) => {
+                return [...prev, { id, name, children: [] }];
+            });
+
+            const index = form
+                .getFieldValue('categories')
+                .findIndex((a: Category) => a.name === name);
+
+            form.setFieldValue(['categories', index], {
+                id,
+                name,
+                children: [],
+            });
+            messageApi.success('Category created');
+        } catch (e) {
+            messageApi.error('Failed to create category');
         }
     }
 
@@ -368,101 +345,67 @@ const CreateEdit: React.FC = () => {
     return (
         <>
             {contextHolder}
-            {loading ? (
-                <Spin size="large" fullscreen />
-            ) : (
-                <Form
-                    form={form}
-                    style={{ padding: '20px' }}
-                    layout="vertical"
-                    variant="filled"
-                    onFinish={onFinish}
-                    onFinishFailed={onFinishFailed}
-                    autoComplete="off"
-                    scrollToFirstError
-                    initialValues={values}
-                >
-                    <Space style={{ display: 'block' }}>
-                        <NameField />
+            <Form
+                form={form}
+                style={{ padding: '20px' }}
+                layout="vertical"
+                variant="filled"
+                onFinish={onFinish}
+                onFinishFailed={onFinishFailed}
+                autoComplete="off"
+                scrollToFirstError
+                initialValues={values}
+            >
+                {loading ? (
+                    <Spin size="large" fullscreen />
+                ) : (
+                    <>
+                        <Space style={{ display: 'block' }}>
+                            <NameField />
 
-                        <DescriptionField />
+                            <DescriptionField />
 
-                        <CategoryField categoriesTree={categoriesTree} categories={categories} />
-
-                        <Form.Item
-                            name={'isVariable'}
-                            label="Product type"
-                            rules={[{ required: true }]}
-                        >
-                            <Select
-                                style={{ width: 120 }}
-                                options={[
-                                    { value: false, label: 'Simple' },
-                                    { value: true, label: 'Variable' },
-                                ]}
-                                value={isVariable}
-                                onChange={(value) => {
-                                    setIsVariable(value);
-                                }}
+                            <CategoryField
+                                categories={categories}
+                                createNewCategory={createNewCategory}
                             />
+
+                            <Form.Item
+                                name={'isVariable'}
+                                label="Product type"
+                                rules={[{ required: true }]}
+                            >
+                                <Select
+                                    style={{ width: 120 }}
+                                    options={[
+                                        { value: false, label: 'Simple' },
+                                        { value: true, label: 'Variable' },
+                                    ]}
+                                    value={isVariable}
+                                    onChange={(value) => {
+                                        setIsVariable(value);
+                                    }}
+                                />
+                            </Form.Item>
+
+                            <Tabs
+                                items={
+                                    form.getFieldValue('isVariable')
+                                        ? variableProductItems
+                                        : simpleProductItems
+                                }
+                                tabPosition="left"
+                            />
+                        </Space>
+
+                        <Form.Item style={{ textAlign: 'center' }}>
+                            <Button type="primary" htmlType="submit" size={'large'}>
+                                Save
+                            </Button>
                         </Form.Item>
-
-                        <Tabs
-                            items={
-                                form.getFieldValue('isVariable')
-                                    ? variableProductItems
-                                    : simpleProductItems
-                            }
-                            tabPosition="left"
-                        />
-                    </Space>
-
-                    <Form.Item style={{ textAlign: 'center' }}>
-                        <Button type="primary" htmlType="submit" size={'large'}>
-                            Save
-                        </Button>
-                    </Form.Item>
-
-                    {/* <Form.Item
-                        name="attributes"
-                        rules={[
-                            {
-                                validator: (_, value) => {
-                                    // Only require if isVariable is true
-                                    if (form.getFieldValue('isVariable')) {
-                                        if (!value || value.length === 0) {
-                                            return Promise.reject(
-                                                new Error('At least one variation is required.')
-                                            );
-                                        }
-                                    }
-                                    return Promise.resolve();
-                                },
-                            },
-                        ]}
-                        style={{ display: 'none' }} // Hide from UI
-                    ></Form.Item>
-                    <Form.Item
-                        name="variations"
-                        rules={[
-                            {
-                                validator: (_, value) => {
-                                    // Only require if isVariable is true
-                                    if (form.getFieldValue('isVariable')) {
-                                        if (!value || value.length === 0) {
-                                            return Promise.reject(
-                                                new Error('At least one variation is required.')
-                                            );
-                                        }
-                                    }
-                                    return Promise.resolve();
-                                },
-                            },
-                        ]}
-                        style={{ display: 'none' }} // Hide from UI
-                    ></Form.Item> */}
-                </Form>
-            )}
+                    </>
+                )}
+            </Form>
         </>
     );
 };
