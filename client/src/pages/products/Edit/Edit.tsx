@@ -44,8 +44,6 @@ const CreateEdit: React.FC = () => {
     });
     const [loading, setLoading] = useState(id ? true : false);
 
-    // TODO: Add some check for variable products, that checks if any attribute value combo is already used and display an error message if so
-
     const fetchData = async () => {
         const categories = await categoryService.getCategories();
         setCategories(categories);
@@ -100,6 +98,7 @@ const CreateEdit: React.FC = () => {
         fetchData();
     };
 
+    // TODO: Think of a way to make variations generation displayed to the user
     const onGenerateVariations = () => {
         const variationalAttributes = values.attributes!.filter((attr) => attr.isVariational);
 

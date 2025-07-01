@@ -40,6 +40,10 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<InventoryHQDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+#if DEBUG
+    options.EnableDetailedErrors();
+    options.EnableSensitiveDataLogging();
+#endif
 });
 
 builder.Services.AddTransient<ProductService>();

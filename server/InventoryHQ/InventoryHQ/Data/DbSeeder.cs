@@ -1,4 +1,6 @@
 ﻿using InventoryHQ.Data.Models;
+using Bogus;
+using System.Linq;
 
 namespace InventoryHQ.Data
 {
@@ -12,132 +14,118 @@ namespace InventoryHQ.Data
                 return;
             }
 
-            var categories = new List<Category>();
-            /* 
-            for (int i = 1; i <= 100; i++)
+            // Fixed categories
+            var categoryFaker = new Faker<Category>()
+                .RuleFor(c => c.Name, f => f.Commerce.Categories(1)[0]);
+            var categories = categoryFaker.Generate(5);
+            context.Categories.AddRange(categories);
+            context.SaveChanges();
+
+            // Fixed attributes and values
+            var colorAttribute = new Models.Attribute
             {
-                categories.Add(new Category()
+                Name = "Color",
+                AttributeValues = new List<AttributeValue>
                 {
-                    Id = i,
-                    Name = $"Category {i}",
-                    Parent = i % 3 == 0 ? categories.FirstOrDefault(c => c.Id == new Random().Next(1, i - 1)) : null
-                });
-            }
- */
-            var cat1 = new Category { Id = 1, Name = "Category 1" };
-var cat2 = new Category { Id = 2, Name = "Category 2", Parent = cat1, ParentId = cat1.Id };
-var cat3 = new Category { Id = 3, Name = "Category 3", Parent = cat2, ParentId = cat2.Id };
+                    new AttributeValue { Value = "Red" },
+                    new AttributeValue { Value = "Green" },
+                    new AttributeValue { Value = "Blue" }
+                }
+            };
+            var materialAttribute = new Models.Attribute
+            {
+                Name = "Material",
+                AttributeValues = new List<AttributeValue>
+                {
+                    new AttributeValue { Value = "Wool" },
+                    new AttributeValue { Value = "Leather" }
+                }
+            };
+            var sizeAttribute = new Models.Attribute
+            {
+                Name = "Size",
+                AttributeValues = new List<AttributeValue>
+                {
+                    new AttributeValue { Value = "S" },
+                    new AttributeValue { Value = "M" },
+                    new AttributeValue { Value = "L" }
+                }
+            };
 
-cat1.Children.Add(cat2);
-cat2.Children.Add(cat3);
+            var attributes = new List<Models.Attribute>
+            {
+                colorAttribute,
+                materialAttribute,
+                sizeAttribute
+            };
+            context.Attributes.AddRange(attributes);
+            context.SaveChanges();
 
- categories = new List<Category> { cat1, cat2, cat3 };
+            var productFaker = new Faker<Product>()
+    .RuleFor(p => p.Name, f => f.Commerce.ProductName())
+    .RuleFor(p => p.Categories, f => f.PickRandom(categories, f.Random.Int(0, 3)).ToList())
+    .RuleFor(p => p.Variations, (f, p) =>
+{
+    // Pick 1-3 attributes for this product
+    var usedAttributes = f.PickRandom(attributes, f.Random.Int(1, 3)).ToList();
 
-context.Categories.AddRange(categories);
+    // Get all possible combinations of attribute values for the selected attributes
+    IEnumerable<List<AttributeValue>> GetCombinations(List<Models.Attribute> attrs)
+    {
+        IEnumerable<List<AttributeValue>> combos = new List<List<AttributeValue>> { new List<AttributeValue>() };
+        foreach (var attr in attrs)
+        {
+            combos = combos.SelectMany(
+                acc => attr.AttributeValues.Select(av => acc.Concat(new[] { av }).ToList())
+            );
+        }
+        return combos;
+    }
+
+    var allCombinations = GetCombinations(usedAttributes).ToList();
+    int maxCombinations = allCombinations.Count;
+    int variationCount = Math.Min(f.Random.Int(1, 3), maxCombinations);
+
+    // Shuffle combinations and take as many as needed for variations
+    var selectedCombinations = allCombinations
+        .OrderBy(_ => f.Random.Int())
+        .Take(variationCount)
+        .ToList();
+
+    var variations = new List<Variation>();
+    for (int i = 0; i < variationCount; i++)
+    {
+        var combination = selectedCombinations[i];
+
+        var variation = new Variation
+        {
+            Description = f.Commerce.ProductDescription(),
+            RetailPrice = Math.Round(f.Random.Decimal(0, 500), 2),
+            SKU = f.Commerce.Ean13(),
+            InventoryUnits = new List<InventoryUnit>
+            {
+                new InventoryUnit { Quantity = f.Random.Int(0, 500) }
+            },
+            VariationAttributeValues = new List<VariationAttributeValue>()
+        };
+
+        // Assign each attribute value in the combination to the variation
+        for (int j = 0; j < usedAttributes.Count; j++)
+        {
+            variation.VariationAttributeValues.Add(new VariationAttributeValue
+            {
+                AttributeValue = combination[j],
+                IsVariational = true
+            });
+        }
+
+        variations.Add(variation);
+    }
+    return variations;
+});
+var products = productFaker.Generate(50);
+context.Products.AddRange(products);
 context.SaveChanges();
-
-            var attrs = new List<Models.Attribute>()
-            {
-                new Models.Attribute()
-                { 
-                    Id=1, 
-                    Name="Color", 
-                    AttributeValues=new List<AttributeValue> () 
-                    {
-                        new AttributeValue() { Id=1, Value="Red" },
-                        new AttributeValue() { Id=2, Value="Green" }
-                    }
-                },
-                new Models.Attribute()
-                {
-                    Id=2,
-                    Name="Size",
-                    AttributeValues=new List<AttributeValue> ()
-                    {
-                        new AttributeValue() { Id=3, Value="S" },
-                        new AttributeValue() { Id=4, Value="M" }
-                    }
-                }
-            };
-
-            context.Attributes.AddRange(attrs);
-            context.SaveChanges();
-
-            var firstProductVariation = new Variation()
-            {
-                Id = 1,
-                Description = "First Variation",
-                RetailPrice = 30M,
-                SKU = "12312312QWE",
-                ProductId = 1,
-                InventoryUnits = new List<InventoryUnit>()
-                {
-                    new InventoryUnit() { Id=1, Quantity=30 }
-                },
-                VariationAttributeValues=new List<VariationAttributeValue> () 
-                {
-                    new VariationAttributeValue() { VariationId=1, AttributeValueId=1, IsVariational=false}
-                }
-            };
-
-            var secondProductVariation = new Variation()
-            {
-                Id = 2,
-                Description = "Second Variation",
-                RetailPrice = 30M,
-                SKU = "12312312QWE",
-                ProductId = 2,
-                InventoryUnits = new List<InventoryUnit>()
-                {
-                    new InventoryUnit() { Id=2, Quantity=40 }
-                },
-                VariationAttributeValues = new List<VariationAttributeValue>()
-                {
-                    new VariationAttributeValue() { VariationId=2, AttributeValueId=2, IsVariational=true},
-                    new VariationAttributeValue() {VariationId=2, AttributeValueId=3, IsVariational=true}
-                }
-            };
-
-            var thirdProductVariation = new Variation()
-            {
-                Id = 3,
-                Description = "Third Variation",
-                RetailPrice = 30M,
-                SKU = "12312312QWE",
-                ProductId = 2,
-                InventoryUnits = new List<InventoryUnit>()
-                {
-                    new InventoryUnit() { Id=3, Quantity=50 }
-                },
-                VariationAttributeValues = new List<VariationAttributeValue>()
-                {
-                    new VariationAttributeValue() { VariationId=3, AttributeValueId=2, IsVariational=true},
-                    new VariationAttributeValue() { VariationId=3, AttributeValueId=4, IsVariational=true}
-                }
-            };
-
-            var fourthProductVariation = new Variation()
-            {
-                Id = 4,
-                Description = "Fourth Variation",
-                RetailPrice = 30M,
-                SKU = "12356312QWE",
-                ProductId = 3,
-                InventoryUnits = new List<InventoryUnit>()
-                {
-                    new InventoryUnit() { Id=4, Quantity=30 }
-                }
-            };
-
-            var products = new List<Product>()
-            {
-                new Product() { Id = 1, Name="Product 1", Categories=new List<Category>() {categories.First() }, Variations=new List<Variation>() { firstProductVariation } },
-                new Product() { Id = 2, Name="Product 2", Categories= {categories.First(), categories.Last()}, Variations=new List<Variation>() { secondProductVariation, thirdProductVariation }},
-                new Product() { Id = 3, Name="Product 3", Variations=new List<Variation>() { fourthProductVariation }}
-            };
-
-            context.Products.AddRange(products);
-            context.SaveChanges();
         }
     }
 }
