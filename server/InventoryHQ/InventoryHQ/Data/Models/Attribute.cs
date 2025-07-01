@@ -4,6 +4,7 @@ namespace InventoryHQ.Data.Models
 {
     public class Attribute : BaseEntity
     {
+        // TODO: Add uniqueness check for Name
         [Required]
         public string Name { get; set; }
 

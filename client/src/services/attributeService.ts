@@ -25,16 +25,12 @@ class AttributeService {
     }
 
     async createAttribute(name: string): Promise<number> {
-        // const response = await api.post('Attribute', null, { params: { name } });
-        //FIXME
-        return Math.floor(Math.random() * 100);
+        const response = await api.post('Attribute', null, { params: { name } });
         return response.data;
     }
 
     async createAttributeValue({ id, value }: { id: number; value: string }): Promise<number> {
-        // const response = await api.post(`Attribute/${id}`, { params: { value } });
-        //FIXME
-        return Math.floor(Math.random() * 100);
+        const response = await api.post(`Attribute/${id}`, null, { params: { value } });
         return response.data;
     }
 }
