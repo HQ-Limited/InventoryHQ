@@ -183,7 +183,7 @@ export default function VariationsCards() {
                                         </>
                                     )}
                                 </Form.List>
-                                <SKUField name={field.name} />
+                                <SKUField name={[field.name]} />
                                 <PriceField name={[field.name, 'retailPrice']} />
                                 {WHOLESALE_ENABLED && (
                                     <PriceField
