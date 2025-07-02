@@ -140,6 +140,7 @@ const CreateEdit: React.FC = () => {
                 await productService.createProduct(values);
             }
 
+            setSaving(false);
             message.success('Product successfully updated!');
         } catch (err) {
             setSaving(false);
