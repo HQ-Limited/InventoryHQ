@@ -96,6 +96,8 @@ namespace InventoryHQ.Data
         .ToList();
 
     var variations = new List<Variation>();
+    bool isVariable = variationCount > 1; // true if product has more than one variation
+
     for (int i = 0; i < variationCount; i++)
     {
         var combination = selectedCombinations[i];
@@ -119,27 +121,27 @@ namespace InventoryHQ.Data
             {
                 AttributeValueId = combination[j].Id,
                 AttributeValue = combination[j],
-                IsVariational = true
+                IsVariational = isVariable // <-- Set based on product's variation count
             });
         }
 
         variations.Add(variation);
     }
     return variations;
-});
+    });
 
-            try
-            {
-                var products = productFaker.Generate(50);
-                context.Products.AddRange(products);
-                context.SaveChanges();
-                Console.WriteLine("Seeding completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                throw;
-            }  
+    try
+    {
+        var products = productFaker.Generate(50);
+        context.Products.AddRange(products);
+        context.SaveChanges();
+        Console.WriteLine("Seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.ToString());
+        throw;
+    }  
         }
     }
 }

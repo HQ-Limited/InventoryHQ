@@ -28,6 +28,7 @@ namespace InventoryHQ.Profiles
 
             CreateMap<Variation, VariationDto>()
                 .ForMember(x => x.Quantity, s => s.MapFrom(src => src.InventoryUnits.Sum(sum => sum.Quantity)))
+                .ForMember(x => x.ManageQuantity, s => s.MapFrom(src => src.InventoryUnits.Any(iu => iu.ManageQuantity)))
                 .ForMember(x => x.Attributes, s => s.MapFrom(src => GetVariationAttributes(src)))
                 .ReverseMap();
         }
