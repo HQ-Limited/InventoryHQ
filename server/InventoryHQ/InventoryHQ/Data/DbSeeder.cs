@@ -22,10 +22,25 @@ namespace InventoryHQ.Data
 
             var dbLocations = context.Locations.ToList();
 
-            // Fixed categories
-            var categoryFaker = new Faker<Category>()
+            // Generate parent categories (level 1)
+            var parentCategoryFaker = new Faker<Category>()
                 .RuleFor(c => c.Name, f => f.Commerce.Categories(1)[0]);
-            var categories = categoryFaker.Generate(5);
+            var parentCategories = parentCategoryFaker.Generate(10);
+
+            // Generate child categories (level 2), each with a random parent
+            var childCategoryFaker = new Faker<Category>()
+                .RuleFor(c => c.Name, f => f.Commerce.Categories(1)[0])
+                .RuleFor(c => c.Parent, f => f.PickRandom(parentCategories));
+            var childCategories = childCategoryFaker.Generate(30);
+
+            // Generate sub-child categories (level 3), each with a random child as parent
+            var subChildCategoryFaker = new Faker<Category>()
+                .RuleFor(c => c.Name, f => f.Commerce.Categories(1)[0])
+                .RuleFor(c => c.Parent, f => f.PickRandom(childCategories));
+            var subChildCategories = subChildCategoryFaker.Generate(60);
+
+            // Combine all categories
+            var categories = parentCategories.Concat(childCategories).Concat(subChildCategories).ToList();
             context.Categories.AddRange(categories);
             context.SaveChanges();
 
