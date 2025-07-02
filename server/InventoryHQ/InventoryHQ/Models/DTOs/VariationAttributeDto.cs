@@ -6,5 +6,7 @@
         public string Name { get; set; }
 
         public AttributeValueDto Value { get; set; }
+
+        public bool IsVariational { get; set; }
     }
 }

@@ -7,17 +7,16 @@ export default function QuantityField({
     name?: (number | string)[];
     variation?: boolean;
 }) {
-    const { getFieldValue } = Form.useFormInstance();
-    const manage_quantity = variation
-        ? getFieldValue(['variations', ...name, 'manage_quantity'])
-        : getFieldValue([...name, 'manage_quantity']);
+    const manageQuantity = Form.useWatch(
+        variation ? ['variations', ...name, 'manageQuantity'] : [...name, 'manageQuantity']
+    );
 
     return (
         <>
-            <Form.Item name={[...name, 'manage_quantity']} valuePropName="checked">
+            <Form.Item name={[...name, 'manageQuantity']} valuePropName="checked">
                 <Checkbox>Manage quantity</Checkbox>
             </Form.Item>
-            {manage_quantity && (
+            {manageQuantity && (
                 <Form.Item
                     label="Quantity"
                     name={[...name, 'quantity']}

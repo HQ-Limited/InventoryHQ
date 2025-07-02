@@ -9,21 +9,16 @@ class ProductService {
 
     async getProductById(id: number): Promise<Product> {
         const response = await api.get(`Product/${id}`);
-        // FIXME REMOVE THIS
-        if (response?.data?.attributes?.length > 0) {
-            response.data.attributes = response.data.attributes.map((a: any) => ({
-                ...a,
-                isVariational: true,
-            }));
+        return response.data;
+    }
 
-            if (response.data.variations?.length > 0) {
-                response.data.variations = response.data.variations.map((v: any) => ({
-                    ...v,
-                    manage_quantity: true,
-                }));
-            }
-        }
+    async createProduct(product: Product): Promise<Product> {
+        const response = await api.post('Product', product);
+        return response.data;
+    }
 
+    async updateProduct(product: Product): Promise<Product> {
+        const response = await api.put('Product', product);
         return response.data;
     }
 

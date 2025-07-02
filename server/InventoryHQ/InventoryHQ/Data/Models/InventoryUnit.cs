@@ -4,8 +4,8 @@ namespace InventoryHQ.Data.Models
 {
     public class InventoryUnit : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
+        [Required]
+        public bool ManageQuantity { get; set; }
 
         public int? Quantity { get; set; }
 

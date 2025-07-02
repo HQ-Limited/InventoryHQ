@@ -1,11 +1,11 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import type { CheckboxProps, GetProp, MenuProps, TableProps } from 'antd';
 import {
+    App,
     Button,
     Checkbox,
     Input,
     Menu,
-    message,
     Popconfirm,
     Popover,
     Space,
@@ -50,6 +50,7 @@ const StatusTag = ({ quantity }: { quantity: number }) => {
 
 const View: React.FC = () => {
     const [categoriesTree, setCategoriesTree] = useState<Tree[]>([]);
+    const { message } = App.useApp();
 
     const variationColumns: ColumnsType<Variation> = [
         {
@@ -71,6 +72,7 @@ const View: React.FC = () => {
             key: 'quantity',
             title: 'Quantity',
             dataIndex: 'quantity',
+            render: (_, record) => (record.manageQuantity ? record.quantity : 'N/A'),
         },
         {
             // responsive: ['sm'],
@@ -140,12 +142,19 @@ const View: React.FC = () => {
             sorter: true,
             render: (_, record) => {
                 if (record.variations.length === 1) {
-                    return record.variations[0].quantity;
+                    return record.variations[0].manageQuantity
+                        ? record.variations[0].quantity
+                        : 'N/A';
                 } else {
+                    if (record.variations.every((v) => !v.manageQuantity)) {
+                        return 'N/A';
+                    }
                     return (
                         <>
                             <Typography.Text style={{ paddingRight: '5px' }}>
-                                {record.variations.reduce((a, b) => a + b.quantity, 0)}
+                                {record.variations
+                                    .filter((v) => v.manageQuantity)
+                                    .reduce((a, b) => a + b.quantity, 0)}
                             </Typography.Text>
                             <Tooltip title="Sum of all variations quantities">
                                 <InfoCircleOutlined />

@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, App } from 'antd';
 import ProductsView from './pages/products/View/View';
 import ProductsEdit from './pages/products/Edit/Edit';
 import PartnersView from './pages/partners/View';
@@ -9,7 +9,7 @@ import Home from './pages/Home';
 import { useState } from 'react';
 import Page404 from './pages/404';
 
-function App() {
+function MainApp() {
     const [isDark, setIsDark] = useState(true);
     return (
         <ConfigProvider
@@ -28,21 +28,23 @@ function App() {
             }}
         >
             <BrowserRouter>
-                <MainLayout isDark={isDark} setIsDark={setIsDark}>
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/products" element={<ProductsView />} />
-                        <Route path="/products/new" element={<ProductsEdit />} />
-                        <Route path="/products/:id" element={<ProductsEdit />} />
-                        <Route path="/partners" element={<PartnersView />} />
-                        <Route path="/partners/new" element={<PartnersCreateEdit />} />
-                        <Route path="/partners/:id" element={<PartnersCreateEdit />} />
-                        <Route path="*" element={<Page404 />} />
-                    </Routes>
-                </MainLayout>
+                <App style={{ height: '100%' }}>
+                    <MainLayout isDark={isDark} setIsDark={setIsDark}>
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/products" element={<ProductsView />} />
+                            <Route path="/products/new" element={<ProductsEdit />} />
+                            <Route path="/products/:id" element={<ProductsEdit />} />
+                            <Route path="/partners" element={<PartnersView />} />
+                            <Route path="/partners/new" element={<PartnersCreateEdit />} />
+                            <Route path="/partners/:id" element={<PartnersCreateEdit />} />
+                            <Route path="*" element={<Page404 />} />
+                        </Routes>
+                    </MainLayout>
+                </App>
             </BrowserRouter>
         </ConfigProvider>
     );
 }
 
-export default App;
+export default MainApp;
