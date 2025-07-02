@@ -61,6 +61,9 @@ namespace InventoryHQ.Data
             context.Attributes.AddRange(attributes);
             context.SaveChanges();
 
+            // Reload tracked AttributeValues from DB
+            var dbAttributeValues = context.AttributeValues.ToList();
+
             var productFaker = new Faker<Product>()
     .RuleFor(p => p.Name, f => f.Commerce.ProductName())
     .RuleFor(p => p.Categories, f => f.PickRandom(categories, f.Random.Int(0, 3)).ToList())
@@ -76,7 +79,7 @@ namespace InventoryHQ.Data
         foreach (var attr in attrs)
         {
             combos = combos.SelectMany(
-                acc => attr.AttributeValues.Select(av => acc.Concat(new[] { av }).ToList())
+                acc => dbAttributeValues.Where(av => av.AttributeId == attr.Id).Select(av => acc.Concat(new[] { av }).ToList())
             );
         }
         return combos;
@@ -104,7 +107,7 @@ namespace InventoryHQ.Data
             SKU = f.Commerce.Ean13(),
             InventoryUnits = new List<InventoryUnit>
             {
-                new InventoryUnit { Quantity = f.Random.Int(0, 500) }
+                new InventoryUnit { ManageQuantity = f.Random.Bool(), Quantity = f.Random.Int(0, 500) }
             },
             VariationAttributeValues = new List<VariationAttributeValue>()
         };
@@ -114,6 +117,7 @@ namespace InventoryHQ.Data
         {
             variation.VariationAttributeValues.Add(new VariationAttributeValue
             {
+                AttributeValueId = combination[j].Id,
                 AttributeValue = combination[j],
                 IsVariational = true
             });
@@ -123,9 +127,19 @@ namespace InventoryHQ.Data
     }
     return variations;
 });
-var products = productFaker.Generate(50);
-context.Products.AddRange(products);
-context.SaveChanges();
+
+            try
+            {
+                var products = productFaker.Generate(50);
+                context.Products.AddRange(products);
+                context.SaveChanges();
+                Console.WriteLine("Seeding completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }  
         }
     }
 }

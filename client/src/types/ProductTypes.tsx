@@ -34,7 +34,7 @@ export type Variation = {
     retailPrice: number;
     wholesalePrice?: number;
     quantity: number;
-    manage_quantity: boolean;
+    manageQuantity: boolean;
     sku: string;
     attributes: VariationAttribute[];
 };

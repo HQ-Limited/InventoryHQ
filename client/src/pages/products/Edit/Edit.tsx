@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Form, FormProps, message, Select, Space, Spin, Tabs, TabsProps } from 'antd';
+import { App, Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps } from 'antd';
 import { useParams } from 'react-router-dom';
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
@@ -29,7 +29,7 @@ import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
 
 const CreateEdit: React.FC = () => {
-    const [messageApi, contextHolder] = message.useMessage();
+    const { message } = App.useApp();
     const [isVariable, setIsVariable] = useState(false);
     const params = useParams();
     const id = params.id;
@@ -43,6 +43,7 @@ const CreateEdit: React.FC = () => {
         isVariable: false,
     });
     const [loading, setLoading] = useState(id ? true : false);
+    const [saving, setSaving] = useState(false);
 
     const fetchData = async () => {
         const categories = await categoryService.getCategories();
@@ -114,7 +115,7 @@ const CreateEdit: React.FC = () => {
         const variations: Variation[] = combinations.map((combo) => {
             return {
                 attributes: combo,
-                manage_quantity: true,
+                manageQuantity: true,
             };
         });
 
@@ -129,16 +130,27 @@ const CreateEdit: React.FC = () => {
         form.setFieldsValue({ variations });
     };
 
-    const onFinish: FormProps<Product>['onFinish'] = (values) => {
-        console.log('Success:', values);
-        form.validateFields()
-            .then((values) => {
-                console.log('all fields validated', values);
-            })
-            .catch((errorInfo) => {});
+    const onFinish: FormProps<Product>['onFinish'] = async (values) => {
+        setSaving(true);
+
+        console.log(values);
+
+        try {
+            if (id) {
+                await productService.updateProduct({ ...values, id: Number(id) });
+            } else {
+                await productService.createProduct(values);
+            }
+
+            message.success('Product successfully updated!');
+        } catch (err) {
+            setSaving(false);
+            message.error('Failed to update product');
+        }
     };
 
     const onFinishFailed: FormProps<Product>['onFinishFailed'] = (errorInfo) => {
+        message.error('Some fields have errors!');
         console.log('Failed:', errorInfo);
     };
 
@@ -192,9 +204,9 @@ const CreateEdit: React.FC = () => {
                 name,
                 children: [],
             });
-            messageApi.success('Category created');
+            message.success('Category created');
         } catch (e) {
-            messageApi.error('Failed to create category');
+            message.error('Failed to create category');
         }
     }
 
@@ -215,9 +227,9 @@ const CreateEdit: React.FC = () => {
                 values: [],
                 isVariable,
             });
-            messageApi.success('Attribute created');
+            message.success('Attribute created');
         } catch (e) {
-            messageApi.error('Failed to create attribute');
+            message.error('Failed to create attribute');
         }
     }
 
@@ -249,9 +261,9 @@ const CreateEdit: React.FC = () => {
             ];
 
             form.setFieldValue(['attributes', index, 'values'], newValues);
-            messageApi.success('Attribute value created');
+            message.success('Attribute value created');
         } catch (e) {
-            messageApi.error('Failed to create attribute value');
+            message.error('Failed to create attribute value');
         }
     }
 
@@ -342,70 +354,67 @@ const CreateEdit: React.FC = () => {
     ];
 
     return (
-        <>
-            {contextHolder}
-            <Form
-                form={form}
-                style={{ padding: '20px' }}
-                layout="vertical"
-                variant="filled"
-                onFinish={onFinish}
-                onFinishFailed={onFinishFailed}
-                autoComplete="off"
-                scrollToFirstError
-                initialValues={values}
-            >
-                {loading ? (
-                    <Spin size="large" fullscreen />
-                ) : (
-                    <>
-                        <Space style={{ display: 'block' }}>
-                            <NameField />
+        <Form
+            form={form}
+            style={{ padding: '20px' }}
+            layout="vertical"
+            variant="filled"
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+            scrollToFirstError
+            initialValues={values}
+        >
+            {loading ? (
+                <Spin size="large" fullscreen />
+            ) : (
+                <>
+                    <Space style={{ display: 'block' }}>
+                        <NameField />
 
-                            <DescriptionField />
+                        <DescriptionField />
 
-                            <CategoryField
-                                categories={categories}
-                                createNewCategory={createNewCategory}
+                        <CategoryField
+                            categories={categories}
+                            createNewCategory={createNewCategory}
+                        />
+
+                        <Form.Item
+                            name={'isVariable'}
+                            label="Product type"
+                            rules={[{ required: true }]}
+                        >
+                            <Select
+                                style={{ width: 120 }}
+                                options={[
+                                    { value: false, label: 'Simple' },
+                                    { value: true, label: 'Variable' },
+                                ]}
+                                value={isVariable}
+                                onChange={(value) => {
+                                    setIsVariable(value);
+                                }}
                             />
-
-                            <Form.Item
-                                name={'isVariable'}
-                                label="Product type"
-                                rules={[{ required: true }]}
-                            >
-                                <Select
-                                    style={{ width: 120 }}
-                                    options={[
-                                        { value: false, label: 'Simple' },
-                                        { value: true, label: 'Variable' },
-                                    ]}
-                                    value={isVariable}
-                                    onChange={(value) => {
-                                        setIsVariable(value);
-                                    }}
-                                />
-                            </Form.Item>
-
-                            <Tabs
-                                items={
-                                    form.getFieldValue('isVariable')
-                                        ? variableProductItems
-                                        : simpleProductItems
-                                }
-                                tabPosition="left"
-                            />
-                        </Space>
-
-                        <Form.Item style={{ textAlign: 'center' }}>
-                            <Button type="primary" htmlType="submit" size={'large'}>
-                                Save
-                            </Button>
                         </Form.Item>
-                    </>
-                )}
-            </Form>
-        </>
+
+                        <Tabs
+                            items={
+                                form.getFieldValue('isVariable')
+                                    ? variableProductItems
+                                    : simpleProductItems
+                            }
+                            tabPosition="left"
+                        />
+                    </Space>
+
+                    <Form.Item style={{ textAlign: 'center' }}>
+                        <Button type="primary" htmlType="submit" size={'large'} loading={saving}>
+                            Save
+                        </Button>
+                    </Form.Item>
+                </>
+            )}
+        </Form>
     );
 };
 

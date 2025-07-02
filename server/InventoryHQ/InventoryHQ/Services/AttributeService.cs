@@ -104,12 +104,6 @@ namespace InventoryHQ.Services
             if (attribute == null)
                 return null;
 
-                // Check if an attribute value with this value already exists for the attribute
-                var exists = await _data.AttributeValues
-                    .AnyAsync(av => av.AttributeId == id && av.Value == value);
-                if (exists)
-                    return null;
-
             var attributeValue = new AttributeValue
             {
                 AttributeId = id,

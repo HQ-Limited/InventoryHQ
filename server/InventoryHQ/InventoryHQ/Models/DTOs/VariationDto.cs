@@ -12,7 +12,10 @@ namespace InventoryHQ.Models.DTOs
         [Required]
         public decimal RetailPrice { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
+
+        [Required]
+        public bool ManageQuantity { get; set; }
 
         [Required]
         public int Quantity { get; set; }
