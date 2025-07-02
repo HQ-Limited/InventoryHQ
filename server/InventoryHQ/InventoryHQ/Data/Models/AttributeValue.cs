@@ -1,8 +1,10 @@
-﻿namespace InventoryHQ.Data.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace InventoryHQ.Data.Models
 {
+    [Index(nameof(AttributeId), nameof(Value), IsUnique = true)]
     public class AttributeValue : BaseEntity
     {
-        // TODO: Add uniqueness check for AttributeId + Value
         public int AttributeId { get; set; }
 
         public Attribute Attribute { get; set; }

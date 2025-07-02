@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryHQ.Data.Models
 {
+    [Index(nameof(SKU), IsUnique = true)]
     public class Variation : BaseEntity
     {
         [Required]
@@ -15,10 +17,12 @@ namespace InventoryHQ.Data.Models
         [Required]
         public int ProductId { get; set; }
 
+        [Required]
         public Product Product { get; set; }
 
+        [Required]
         public ICollection<InventoryUnit> InventoryUnits { get; set; }
 
-        public ICollection<VariationAttributeValue> VariationAttributeValues {get; set;}
+        public ICollection<VariationAttributeValue> VariationAttributeValues { get; set; }
     }
 }
