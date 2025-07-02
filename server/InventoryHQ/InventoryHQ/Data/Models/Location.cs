@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryHQ.Data.Models
 {
+    [Index(nameof(Name), IsUnique = true)]
     public class Location : BaseEntity
     {
         [Required]

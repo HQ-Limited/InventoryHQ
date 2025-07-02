@@ -7,6 +7,7 @@ namespace InventoryHQ.Data.Models
         [Required]
         public string Name { get; set; }
 
+        [Required]
         public List<Variation> Variations { get; set; }
 
         public List<Category> Categories { get; set; } = new();
