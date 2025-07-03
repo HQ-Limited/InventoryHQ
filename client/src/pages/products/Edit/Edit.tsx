@@ -133,8 +133,6 @@ const CreateEdit: React.FC = () => {
     const onFinish: FormProps<Product>['onFinish'] = async (values) => {
         setSaving(true);
 
-        console.log(values);
-
         try {
             if (id) {
                 await productService.updateProduct({ ...values, id: Number(id) });
@@ -142,6 +140,7 @@ const CreateEdit: React.FC = () => {
                 await productService.createProduct(values);
             }
 
+            setSaving(false);
             message.success('Product successfully updated!');
         } catch (err) {
             setSaving(false);
