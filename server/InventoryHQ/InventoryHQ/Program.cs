@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen(c =>
             Name = "EULA",
             Url = new Uri("https://hq-limited.com/eula")
         }
-     });
+    });
 
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);

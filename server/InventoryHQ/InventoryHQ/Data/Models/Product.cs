@@ -5,11 +5,17 @@ namespace InventoryHQ.Data.Models
     public class Product : BaseEntity
     {
         [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; }
+
+        public string? Description { get; set; }
 
         [Required]
-        public List<Variation> Variations { get; set; }
+        public required List<Variation> Variations { get; set; }
 
-        public List<Category> Categories { get; set; } = new();
+        public List<ProductAttribute>? Attributes { get; set; }
+
+        public List<Category>? Categories { get; set; }
+
+        public bool isVariable { get; set; }
     }
 }

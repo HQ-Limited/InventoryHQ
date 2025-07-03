@@ -5,7 +5,7 @@ namespace InventoryHQ.Data.Models
     public class InventoryUnit : BaseEntity
     {
         [Required]
-        public bool ManageQuantity { get; set; }
+        public required bool ManageQuantity { get; set; }
 
         public int? Quantity { get; set; }
 
@@ -13,13 +13,12 @@ namespace InventoryHQ.Data.Models
 
         public Package? Package { get; set; }
 
-        [Required]
         public int VariationId { get; set; }
 
         public Variation Variation { get; set; }
 
-        public int? LocationId { get; set; }
+        public int LocationId { get; set; }
 
-        public Location? Location { get; set; }
+        public Location Location { get; set; }
     }
 }
