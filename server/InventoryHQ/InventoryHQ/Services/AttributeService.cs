@@ -33,7 +33,7 @@ namespace InventoryHQ.Services
                 if (ids.Length == 0)
                 {
                     // All attributes with all values
-                    attributes = await query.Include(x => x.AttributeValues).ToListAsync();
+                    attributes = await query.Include(x => x.Values).ToListAsync();
                 }
                 else
                 {
@@ -49,11 +49,11 @@ namespace InventoryHQ.Services
                     {
                         if (ids.Contains(attr.Id))
                         {
-                            attr.AttributeValues = values.Where(v => v.AttributeId == attr.Id).ToList();
+                            attr.Values = values.Where(v => v.AttributeId == attr.Id).ToList();
                         }
                         else
                         {
-                            attr.AttributeValues = new List<AttributeValue>();
+                            attr.Values = new List<AttributeValue>();
                         }
                     }
                 }

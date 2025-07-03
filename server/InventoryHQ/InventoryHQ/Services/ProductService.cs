@@ -22,31 +22,40 @@ namespace InventoryHQ.Services
 
         public async Task<ProductDto?> GetById(int id)
         {
-            var product = await _data.Products.Include(x => x.Variations)
-                                              .ThenInclude(x=>x.InventoryUnits)
-                                              .Include(x=>x.Variations)
-                                              .ThenInclude(x => x.VariationAttributeValues)
-                                              .ThenInclude(x => x.AttributeValue)
-                                              .ThenInclude(x => x.Attribute)
-                                              .Include(x => x.Categories)
-                                              .FirstOrDefaultAsync(x => x.Id == id);
-            var simpleProduct = _mapper.Map<ProductDto>(product);
+            var data = await _data.Products
+                                .Include(x => x.Categories)
+                                .Include(x => x.Attributes)
+                                    .ThenInclude(pa => pa.Attribute)
+                                .Include(x => x.Attributes)
+                                    .ThenInclude(a => a.Values)
+                                .Include(x => x.Variations)
+                                    .ThenInclude(v => v.Attributes)
+                                .Include(x => x.Variations)
+                                    .ThenInclude(i => i.InventoryUnits)
+                                        .ThenInclude(i => i.Location)
+                                .FirstOrDefaultAsync(x => x.Id == id);
+            var product = _mapper.Map<ProductDto>(data);
 
-            return simpleProduct;
+            return product;
         }
 
         public async Task<IEnumerable<ProductDto>> GetProducts()
         {
-            var products = await _data.Products.Include(x => x.Variations)
-                                              .ThenInclude(x=>x.InventoryUnits)
-                                              .Include(x=>x.Variations)
-                                              .ThenInclude(x => x.VariationAttributeValues)
-                                              .ThenInclude(x => x.AttributeValue)
-                                              .ThenInclude(x => x.Attribute)
-                                              .Include(x => x.Categories).ToListAsync();
-            var simpleProducts = _mapper.Map<IEnumerable<ProductDto>>(products);
+            var data = await _data.Products
+                                .Include(x => x.Categories)
+                                .Include(x => x.Attributes)
+                                    .ThenInclude(pa => pa.Attribute)
+                                .Include(x => x.Attributes)
+                                    .ThenInclude(a => a.Values)
+                                .Include(x => x.Variations)
+                                    .ThenInclude(v => v.Attributes)
+                                .Include(x => x.Variations)
+                                    .ThenInclude(i => i.InventoryUnits)
+                                        .ThenInclude(i => i.Location)
+                                .ToListAsync();
+            var products = _mapper.Map<IEnumerable<ProductDto>>(data);
 
-            return simpleProducts;
+            return products;
         }
 
         public async Task<int?> CreateProduct(ProductDto simpleProductDto)

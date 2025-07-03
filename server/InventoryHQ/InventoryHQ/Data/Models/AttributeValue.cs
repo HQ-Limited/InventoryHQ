@@ -6,15 +6,15 @@ namespace InventoryHQ.Data.Models
     [Index(nameof(AttributeId), nameof(Value), IsUnique = true)]
     public class AttributeValue : BaseEntity
     {
-        [Required]
         public int AttributeId { get; set; }
 
-        [Required]
         public Attribute Attribute { get; set; }
 
         [Required]
-        public string Value { get; set; }
+        public required string Value { get; set; }
 
-        public ICollection<VariationAttributeValue> VariationAttributeValues { get; set; }
+        public ICollection<ProductAttribute>? ProductAttributes { get; set; }
+
+        public ICollection<VariationAttribute>? VariationAttributes { get; set; }
     }
 }

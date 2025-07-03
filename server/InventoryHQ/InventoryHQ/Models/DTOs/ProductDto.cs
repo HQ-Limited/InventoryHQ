@@ -4,14 +4,16 @@
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public bool IsVariable { get; set; }
+        public string? Description { get; set; }
 
-        public List<CategoryDto> Categories { get; set; } = new();
+        public required bool IsVariable { get; set; }
 
-        public List<VariationDto> Variations { get; set; } = new();
+        public List<CategoryDto>? Categories { get; set; }
 
-        public List<AttributeDto> Attributes { get; set; }
+        public required List<VariationDto> Variations { get; set; }
+
+        public List<ProductAttributeDto>? Attributes { get; set; }
     }
 }

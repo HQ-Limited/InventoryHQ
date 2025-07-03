@@ -3,6 +3,7 @@ using System;
 using InventoryHQ.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryHQ.Migrations
 {
     [DbContext(typeof(InventoryHQDbContext))]
-    partial class InventoryHQDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250703110613_MakeLocationDescriptionNullable")]
+    partial class MakeLocationDescriptionNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace InventoryHQ.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("AttributeValueProductAttribute", b =>
-                {
-                    b.Property<int>("ProductAttributesId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ValuesId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ProductAttributesId", "ValuesId");
-
-                    b.HasIndex("ValuesId");
-
-                    b.ToTable("AttributeValueProductAttribute");
-                });
 
             modelBuilder.Entity("CategoryProduct", b =>
                 {
@@ -267,9 +255,6 @@ namespace InventoryHQ.Migrations
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -280,47 +265,9 @@ namespace InventoryHQ.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("isVariable")
-                        .HasColumnType("boolean");
-
                     b.HasKey("Id");
 
                     b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.ProductAttribute", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AttributeId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVariational")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttributeId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductAttribute");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Variation", b =>
@@ -363,7 +310,7 @@ namespace InventoryHQ.Migrations
                     b.ToTable("Variations");
                 });
 
-            modelBuilder.Entity("InventoryHQ.Data.Models.VariationAttribute", b =>
+            modelBuilder.Entity("InventoryHQ.Data.Models.VariationAttributeValue", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -380,34 +327,27 @@ namespace InventoryHQ.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool?>("IsVariational")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("VariationId")
+                    b.Property<int?>("VariationId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AttributeValueId");
 
+                    b.HasIndex("ProductId");
+
                     b.HasIndex("VariationId");
 
-                    b.ToTable("VariationsAttribute");
-                });
-
-            modelBuilder.Entity("AttributeValueProductAttribute", b =>
-                {
-                    b.HasOne("InventoryHQ.Data.Models.ProductAttribute", null)
-                        .WithMany()
-                        .HasForeignKey("ProductAttributesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InventoryHQ.Data.Models.AttributeValue", null)
-                        .WithMany()
-                        .HasForeignKey("ValuesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.ToTable("VariationsAttributeValue");
                 });
 
             modelBuilder.Entity("CategoryProduct", b =>
@@ -428,7 +368,7 @@ namespace InventoryHQ.Migrations
             modelBuilder.Entity("InventoryHQ.Data.Models.AttributeValue", b =>
                 {
                     b.HasOne("InventoryHQ.Data.Models.Attribute", "Attribute")
-                        .WithMany("Values")
+                        .WithMany("AttributeValues")
                         .HasForeignKey("AttributeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -481,25 +421,6 @@ namespace InventoryHQ.Migrations
                     b.Navigation("Location");
                 });
 
-            modelBuilder.Entity("InventoryHQ.Data.Models.ProductAttribute", b =>
-                {
-                    b.HasOne("InventoryHQ.Data.Models.Attribute", "Attribute")
-                        .WithMany()
-                        .HasForeignKey("AttributeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InventoryHQ.Data.Models.Product", "Product")
-                        .WithMany("Attributes")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Attribute");
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("InventoryHQ.Data.Models.Variation", b =>
                 {
                     b.HasOne("InventoryHQ.Data.Models.Product", "Product")
@@ -511,33 +432,37 @@ namespace InventoryHQ.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("InventoryHQ.Data.Models.VariationAttribute", b =>
+            modelBuilder.Entity("InventoryHQ.Data.Models.VariationAttributeValue", b =>
                 {
-                    b.HasOne("InventoryHQ.Data.Models.AttributeValue", "Value")
-                        .WithMany("VariationAttributes")
+                    b.HasOne("InventoryHQ.Data.Models.AttributeValue", "AttributeValue")
+                        .WithMany("VariationAttributeValues")
                         .HasForeignKey("AttributeValueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InventoryHQ.Data.Models.Variation", "Variation")
-                        .WithMany("Attributes")
-                        .HasForeignKey("VariationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("InventoryHQ.Data.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId");
 
-                    b.Navigation("Value");
+                    b.HasOne("InventoryHQ.Data.Models.Variation", "Variation")
+                        .WithMany("VariationAttributeValues")
+                        .HasForeignKey("VariationId");
+
+                    b.Navigation("AttributeValue");
+
+                    b.Navigation("Product");
 
                     b.Navigation("Variation");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Attribute", b =>
                 {
-                    b.Navigation("Values");
+                    b.Navigation("AttributeValues");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.AttributeValue", b =>
                 {
-                    b.Navigation("VariationAttributes");
+                    b.Navigation("VariationAttributeValues");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Category", b =>
@@ -547,16 +472,14 @@ namespace InventoryHQ.Migrations
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Product", b =>
                 {
-                    b.Navigation("Attributes");
-
                     b.Navigation("Variations");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Variation", b =>
                 {
-                    b.Navigation("Attributes");
-
                     b.Navigation("InventoryUnits");
+
+                    b.Navigation("VariationAttributeValues");
                 });
 #pragma warning restore 612, 618
         }

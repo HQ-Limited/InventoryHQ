@@ -4,10 +4,10 @@
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         public int? ParentId { get; set; }
 
-        public List<CategoryDto> Children { get; set; } = new List<CategoryDto>();
+        public List<CategoryDto>? Children { get; set; }
     }
 }

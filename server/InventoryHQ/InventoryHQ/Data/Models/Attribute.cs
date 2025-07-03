@@ -7,9 +7,8 @@ namespace InventoryHQ.Data.Models
     public class Attribute : BaseEntity
     {
         [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        [Required]
-        public ICollection<AttributeValue> AttributeValues { get; set; }
+        public ICollection<AttributeValue>? Values { get; set; }
     }
 }

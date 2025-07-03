@@ -7,22 +7,19 @@ namespace InventoryHQ.Data.Models
     public class Variation : BaseEntity
     {
         [Required]
-        public string SKU { get; set; }
+        public required string SKU { get; set; }
 
         [Required]
-        public decimal RetailPrice { get; set; }
+        public required decimal RetailPrice { get; set; }
 
         public string? Description { get; set; }
 
-        [Required]
         public int ProductId { get; set; }
 
-        [Required]
         public Product Product { get; set; }
 
-        [Required]
-        public ICollection<InventoryUnit> InventoryUnits { get; set; }
+        public required ICollection<InventoryUnit> InventoryUnits { get; set; }
 
-        public ICollection<VariationAttributeValue> VariationAttributeValues { get; set; }
+        public ICollection<VariationAttribute>? Attributes { get; set; }
     }
 }

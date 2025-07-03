@@ -24,7 +24,9 @@ namespace InventoryHQ.Data
 
         public DbSet<Package> Packages { get; set; }
 
-        public DbSet<VariationAttributeValue> VariationsAttributeValue { get; set; }
+        public DbSet<VariationAttribute> VariationsAttribute { get; set; }
+
+        public DbSet<ProductAttribute> ProductAttribute { get; set; }
 
         public DbSet<InventoryUnit> InventoryUnits { get; set; }
 

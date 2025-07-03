@@ -8,62 +8,46 @@ namespace InventoryHQ.Profiles
     {
         public InventoryHQProfile()
         {
+            CreateMap<Location, LocationDto>().ReverseMap();
+
+            CreateMap<InventoryUnit, InventoryUnitDto>().ReverseMap();
+
             CreateMap<Product, ProductDto>()
-                .ForMember(x => x.IsVariable, s => s.MapFrom(src => src.Variations.Count > 1))
-                .ForMember(x => x.Attributes, s => s.MapFrom(src => GetAllVariationsAttributes(src)))
                 .ReverseMap();
 
             CreateMap<Category, CategoryDto>().ReverseMap();
 
             CreateMap<Data.Models.Attribute, AttributeDto>()
-                .ForMember(x => x.Name, s => s.MapFrom(src => src.Name))
-                .ForMember(x => x.Values, s => s.MapFrom(src => src.AttributeValues.Select(av => new AttributeValueDto
-                {
-                    Id = av.Id,
-                    Value = av.Value
-                }).ToList()))
                 .ReverseMap();
 
             CreateMap<AttributeValue, AttributeValueDto>().ReverseMap();
 
             CreateMap<Variation, VariationDto>()
-                .ForMember(x => x.Quantity, s => s.MapFrom(src => src.InventoryUnits.Sum(sum => sum.Quantity)))
-                .ForMember(x => x.Attributes, s => s.MapFrom(src => GetVariationAttributes(src)))
+                .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src => GetVariationAttributes(src)))
                 .ReverseMap();
+
+            CreateMap<VariationAttribute, VariationAttributeDto>()
+            .ReverseMap();
+
+            CreateMap<ProductAttribute, ProductAttributeDto>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Product.Name))
+                .ReverseMap();
+
+            CreateMap<Data.Models.Attribute, AttributeDto>().ReverseMap();
         }
 
         private object GetVariationAttributes(Variation src)
         {
-            return src.VariationAttributeValues.Select(vav => new VariationAttributeDto
+            return src.Attributes.Select(vav => new VariationAttributeDto
             {
-                Id = vav.AttributeValue.Attribute.Id,
-                Name = vav.AttributeValue.Attribute.Name,
+                Id = vav.Value.Attribute.Id,
+                Name = vav.Value.Attribute.Name,
                 Value = new AttributeValueDto
                 {
-                    Id = vav.AttributeValue.Id,
-                    Value = vav.AttributeValue.Value
+                    Id = vav.Value.Id,
+                    Value = vav.Value.Value
                 }
             }).ToList();
-        }
-
-        private static List<AttributeDto> GetAllVariationsAttributes(Product product)
-        {
-            return product.Variations
-                .SelectMany(v => v.VariationAttributeValues)
-                .GroupBy(vav => new { vav.AttributeValue.Attribute.Id, vav.AttributeValue.Attribute.Name })
-                .Select(group => new AttributeDto
-                {
-                    Id = group.Key.Id,
-                    Name = group.Key.Name,
-                    Values = group
-                        .Select(g => g.AttributeValue)
-                        .DistinctBy(av => av.Id)
-                        .Select(av => new AttributeValueDto
-                        {
-                            Id = av.Id,
-                            Value = av.Value
-                        }).ToList()
-                }).ToList();
         }
     }
 }
