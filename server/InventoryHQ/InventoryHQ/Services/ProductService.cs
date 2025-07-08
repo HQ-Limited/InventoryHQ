@@ -101,5 +101,16 @@ namespace InventoryHQ.Services
 
             return product.Id;
         }
+
+        public async Task<IEnumerable<VariationDto>> GetVariations(int id, TableDatasourceRequest? request)
+        {
+            var data = _data.Variations.Where(x => x.ProductId == id).AsQueryable();
+
+            data = data.ApplyVariationFilters(request.Filters);
+
+            var variations = _mapper.Map<IEnumerable<VariationDto>>(data);
+
+            return variations;
+        }
     }
 }

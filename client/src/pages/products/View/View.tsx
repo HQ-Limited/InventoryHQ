@@ -62,7 +62,7 @@ const View: React.FC = () => {
     const [categoriesTree, setCategoriesTree] = useState<Tree[]>([]);
     const { message } = App.useApp();
 
-    const variationColumns: ColumnsType<Variation> = [
+    const [variationColumns, setVariationColumns] = useState<ColumnsType<Variation>>([
         {
             width: 100,
             key: 'sku',
@@ -82,6 +82,7 @@ const View: React.FC = () => {
             width: 100,
             key: 'locations',
             title: 'Quantity',
+            dataIndex: 'inventoryUnits',
             render: (_, record) => {
                 if (LOCATIONS_ENABLED) {
                     return record.inventoryUnits!.map((unit) => (
@@ -92,16 +93,18 @@ const View: React.FC = () => {
                 }
                 return record.inventoryUnits![0].quantity;
             },
+            ...NumberFilter(),
         },
         {
             // responsive: ['sm'],
             width: 100,
             key: 'attributes',
             title: 'Attributes',
+            dataIndex: 'attributes',
             render: (_, record) =>
                 record.attributes?.map((attr, i) => <Tag key={i}>{attr.value.value}</Tag>),
         },
-    ];
+    ]);
 
     const productColumns: ColumnsType<Product> = [
         {
@@ -252,6 +255,48 @@ const View: React.FC = () => {
         },
     ];
 
+    const onVariationTableChange = (pagination, filters, sorter, product: Product) => {
+        setLoading(true);
+
+        const filterDescriptors = convertFiltersToDescriptors(filters);
+
+        const newTableParams = {
+            pagination,
+            filters,
+            sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
+            sortField: Array.isArray(sorter) ? undefined : sorter.field,
+        };
+
+        const dataRequest = {
+            pagination,
+            filters: filterDescriptors,
+            sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
+            sortField: Array.isArray(sorter) ? undefined : sorter.field,
+        };
+
+        setVariationTableParams(newTableParams);
+
+        async function fetchVariations(dataRequest: any) {
+            const variations = await productService.getVariations(product.id, dataRequest);
+            console.log({ variations });
+            return variations;
+        }
+
+        fetchVariations(dataRequest)
+            .then((variations: Variation[]) => {
+                // find the product in data and replace the variations with the new variations
+                const newData = data?.map((product) => {
+                    if (product.id === product.id) {
+                        return { ...product, variations: variations };
+                    }
+                    return product;
+                });
+                setData(newData);
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    };
+
     const variationsRowRender = (record: Product, index: number) => (
         <Table<Variation>
             key={index}
@@ -261,7 +306,10 @@ const View: React.FC = () => {
             }}
             size="small"
             bordered
-            pagination={false}
+            pagination={variationTableParams.pagination}
+            onChange={(pagination, filters, sorter) =>
+                onVariationTableChange(pagination, filters, sorter, record)
+            }
             scroll={{ x: 'max-content', scrollToFirstRowOnChange: false }}
             dataSource={record.variations}
         />
@@ -365,6 +413,15 @@ const View: React.FC = () => {
         },
     });
 
+    const [variationTableParams, setVariationTableParams] = useState<TableParams>({
+        pagination: {
+            current: 1,
+            pageSize: 20,
+            position: ['bottomCenter'],
+            hideOnSinglePage: true,
+        },
+    });
+
     const fetchProducts = async (tableParams = {}) => {
         return await productService.getProducts(tableParams);
     };
@@ -431,6 +488,15 @@ const View: React.FC = () => {
             sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
             sortField: Array.isArray(sorter) ? undefined : sorter.field,
         };
+
+        setVariationColumns(
+            variationColumns?.map((col) => ({
+                ...col,
+                filteredValue: filters[col.dataIndex as string],
+            }))
+        );
+
+        console.log({ filters });
 
         const dataRequest = {
             pagination,

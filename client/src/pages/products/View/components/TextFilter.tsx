@@ -31,7 +31,7 @@ export const TextFilter = <T,>(): TableColumnType<T> => {
                             }}
                             onPressEnter={() => confirm()}
                             onSearch={(value) => {
-                                setSelectedKeys(value ? [value] : []);
+                                setSelectedKeys(value ? [{ ...current, input: value }] : []);
                                 confirm();
                             }}
                             allowClear

@@ -102,6 +102,12 @@ namespace InventoryHQ.Controllers
             return Ok(id);
         }
 
+        [HttpPost("{id:int}/variations")]
+        public async Task<ActionResult<IEnumerable<VariationDto>>> GetVariations(int id, [FromBody]TableDatasourceRequest? request)
+        {
+            var variations = await _productService.GetVariations(id, request);
+            return Ok(variations);
+        }
     }
 }
 
