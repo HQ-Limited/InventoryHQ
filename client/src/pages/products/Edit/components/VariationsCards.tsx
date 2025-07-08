@@ -5,7 +5,7 @@ import QuantityField from './QuantityField';
 import { WHOLESALE_ENABLED } from '../../../../global';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { DefaultOptionType } from 'antd/es/select';
-import { ProductAttribute } from '../../../../types/ProductTypes';
+import { Location, ProductAttribute } from '../../../../types/ProductTypes';
 
 function SelectField({
     name,
@@ -62,7 +62,7 @@ function SelectField({
         </Form.Item>
     );
 }
-export default function VariationsCards() {
+export default function VariationsCards({ locations }: { locations: Location[] }) {
     const form = Form.useFormInstance();
     const attributes = Form.useWatch('attributes') || [];
 
@@ -191,7 +191,7 @@ export default function VariationsCards() {
                                         label="Wholesale Price"
                                     />
                                 )}
-                                <QuantityField name={[field.name]} variation={true} />
+                                <QuantityField name={[field.name]} locations={locations} />
                             </Card>
                         ))}
                     </Flex>

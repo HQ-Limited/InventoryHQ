@@ -94,6 +94,7 @@ namespace InventoryHQ.Data
                 Description = "Warm and cozy sweater",
                 Categories = new List<Category> { categories[0] },
                 isVariable = true,
+                ManageQuantity = true,
                 Attributes = new List<ProductAttribute>
                 {
                     new ProductAttribute
@@ -126,7 +127,11 @@ namespace InventoryHQ.Data
                             {
                                 LocationId = dbLocations[0].Id,
                                 Quantity = 10,
-                                ManageQuantity = true
+                            },
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[1].Id,
+                                Quantity = 50,
                             },
                         }
                     },
@@ -146,7 +151,12 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
-                                ManageQuantity = false
+                                Quantity = 20,
+                            },
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[1].Id,
+                                Quantity = 30,
                             },
                         }
                     },
@@ -154,7 +164,69 @@ namespace InventoryHQ.Data
                 }
             };
 
+            var product2 = new Product
+            {
+                Name = "T-shirt",
+                Description = "Comfortable t-shirt",
+                Categories = new List<Category> { categories[1] },
+                isVariable = false,
+                ManageQuantity = true,
+                Attributes = new List<ProductAttribute>
+                {
+                    new ProductAttribute
+                    {
+                        Attribute = colorAttribute,
+                        Values = new List<AttributeValue>
+                        {
+                            dbAttributeValues.First(av => av.AttributeId == colorAttribute.Id && av.Value == "Red"),
+                        },
+                        IsVariational = false
+                    },
+                },
+                Variations = new List<Variation>
+                {
+                    new Variation
+                    {
+                        SKU = "ABC12345",
+                        RetailPrice = 12,
+                        InventoryUnits = new List<InventoryUnit>
+                        {
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[0].Id,
+                                Quantity = 10,
+                            },
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[1].Id,
+                                Quantity = 5,
+                            },
+                        }
+                    },
+
+                }
+            };
+
+            var product3 = new Product
+            {
+                Name = "T-shirt",
+                Description = "Comfortable t-shirt",
+                Categories = new List<Category> { categories[1] },
+                isVariable = false,
+                ManageQuantity = false,
+                Variations = new List<Variation>
+                {
+                    new Variation
+                    {
+                        SKU = "ABC123456",
+                        RetailPrice = 12,
+                    }
+                }
+            };
+
             context.Products.Add(product1);
+            context.Products.Add(product2);
+            context.Products.Add(product3);
             context.SaveChanges();
             Console.WriteLine("Seeding completed successfully.");
         }

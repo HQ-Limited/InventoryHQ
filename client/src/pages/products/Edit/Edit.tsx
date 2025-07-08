@@ -10,6 +10,7 @@ import {
     Category,
     Variation,
     VariationAttribute,
+    Location,
 } from '../../../types/ProductTypes';
 import NameField from './components/NameField';
 import DescriptionField from './components/DescriptionField';
@@ -24,9 +25,11 @@ import {
     UnorderedListOutlined,
 } from '@ant-design/icons';
 import PriceField from './components/PriceField';
-import { WHOLESALE_ENABLED } from '../../../global';
+import { LOCATIONS_ENABLED, WHOLESALE_ENABLED } from '../../../global';
 import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
+import locationService from '../../../services/locationService';
+import ManageQuantityCheckbox from './components/ManageQuantityCheckbox';
 
 const CreateEdit: React.FC = () => {
     const { message } = App.useApp();
@@ -41,13 +44,20 @@ const CreateEdit: React.FC = () => {
         attributes: [],
         variations: [],
         isVariable: false,
+        manageQuantity: true,
     });
     const [loading, setLoading] = useState(id ? true : false);
     const [saving, setSaving] = useState(false);
+    const [locations, setLocations] = useState<Location[]>([]);
 
     const fetchData = async () => {
         const categories = await categoryService.getCategories();
         setCategories(categories);
+
+        if (LOCATIONS_ENABLED) {
+            const locations = await locationService.getLocations();
+            setLocations(locations);
+        }
 
         let product: Product | undefined;
         if (id) {
@@ -131,6 +141,7 @@ const CreateEdit: React.FC = () => {
     };
 
     const onFinish: FormProps<Product>['onFinish'] = async (values) => {
+        return console.log(values);
         setSaving(true);
 
         try {
@@ -268,6 +279,20 @@ const CreateEdit: React.FC = () => {
 
     const commonProductItems: TabsProps['items'] = [
         {
+            key: '2',
+            label: 'Inventory',
+            icon: <TruckFilled />,
+            children: (
+                <>
+                    <ManageQuantityCheckbox />
+                    {!isVariable && (
+                        <QuantityField name={['variations', 0]} locations={locations} />
+                    )}
+                </>
+            ),
+            forceRender: true,
+        },
+        {
             key: '3',
             label: 'Attributes',
             icon: <UnorderedListOutlined />,
@@ -322,17 +347,7 @@ const CreateEdit: React.FC = () => {
                     {WHOLESALE_ENABLED && (
                         <PriceField name={[0, 'wholesalePrice']} label="Wholesale price" />
                     )}
-                </>
-            ),
-            forceRender: true,
-        },
-        {
-            key: '2',
-            label: 'Inventory',
-            icon: <TruckFilled />,
-            children: (
-                <>
-                    <QuantityField />
+
                     <SKUField />
                 </>
             ),
@@ -347,7 +362,7 @@ const CreateEdit: React.FC = () => {
             key: '4',
             label: 'Variations',
             icon: <ProductFilled />,
-            children: <VariationsCards />,
+            children: <VariationsCards locations={locations} />,
             forceRender: true,
         },
     ];

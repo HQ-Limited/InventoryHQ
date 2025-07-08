@@ -1,3 +1,24 @@
+export type Package = {
+    id: number;
+    label?: string;
+    price: number;
+    location: Location;
+    description?: string;
+};
+
+export type Location = {
+    id: number;
+    name: string;
+    description?: string;
+};
+
+export type InventoryUnit = {
+    id: number;
+    quantity: number;
+    package?: Package;
+    location: Location;
+};
+
 export type ProductAttribute = {
     id: number; // id of attribute name
     name: string;
@@ -23,6 +44,7 @@ export type Product = {
     id: number;
     name: string;
     description?: string;
+    manageQuantity: boolean;
     categories: Category[];
     attributes: ProductAttribute[];
     variations: Variation[];
@@ -31,12 +53,12 @@ export type Product = {
 
 export type Variation = {
     id: number;
+    sku: string;
     retailPrice: number;
     wholesalePrice?: number;
-    quantity: number;
-    manageQuantity: boolean;
-    sku: string;
-    attributes: VariationAttribute[];
+    description?: string;
+    attributes?: VariationAttribute[];
+    inventoryUnits?: InventoryUnit[];
 };
 
 export type Category = {

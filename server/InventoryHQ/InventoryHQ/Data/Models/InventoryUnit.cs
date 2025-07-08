@@ -4,10 +4,7 @@ namespace InventoryHQ.Data.Models
 {
     public class InventoryUnit : BaseEntity
     {
-        [Required]
-        public required bool ManageQuantity { get; set; }
-
-        public int? Quantity { get; set; }
+        public required int Quantity { get; set; }
 
         public int? PackageId { get; set; }
 

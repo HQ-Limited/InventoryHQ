@@ -29,6 +29,7 @@ import { TextFilter } from './components/TextFilter';
 import { NumberFilter } from './components/NumberFilter';
 import { generateCategoriesTree, Tree } from '../../../utils/generate';
 import categoryService from '../../../services/categoryService';
+import { LOCATIONS_ENABLED } from '../../../global';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -48,6 +49,15 @@ const StatusTag = ({ quantity }: { quantity: number }) => {
     }
 };
 
+const IconTooltip = ({ title, text }: { title: string; text: string | number }) => (
+    <>
+        <Typography.Text style={{ paddingRight: '5px' }}>{text}</Typography.Text>
+        <Tooltip title={title}>
+            <InfoCircleOutlined />
+        </Tooltip>
+    </>
+);
+
 const View: React.FC = () => {
     const [categoriesTree, setCategoriesTree] = useState<Tree[]>([]);
     const { message } = App.useApp();
@@ -58,6 +68,7 @@ const View: React.FC = () => {
             key: 'sku',
             title: 'SKU',
             dataIndex: 'sku',
+            ...TextFilter(),
         },
         {
             // responsive: ['md'],
@@ -65,14 +76,22 @@ const View: React.FC = () => {
             key: 'price',
             title: 'Price',
             dataIndex: 'retailPrice',
+            ...NumberFilter(),
         },
         {
-            // responsive: ['md'],
             width: 100,
-            key: 'quantity',
+            key: 'locations',
             title: 'Quantity',
-            dataIndex: 'quantity',
-            render: (_, record) => (record.manageQuantity ? record.quantity : 'N/A'),
+            render: (_, record) => {
+                if (LOCATIONS_ENABLED) {
+                    return record.inventoryUnits!.map((unit) => (
+                        <Tag key={unit.location.id}>
+                            {unit.location.name} ({unit.quantity})
+                        </Tag>
+                    ));
+                }
+                return record.inventoryUnits![0].quantity;
+            },
         },
         {
             // responsive: ['sm'],
@@ -80,17 +99,7 @@ const View: React.FC = () => {
             key: 'attributes',
             title: 'Attributes',
             render: (_, record) =>
-                record.attributes.map((attr, i) => <Tag key={i}>{attr.value.value}</Tag>),
-        },
-        {
-            width: 100,
-            key: 'status',
-            title: 'Status',
-            filters: [
-                { text: 'In Stock', value: 'instock' },
-                { text: 'Out of Stock', value: 'outofstock' },
-            ],
-            render: (_, record) => <StatusTag quantity={record.quantity} />,
+                record.attributes?.map((attr, i) => <Tag key={i}>{attr.value.value}</Tag>),
         },
     ];
 
@@ -109,7 +118,7 @@ const View: React.FC = () => {
             key: 'sku',
             title: 'SKU',
             render: (_, record) => {
-                if (record.variations.length === 1) {
+                if (record.isVariable === false) {
                     return record.variations[0].sku;
                 } else {
                     return 'N/A';
@@ -125,7 +134,7 @@ const View: React.FC = () => {
             dataIndex: 'price',
             sorter: true,
             render: (_, record) => {
-                if (record.variations.length === 1) {
+                if (record.isVariable === false) {
                     return record.variations[0].retailPrice;
                 } else {
                     return 'N/A';
@@ -134,32 +143,30 @@ const View: React.FC = () => {
             ...NumberFilter(),
         },
         {
-            // responsive: ['lg'],
             width: 100,
-            key: 'quantity',
+            key: 'locations',
             title: 'Quantity',
-            dataIndex: 'quantity',
-            sorter: true,
             render: (_, record) => {
-                if (record.variations.length === 1) {
-                    return record.variations[0].manageQuantity
-                        ? record.variations[0].quantity
-                        : 'N/A';
-                } else {
-                    if (record.variations.every((v) => !v.manageQuantity)) {
-                        return 'N/A';
+                if (record.manageQuantity === false) return 'Infinite';
+
+                if (record.isVariable === false) {
+                    if (LOCATIONS_ENABLED) {
+                        return record.variations[0].inventoryUnits!.map((unit) => (
+                            <Tag key={unit.location.id}>
+                                {unit.location.name} ({unit.quantity})
+                            </Tag>
+                        ));
                     }
+                    return record.variations[0].inventoryUnits![0].quantity;
+                } else {
                     return (
-                        <>
-                            <Typography.Text style={{ paddingRight: '5px' }}>
-                                {record.variations
-                                    .filter((v) => v.manageQuantity)
-                                    .reduce((a, b) => a + b.quantity, 0)}
-                            </Typography.Text>
-                            <Tooltip title="Sum of all variations quantities">
-                                <InfoCircleOutlined />
-                            </Tooltip>
-                        </>
+                        <IconTooltip
+                            title="Sum of all variation quantities"
+                            text={record.variations.reduce(
+                                (a, b) => a + b.inventoryUnits!.reduce((c, d) => c + d.quantity, 0),
+                                0
+                            )}
+                        />
                     );
                 }
             },
@@ -210,19 +217,6 @@ const View: React.FC = () => {
             },
         },
         {
-            responsive: ['sm', 'md'],
-            width: 100,
-            key: 'status',
-            title: 'Status',
-            filters: [
-                { text: 'In Stock', value: 'instock' },
-                { text: 'Out of Stock', value: 'outofstock' },
-            ],
-            render: (_, record) => (
-                <StatusTag quantity={record.variations.reduce((a, b) => a + b.quantity, 0)} />
-            ),
-        },
-        {
             fixed: 'right',
             key: 'action',
             title: 'Action',
@@ -257,7 +251,7 @@ const View: React.FC = () => {
         },
     ];
 
-    const expandedRowRender = (record: Product, index: number) => (
+    const variationsRowRender = (record: Product, index: number) => (
         <Table<Variation>
             key={index}
             columns={variationColumns}
@@ -277,7 +271,6 @@ const View: React.FC = () => {
     const [hiddenColumns, setHiddenColumns] = useState<string[]>(
         productColumns.filter((item) => item?.hidden == true).map((item) => item.key as string)
     );
-
     const onDeleteProduct = (id: number) => {
         return new Promise<void>((resolve, reject) => {
             try {
@@ -426,8 +419,8 @@ const View: React.FC = () => {
                 dataSource={data}
                 size="small"
                 expandable={{
-                    expandedRowRender,
-                    rowExpandable: (record) => record.variations.length > 1,
+                    expandedRowRender: variationsRowRender,
+                    rowExpandable: (record) => record.isVariable,
                 }}
                 sticky
                 pagination={tableParams.pagination}

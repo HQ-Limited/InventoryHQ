@@ -20,17 +20,17 @@ class AttributeService {
     }
 
     async getAttributeValues(id: number): Promise<AttributeValue[]> {
-        const response = await api.get(`Attribute/${id}`);
+        const response = await api.get<AttributeValue[]>(`Attribute/${id}`);
         return response.data;
     }
 
     async createAttribute(name: string): Promise<number> {
-        const response = await api.post('Attribute', null, { params: { name } });
+        const response = await api.post<number>('Attribute', null, { params: { name } });
         return response.data;
     }
 
     async createAttributeValue({ id, value }: { id: number; value: string }): Promise<number> {
-        const response = await api.post(`Attribute/${id}`, null, { params: { value } });
+        const response = await api.post<number>(`Attribute/${id}`, null, { params: { value } });
         return response.data;
     }
 }
