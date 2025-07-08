@@ -5,7 +5,7 @@ import QuantityField from './QuantityField';
 import { WHOLESALE_ENABLED } from '../../../../global';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { DefaultOptionType } from 'antd/es/select';
-import { Location, ProductAttribute } from '../../../../types/ProductTypes';
+import { InventoryUnit, Location, ProductAttribute } from '../../../../types/ProductTypes';
 
 function SelectField({
     name,
@@ -191,6 +191,82 @@ export default function VariationsCards({ locations }: { locations: Location[] }
                                         label="Wholesale Price"
                                     />
                                 )}
+                                {/* <Form.Item
+                                    label="Locations"
+                                    name={[field.name, 'inventoryUnits']}
+                                    getValueFromEvent={(values: (number | string)[]) => {
+                                        const prevLocations = form.getFieldValue([
+                                            'variations',
+                                            field.name,
+                                            'inventoryUnits',
+                                        ]);
+                                        console.log({ prevLocations });
+                                        if (values.length == 0) {
+                                            return [];
+                                        }
+                                        // find out which value was added/removed
+                                        const added = values.find(
+                                            (v) =>
+                                                !prevLocations?.find(
+                                                    (inventoryUnit: InventoryUnit) =>
+                                                        inventoryUnit.location.id == v
+                                                )
+                                        );
+
+                                        if (added) {
+                                            return [
+                                                ...(prevLocations || []),
+                                                {
+                                                    location: {
+                                                        id: added,
+                                                        name: locations!.find((l) => l.id == added)!
+                                                            .name,
+                                                    },
+                                                },
+                                            ];
+                                        }
+
+                                        const removed = prevLocations?.find(
+                                            (inventoryUnit: InventoryUnit) =>
+                                                !values.find((v) => v == inventoryUnit.location.id)
+                                        );
+
+                                        if (removed) {
+                                            return prevLocations.filter(
+                                                (a: InventoryUnit) =>
+                                                    a.location.id != removed.location.id
+                                            );
+                                        }
+
+                                        return prevLocations;
+                                    }}
+                                    getValueProps={(inventoryUnits) => {
+                                        console.log({ inventoryUnits });
+                                        return {
+                                            value: inventoryUnits?.map(
+                                                (l: InventoryUnit) => l.location.id
+                                            ),
+                                        };
+                                    }}
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please select at least one location!',
+                                        },
+                                    ]}
+                                >
+                                    <Select
+                                        mode="multiple"
+                                        allowClear
+                                        showSearch
+                                        placeholder="Select location/s"
+                                        optionFilterProp="label"
+                                        options={locations!.map((location) => ({
+                                            label: location.name,
+                                            value: location.id,
+                                        }))}
+                                    />
+                                </Form.Item> */}
                                 <QuantityField name={[field.name]} locations={locations} />
                             </Card>
                         ))}
