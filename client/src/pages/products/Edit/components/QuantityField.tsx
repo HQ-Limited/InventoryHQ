@@ -1,7 +1,6 @@
-import { Card, Form, InputNumber, Select } from 'antd';
+import { Form, InputNumber, Select } from 'antd';
 import { LOCATIONS_ENABLED } from '../../../../global';
 import { InventoryUnit, Location } from '../../../../types/ProductTypes';
-import ManageQuantityCheckbox from './ManageQuantityCheckbox';
 
 const QuantityInputField = ({
     name,
@@ -44,7 +43,7 @@ export default function QuantityField({
     name,
     locations,
 }: {
-    name?: (number | string)[];
+    name: (number | string)[];
     locations?: Location[];
 }) {
     const form = Form.useFormInstance();
@@ -55,9 +54,9 @@ export default function QuantityField({
 
     return (
         <>
-            {manageQuantity &&
-                (LOCATIONS_ENABLED ? (
-                    <>
+            {manageQuantity && (
+                <>
+                    {LOCATIONS_ENABLED && (
                         <Form.Item
                             label="Locations"
                             name={[...name, 'inventoryUnits']}
@@ -101,7 +100,7 @@ export default function QuantityField({
                             }}
                             getValueProps={(variations) => {
                                 return {
-                                    value: variations.map((l) => l.location.id),
+                                    value: variations?.map((l) => l.location.id),
                                 };
                             }}
                             rules={[
@@ -123,31 +122,33 @@ export default function QuantityField({
                                 }))}
                             />
                         </Form.Item>
-                        <Form.List name={[...name, 'inventoryUnits']}>
-                            {(fields) => (
-                                <>
-                                    {fields.map((field) => {
-                                        const location = form.getFieldValue([
-                                            ...(isVariable ? ['variations'] : []),
-                                            ...name,
-                                            'inventoryUnits',
-                                            field.name,
-                                            'location',
-                                        ]);
-                                        return (
-                                            <QuantityInputField
-                                                name={[field.name]}
-                                                label={location.name}
-                                            />
-                                        );
-                                    })}
-                                </>
-                            )}
-                        </Form.List>
-                    </>
-                ) : (
-                    <QuantityInputField name={[...name]} />
-                ))}
+                    )}
+
+                    <Form.List name={[...name, 'inventoryUnits']}>
+                        {(fields) => {
+                            if (LOCATIONS_ENABLED == false) {
+                                return <QuantityInputField name={[...name]} />;
+                            }
+
+                            return fields.map((field) => {
+                                const location = form.getFieldValue([
+                                    ...(isVariable ? ['variations'] : []),
+                                    ...name,
+                                    'inventoryUnits',
+                                    field.name,
+                                    'location',
+                                ]);
+                                return (
+                                    <QuantityInputField
+                                        name={[field.name]}
+                                        label={`${location.name} quantity`}
+                                    />
+                                );
+                            });
+                        }}
+                    </Form.List>
+                </>
+            )}
         </>
     );
 }
