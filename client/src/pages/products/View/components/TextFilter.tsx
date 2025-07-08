@@ -15,7 +15,10 @@ export const TextFilter = <T,>(): TableColumnType<T> => {
                         setSelectedKeys(e.target.value ? [e.target.value] : []);
                     }}
                     onPressEnter={() => confirm()}
-                    onSearch={() => confirm()}
+                    onSearch={(value) => {
+                        setSelectedKeys(value ? [value] : []);
+                        confirm();
+                    }}
                     allowClear
                     style={{ marginBottom: 8, display: 'block' }}
                 />
