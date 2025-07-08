@@ -14,6 +14,6 @@ namespace InventoryHQ.Models.DTOs
 
         public List<VariationAttributeDto>? Attributes { get; set; }
 
-        public required List<InventoryUnitDto> InventoryUnits { get; set; }
+        public required List<InventoryUnitDto>? InventoryUnits { get; set; }
     }
 }

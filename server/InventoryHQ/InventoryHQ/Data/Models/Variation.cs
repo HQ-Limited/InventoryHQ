@@ -18,7 +18,7 @@ namespace InventoryHQ.Data.Models
 
         public Product Product { get; set; }
 
-        public required ICollection<InventoryUnit> InventoryUnits { get; set; }
+        public ICollection<InventoryUnit>? InventoryUnits { get; set; }
 
         public ICollection<VariationAttribute>? Attributes { get; set; }
     }

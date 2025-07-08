@@ -10,6 +10,10 @@ namespace InventoryHQ.Data.Models
         public string? Description { get; set; }
 
         [Required]
+        public required bool ManageQuantity { get; set; }
+        public bool? InStock { get; set; }
+
+        [Required]
         public required List<Variation> Variations { get; set; }
 
         public List<ProductAttribute>? Attributes { get; set; }

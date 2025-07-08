@@ -13,6 +13,7 @@ namespace InventoryHQ.Profiles
             CreateMap<InventoryUnit, InventoryUnitDto>().ReverseMap();
 
             CreateMap<Product, ProductDto>()
+                .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src => GetProductAttributes(src)))
                 .ReverseMap();
 
             CreateMap<Category, CategoryDto>().ReverseMap();
@@ -30,10 +31,24 @@ namespace InventoryHQ.Profiles
             .ReverseMap();
 
             CreateMap<ProductAttribute, ProductAttributeDto>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Product.Name))
                 .ReverseMap();
 
             CreateMap<Data.Models.Attribute, AttributeDto>().ReverseMap();
+        }
+
+        private object GetProductAttributes(Product src)
+        {
+            return src.Attributes.Select(pa => new ProductAttributeDto
+            {
+                Id = pa.Attribute.Id,
+                Name = pa.Attribute.Name,
+                IsVariational = pa.IsVariational,
+                Values = pa.Values.Select(v => new AttributeValueDto
+                {
+                    Id = v.Id,
+                    Value = v.Value
+                }).ToList()
+            }).ToList();
         }
 
         private object GetVariationAttributes(Variation src)
