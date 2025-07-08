@@ -71,8 +71,8 @@ namespace InventoryHQ.Services
         public async Task<IEnumerable<AttributeValueDto>> GetAttributeValues(int id)
         {
             var attributeValues = await _data.AttributeValues
-            .Where(av => av.AttributeId == id)
-            .ToListAsync();
+                                        .Where(av => av.AttributeId == id)
+                                        .ToListAsync();
 
             var result = _mapper.Map<IEnumerable<AttributeValueDto>>(attributeValues);
             return result;
@@ -96,7 +96,6 @@ namespace InventoryHQ.Services
 
         public async Task<int?> CreateAttributeValue(int id, string value)
         {
-            //FIXME THIS IS NOT WORKING FOR SOME REASON
             if (string.IsNullOrWhiteSpace(value))
                 return null;
 

@@ -2,8 +2,8 @@ import { Product } from '../types/ProductTypes';
 import api from '../utils/api';
 
 class ProductService {
-    async getProducts(): Promise<Product[]> {
-        const response = await api.get<Product[]>('Product');
+    async getProducts(payload: any): Promise<Product[]> {
+        const response = await api.post<Product[]>('Product/search', payload ?? {});
         return response.data;
     }
 

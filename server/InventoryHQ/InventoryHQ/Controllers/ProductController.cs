@@ -41,10 +41,10 @@ namespace InventoryHQ.Controllers
         /// Retrieves all products.
         /// </summary>
         /// <returns>A list of all products.</returns>
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDto>>> Get()
+        [HttpPost("search")]
+        public async Task<ActionResult<IEnumerable<ProductDto>>> Get([FromBody]TableDatasourceRequest? request)
         {
-            var products = await _productService.GetProducts();
+            var products = await _productService.GetProducts(request);
             return Ok(products);
         }
 

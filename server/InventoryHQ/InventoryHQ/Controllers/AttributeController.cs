@@ -16,12 +16,12 @@ namespace InventoryHQ.Controllers
             _attributeService = attributeService;
         }
 
-/// <summary>
-/// Retrieves a list of attributes, optionally including their values.
-/// </summary>
-/// <param name="includeValues">If true, includes attribute values in the response.</param>
-/// <param name="ids">An array of attribute IDs to fill with values. If includeValues is false, this array is ignored. If null or empty, returns all attributes with all values.</param>
-/// <returns>A list of attributes.</returns>
+        /// <summary>
+        /// Retrieves a list of attributes, optionally including their values.
+        /// </summary>
+        /// <param name="includeValues">If true, includes attribute values in the response.</param>
+        /// <param name="ids">An array of attribute IDs to fill with values. If includeValues is false, this array is ignored. If null or empty, returns all attributes with all values.</param>
+        /// <returns>A list of attributes.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AttributeDto>>> Get(
             [FromQuery] bool includeValues = false,
@@ -54,7 +54,7 @@ namespace InventoryHQ.Controllers
 
             return Ok(values);
         }
-        
+
         /// <summary>
         /// Creates a new attribute.
         /// </summary>
@@ -86,7 +86,7 @@ namespace InventoryHQ.Controllers
 
             if (valueId == null)
             {
-            return BadRequest();
+                return BadRequest();
             }
 
             return Ok(valueId);
