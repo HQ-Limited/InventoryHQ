@@ -1,4 +1,4 @@
-import { Product } from '../types/ProductTypes';
+import { Product, Variation } from '../types/ProductTypes';
 import api from '../utils/api';
 
 class ProductService {
@@ -25,6 +25,11 @@ class ProductService {
     async deleteProduct(id: number): Promise<number> {
         const response = await api.delete<number>(`Product/${id}`);
         return response.status;
+    }
+
+    async getVariations(id: number, payload: any): Promise<Variation[]> {
+        const response = await api.post<Variation[]>(`Product/${id}/variations`, payload ?? {});
+        return response.data;
     }
 }
 

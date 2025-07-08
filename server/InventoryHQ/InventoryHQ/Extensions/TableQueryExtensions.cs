@@ -53,6 +53,38 @@ namespace InventoryHQ.Extensions
             return query;
         }
 
+        public static IQueryable<Variation> ApplyVariationFilters(this IQueryable<Variation> query, IEnumerable<TableFilter> filters) 
+        {
+            if (filters == null || !filters.Any())
+            {
+                return query;
+            }
+
+            foreach (var filter in filters)
+            {
+                var filterValue = filter.Value.ToString();
+                switch (filter.FieldName.ToLower())
+                {
+                    case "sku":
+                        if (filter.Operator == "ct")
+                        {
+                            query = query.Where(x => x.SKU.Contains(filterValue));
+                        }
+                        else if (filter.Operator == "sw")
+                        {
+                            query = query.Where(x => x.SKU.StartsWith(filterValue));
+                        }
+                        else if (filter.Operator == "eq")
+                        {
+                            query = query.Where(x => x.SKU == filterValue);
+                        }
+                        break;
+                }
+            }
+
+            return query;
+        }
+
         public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, string sortField, string sortOrder)
         {
             if (!string.IsNullOrWhiteSpace(sortField))
