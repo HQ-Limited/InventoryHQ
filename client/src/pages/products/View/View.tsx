@@ -277,9 +277,7 @@ const View: React.FC = () => {
         setVariationTableParams(newTableParams);
 
         async function fetchVariations(dataRequest: any) {
-            const variations = await productService.getVariations(product.id, dataRequest);
-            console.log({ variations });
-            return variations;
+            return await productService.getVariations(product.id, dataRequest);
         }
 
         fetchVariations(dataRequest)
