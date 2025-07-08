@@ -11,6 +11,7 @@
         public required bool IsVariable { get; set; }
 
         public required bool ManageQuantity { get; set; }
+
         public bool? InStock { get; set; }
 
         public List<CategoryDto>? Categories { get; set; }

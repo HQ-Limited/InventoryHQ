@@ -11,6 +11,7 @@ namespace InventoryHQ.Data.Models
 
         [Required]
         public required bool ManageQuantity { get; set; }
+
         public bool? InStock { get; set; }
 
         [Required]
@@ -18,7 +19,7 @@ namespace InventoryHQ.Data.Models
 
         public List<ProductAttribute>? Attributes { get; set; }
 
-        public List<Category>? Categories { get; set; }
+        public List<Category>? Categories { get; set; } = new List<Category>();
 
         public bool isVariable { get; set; }
     }

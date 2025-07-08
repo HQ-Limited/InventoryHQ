@@ -144,7 +144,7 @@ const View: React.FC = () => {
         },
         {
             width: 100,
-            key: 'locations',
+            key: 'quantity',
             title: 'Quantity',
             render: (_, record) => {
                 if (record.manageQuantity === false) return 'Infinite';
@@ -170,6 +170,7 @@ const View: React.FC = () => {
                     );
                 }
             },
+            ...NumberFilter(),
         },
         {
             responsive: ['lg'],
@@ -386,8 +387,43 @@ const View: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    function convertFiltersToDescriptors(data) {
+        const descriptors = [];
+
+        for (const [field, filters] of Object.entries(data)) {
+            if (Array.isArray(filters)) {
+                if (
+                    typeof filters[0] === 'object' &&
+                    filters[0] !== null &&
+                    'operator' in filters[0]
+                ) {
+                    for (const f of filters) {
+                        descriptors.push({
+                            fieldName: field,
+                            value: f.input,
+                            operator: f.operator,
+                        });
+                    }
+                } else {
+                    // Simple array of values, assume equality
+                    for (const val of filters) {
+                        descriptors.push({
+                            fieldName: field,
+                            value: val,
+                            operator: 'eq',
+                        });
+                    }
+                }
+            }
+        }
+
+        return descriptors;
+    }
+
     const onTableChange: TableProps<Product>['onChange'] = (pagination, filters, sorter) => {
         setLoading(true);
+
+        const filterDescriptors = convertFiltersToDescriptors(filters);
 
         const newTableParams = {
             pagination,
@@ -396,9 +432,16 @@ const View: React.FC = () => {
             sortField: Array.isArray(sorter) ? undefined : sorter.field,
         };
 
+        const dataRequest = {
+            pagination,
+            filters: filterDescriptors,
+            sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
+            sortField: Array.isArray(sorter) ? undefined : sorter.field,
+        };
+
         setTableParams(newTableParams);
 
-        fetchProducts(newTableParams)
+        fetchProducts(dataRequest)
             .then((products) => {
                 setData(products);
             })

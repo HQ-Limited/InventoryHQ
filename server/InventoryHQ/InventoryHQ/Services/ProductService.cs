@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using InventoryHQ.Data;
 using InventoryHQ.Data.Models;
+using InventoryHQ.Extensions;
 using InventoryHQ.Models.DTOs;
 using InventoryHQ.Models.Request;
 using Microsoft.EntityFrameworkCore;
@@ -39,20 +40,23 @@ namespace InventoryHQ.Services
             return product;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetProducts()
+        public async Task<IEnumerable<ProductDto>> GetProducts(TableDatasourceRequest? request)
         {
-            var data = await _data.Products
-                                .Include(x => x.Categories)
-                                .Include(x => x.Attributes)
-                                    .ThenInclude(pa => pa.Attribute)
-                                .Include(x => x.Attributes)
-                                    .ThenInclude(a => a.Values)
-                                .Include(x => x.Variations)
-                                    .ThenInclude(v => v.Attributes)
-                                .Include(x => x.Variations)
-                                    .ThenInclude(i => i.InventoryUnits)
-                                        .ThenInclude(i => i.Location)
-                                .ToListAsync();
+            var data = _data.Products
+                            .Include(x => x.Categories)
+                            .Include(x => x.Attributes)
+                                .ThenInclude(pa => pa.Attribute)
+                            .Include(x => x.Attributes)
+                                .ThenInclude(a => a.Values)
+                            .Include(x => x.Variations)
+                                .ThenInclude(v => v.Attributes)
+                            .Include(x => x.Variations)
+                                .ThenInclude(i => i.InventoryUnits)
+                                    .ThenInclude(i => i.Location)
+                            .AsQueryable();
+
+            data = data.ApplyProductFilters(request.Filters);
+
             var products = _mapper.Map<IEnumerable<ProductDto>>(data);
 
             return products;
