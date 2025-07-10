@@ -1,19 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace InventoryHQ.Models.DTOs
+﻿namespace InventoryHQ.Models.DTOs
 {
     public class VariationDto
     {
         public int Id { get; set; }
 
-        public required string SKU { get; set; }
+        public string SKU { get; set; }
 
-        public required decimal RetailPrice { get; set; }
+        public decimal RetailPrice { get; set; }
 
         public string? Description { get; set; }
 
-        public List<VariationAttributeDto>? Attributes { get; set; }
+        public IEnumerable<VariationAttributeDto>? Attributes { get; set; }
 
-        public required List<InventoryUnitDto>? InventoryUnits { get; set; }
+        public IEnumerable<InventoryUnitDto>? InventoryUnits { get; set; }
     }
 }
