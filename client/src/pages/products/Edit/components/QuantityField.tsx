@@ -49,7 +49,7 @@ export default function QuantityField({
     const form = Form.useFormInstance();
     const manageQuantity = Form.useWatch('manageQuantity');
     const isVariable = Form.useWatch('isVariable');
-    const prevLocations = form.getFieldValue([
+    const prevLocations = Form.useWatch([
         ...(isVariable ? ['variations'] : []),
         ...name,
         'inventoryUnits',
@@ -76,6 +76,7 @@ export default function QuantityField({
                             );
 
                             if (added) {
+                                console.log({ added, prevLocations });
                                 return [
                                     ...(prevLocations || []),
                                     {
