@@ -5,7 +5,7 @@ import QuantityField from './QuantityField';
 import { WHOLESALE_ENABLED } from '../../../../global';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { DefaultOptionType } from 'antd/es/select';
-import { InventoryUnit, Location, ProductAttribute } from '../../../../types/ProductTypes';
+import { Location, ProductAttribute } from '../../../../types/ProductTypes';
 
 function SelectField({
     name,

@@ -1,6 +1,7 @@
 ﻿using InventoryHQ.Data.Models;
 using Bogus;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace InventoryHQ.Data
 {
@@ -88,9 +89,9 @@ namespace InventoryHQ.Data
             var dbAttributeValues = context.AttributeValues.ToList();
 
 
-            var product1 = new Product
+            var variableProduct = new Product
             {
-                Name = "Sweater",
+                Name = "Variable Product in 2 Locations",
                 Description = "Warm and cozy sweater",
                 Categories = new List<Category> { categories[0] },
                 isVariable = true,
@@ -164,9 +165,9 @@ namespace InventoryHQ.Data
                 }
             };
 
-            var product2 = new Product
+            var simpleProduct1 = new Product
             {
-                Name = "T-shirt",
+                Name = "Simple product in 2 locations",
                 Description = "Comfortable t-shirt",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
@@ -207,9 +208,9 @@ namespace InventoryHQ.Data
                 }
             };
 
-            var product3 = new Product
+            var simpleProduct2 = new Product
             {
-                Name = "T-shirt",
+                Name = "Simple product in 2 locations (Unmannaged quantity)",
                 Description = "Comfortable t-shirt",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
@@ -224,9 +225,167 @@ namespace InventoryHQ.Data
                 }
             };
 
-            context.Products.Add(product1);
-            context.Products.Add(product2);
-            context.Products.Add(product3);
+            var package1 = new Package
+            {
+                Price = 10,
+                LocationId = dbLocations[0].Id
+            };
+
+            var package2 = new Package
+            {
+                Price = 5,
+                LocationId = dbLocations[0].Id
+            };
+
+            var package3 = new Package
+            {
+                Price = 10,
+                LocationId = dbLocations[0].Id
+            };
+
+            var package4 = new Package
+            {
+                Price = 5,
+                LocationId = dbLocations[0].Id
+            };
+
+            context.Packages.AddRange(new List<Package> { package1, package2, package3, package4 });
+            context.SaveChanges();
+
+
+            var simpleProductPackages = new Product
+            {
+                Name = "Simple product with 2 packages",
+                Description = "This product contains 2 packages with the following data inside: Package 1 - 10$ - 10 pieces inside, Package 2 - 5$ - 5 pieces inside",
+                Categories = new List<Category> { categories[1] },
+                isVariable = false,
+                ManageQuantity = true,
+                Attributes = new List<ProductAttribute>
+                {
+                    new ProductAttribute
+                    {
+                        Attribute = colorAttribute,
+                        Values = new List<AttributeValue>
+                        {
+                            dbAttributeValues.First(av => av.AttributeId == colorAttribute.Id && av.Value == "Red"),
+                        },
+                        IsVariational = false
+                    },
+                },
+                Variations = new List<Variation>
+                {
+                    new Variation
+                    {
+                        SKU = "FFFF123",
+                        RetailPrice = 12,
+                        InventoryUnits = new List<InventoryUnit>
+                        {
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[0].Id,
+                                Quantity = 10,
+                                PackageId = package1.Id
+                            },
+                            {
+                                new InventoryUnit
+                                {
+                                    LocationId = dbLocations[0].Id,
+                                    Quantity = 5,
+                                    PackageId = package2.Id
+                                }
+                            }
+                        },
+                    },
+
+                }
+            };
+
+            var variableProductPackages = new Product
+            {
+                Name = "Variable Product with 2 packages",
+                Description = "This product contains 2 packages with the following data inside: Package 1 - 10$ - 10 pieces of variation 1 and 10 pieces of variation 2, Package 2 - 5$ - 10 pieces of variation 1 and 5 pieces of variation 2",
+                Categories = new List<Category> { categories[0] },
+                isVariable = true,
+                ManageQuantity = true,
+                Attributes = new List<ProductAttribute>
+                {
+                    new ProductAttribute
+                    {
+                        Attribute = colorAttribute,
+                        Values = new List<AttributeValue>
+                        {
+                            dbAttributeValues.First(av => av.AttributeId == colorAttribute.Id && av.Value == "Red"),
+                            dbAttributeValues.First(av => av.AttributeId == colorAttribute.Id && av.Value == "Green")
+                        },
+                        IsVariational = true
+                    },
+                },
+                Variations = new List<Variation>
+                {
+                    new Variation
+                    {
+                        SKU = "AAA111",
+                        RetailPrice = 20,
+                        Attributes = new List<VariationAttribute>
+                        {
+                            new VariationAttribute
+                            {
+                                AttributeValueId = dbAttributeValues.First(av => av.AttributeId == colorAttribute.Id && av.Value == "Red").Id,
+                            }
+                        },
+                        InventoryUnits = new List<InventoryUnit>
+                        {
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[0].Id,
+                                Quantity = 10,
+                                PackageId = package3.Id
+                            },
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[0].Id,
+                                Quantity = 10,
+                                PackageId = package4.Id
+                            },
+                        }
+                    },
+                    new Variation
+                    {
+                        SKU = "AAA222",
+                        RetailPrice = 25,
+                        Attributes = new List<VariationAttribute>
+                        {
+                            new VariationAttribute
+                            {
+                                AttributeValueId = dbAttributeValues.First(av => av.AttributeId == colorAttribute.Id && av.Value == "Green").Id,
+                            }
+                        },
+                        InventoryUnits = new List<InventoryUnit>
+                        {
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[0].Id,
+                                Quantity = 10,
+                                PackageId = package3.Id
+                            },
+                            new InventoryUnit
+                            {
+                                LocationId = dbLocations[0].Id,
+                                Quantity = 5,
+                                PackageId = package4.Id
+                            },
+                        }
+                    },
+
+                }
+            };
+
+
+            context.Products.Add(variableProduct);
+            context.Products.Add(simpleProduct1);
+            context.Products.Add(simpleProduct2);
+            context.Products.Add(simpleProductPackages);
+            context.Products.Add(variableProductPackages);
             context.SaveChanges();
             Console.WriteLine("Seeding completed successfully.");
         }

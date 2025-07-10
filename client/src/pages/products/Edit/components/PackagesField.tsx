@@ -125,7 +125,7 @@ const LocationField = ({
     );
 };
 
-export default function QuantityField({
+export default function PackageField({
     name,
     locations,
 }: {
@@ -139,39 +139,32 @@ export default function QuantityField({
     return (
         <>
             {manageQuantity && (
-                <>
-                    {LOCATIONS_ENABLED && (
-                        <LocationField name={name} locations={locations!} isVariable={isVariable} />
-                    )}
-                    <Form.List name={[...name, 'inventoryUnits']}>
-                        {(fields) =>
-                            fields.map((field) => {
-                                const inventoryUnit = form.getFieldValue([
-                                    ...(isVariable ? ['variations'] : []),
-                                    ...name,
-                                    'inventoryUnits',
-                                    field.name,
-                                ]);
+                <Form.List name={[...name, 'inventoryUnits']}>
+                    {(fields) =>
+                        fields.map((field) => {
+                            const inventoryUnit = form.getFieldValue([
+                                ...(isVariable ? ['variations'] : []),
+                                ...name,
+                                'inventoryUnits',
+                                field.name,
+                            ]);
 
-                                const location = inventoryUnit.location;
+                            const location = inventoryUnit.location;
 
-                                if (inventoryUnit.package) return;
+                            if (!inventoryUnit.package) return;
 
-                                return (
-                                    <QuantityInputField
-                                        key={field.key}
-                                        name={[field.name]}
-                                        label={
-                                            LOCATIONS_ENABLED
-                                                ? `${location.name} quantity`
-                                                : undefined
-                                        }
-                                    />
-                                );
-                            })
-                        }
-                    </Form.List>
-                </>
+                            return (
+                                <QuantityInputField
+                                    key={field.key}
+                                    name={[field.name]}
+                                    label={
+                                        LOCATIONS_ENABLED ? `${location.name} quantity` : undefined
+                                    }
+                                />
+                            );
+                        })
+                    }
+                </Form.List>
             )}
         </>
     );

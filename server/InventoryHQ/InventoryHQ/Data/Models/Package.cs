@@ -9,10 +9,12 @@ namespace InventoryHQ.Data.Models
         [Required]
         public required decimal Price { get; set; }
 
-        public int LocationId { get; set; }
-
         [Required]
-        public required Location Location { get; set; }
+        public required int LocationId { get; set; }
+
+        public Location Location { get; set; }
+
+        public List<InventoryUnit> InventoryUnit { get; set; }
 
         [MaxLength(200)]
         public string? Description { get; set; }

@@ -34,6 +34,9 @@ namespace InventoryHQ.Services
                                 .Include(x => x.Variations)
                                     .ThenInclude(i => i.InventoryUnits)
                                         .ThenInclude(i => i.Location)
+                                .Include(x => x.Variations)
+                                    .ThenInclude(v => v.InventoryUnits)
+                                        .ThenInclude(iu => iu.Package)
                                 .FirstOrDefaultAsync(x => x.Id == id);
             var product = _mapper.Map<ProductDto>(data);
 
@@ -44,15 +47,18 @@ namespace InventoryHQ.Services
         {
             var data = _data.Products
                             .Include(x => x.Categories)
-                            .Include(x => x.Attributes)
-                                .ThenInclude(pa => pa.Attribute)
-                            .Include(x => x.Attributes)
-                                .ThenInclude(a => a.Values)
-                            .Include(x => x.Variations)
-                                .ThenInclude(v => v.Attributes)
-                            .Include(x => x.Variations)
-                                .ThenInclude(i => i.InventoryUnits)
-                                    .ThenInclude(i => i.Location)
+                                .Include(x => x.Attributes)
+                                    .ThenInclude(pa => pa.Attribute)
+                                .Include(x => x.Attributes)
+                                    .ThenInclude(a => a.Values)
+                                .Include(x => x.Variations)
+                                    .ThenInclude(v => v.Attributes)
+                                .Include(x => x.Variations)
+                                    .ThenInclude(i => i.InventoryUnits)
+                                        .ThenInclude(i => i.Location)
+                                .Include(x => x.Variations)
+                                    .ThenInclude(v => v.InventoryUnits)
+                                        .ThenInclude(iu => iu.Package)
                             .AsQueryable();
 
             data = data.ApplyProductFilters(request.Filters);

@@ -19,6 +19,7 @@ import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
 import VariationsCards from './components/VariationsCards';
 import {
+    AppstoreOutlined,
     ControlFilled,
     ProductFilled,
     TruckFilled,
@@ -30,6 +31,8 @@ import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
 import locationService from '../../../services/locationService';
 import ManageQuantityCheckbox from './components/ManageQuantityCheckbox';
+import PackagesField from './components/PackagesField';
+import PackagesCard from './components/PackagesCards';
 
 const CreateEdit: React.FC = () => {
     const { message } = App.useApp();
@@ -279,7 +282,7 @@ const CreateEdit: React.FC = () => {
 
     const commonProductItems: TabsProps['items'] = [
         {
-            key: '2',
+            key: 'inventory',
             label: 'Inventory',
             icon: <TruckFilled />,
             children: (
@@ -293,7 +296,7 @@ const CreateEdit: React.FC = () => {
             forceRender: true,
         },
         {
-            key: '3',
+            key: 'attributes',
             label: 'Attributes',
             icon: <UnorderedListOutlined />,
             children: (
@@ -333,11 +336,18 @@ const CreateEdit: React.FC = () => {
             ),
             forceRender: true,
         },
+        {
+            key: 'packages',
+            label: 'Packages',
+            icon: <AppstoreOutlined />,
+            children: <PackagesCard locations={locations} />,
+            forceRender: true,
+        },
     ];
 
     const simpleProductItems: TabsProps['items'] = [
         {
-            key: '1',
+            key: 'general',
             label: 'General',
             icon: <ControlFilled />,
             children: (
@@ -359,7 +369,7 @@ const CreateEdit: React.FC = () => {
     const variableProductItems: TabsProps['items'] = [
         ...commonProductItems,
         {
-            key: '4',
+            key: 'variations',
             label: 'Variations',
             icon: <ProductFilled />,
             children: <VariationsCards locations={locations} />,
