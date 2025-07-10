@@ -21,9 +21,10 @@ namespace InventoryHQ.Services
             _mapper = mapper;
         }
 
-        public async Task<ProductDto?> GetById(int id)
+        public async Task<EditProductDto?> GetById(int id)
         {
-            var data = await _data.Products
+            var product = await _data.Products
+                                .Where(x => x.Id == id)
                                 .Include(x => x.Categories)
                                 .Include(x => x.Attributes)
                                     .ThenInclude(pa => pa.Attribute)
@@ -37,10 +38,86 @@ namespace InventoryHQ.Services
                                 .Include(x => x.Variations)
                                     .ThenInclude(v => v.InventoryUnits)
                                         .ThenInclude(iu => iu.Package)
-                                .FirstOrDefaultAsync(x => x.Id == id);
-            var product = _mapper.Map<ProductDto>(data);
+                                .FirstOrDefaultAsync();
 
-            return product;
+            return new EditProductDto()
+            {
+                Id = product.Id,
+                Description = product.Description,
+                Name = product.Name,
+                ManageQuantity = product.ManageQuantity,
+                IsVariable = product.isVariable,
+                Attributes = product.Attributes?.Select(x => new AttributeDto()
+                {
+                    Id = x.Id,
+                    Name = x.Attribute.Name,
+                    IsVariational = x.IsVariational,
+                    Values = x.Values?.Select(y => new AttributeValueDto()
+                    {
+                        Id = y.Id,
+                        Value = y.Value
+                    })
+                }),
+                Categories = product.Categories?.Select(ct => new CategoryDto()
+                {
+                    Id = ct.Id,
+                    Name = ct.Name,
+                }),
+                Variations = product.Variations?.Select(v => new VariationDto()
+                {
+                    Id = v.Id,
+                    Description = v.Description,
+                    SKU = v.SKU,
+                    InventoryUnits = v.InventoryUnits?
+                                    .Where(q => q.PackageId == null)?
+                                    .Select(viu => new InventoryUnitDto()
+                                    {
+                                        Id = viu.Id,
+                                        Location = new LocationDto()
+                                        {
+                                            Id = viu.Location.Id,
+                                            Name = viu.Location.Name
+                                        },
+                                        Quantity = viu.Quantity,
+                                    }),
+                    RetailPrice = v.RetailPrice,
+                    Attributes = v.Attributes?.Select(va => new VariationAttributeDto()
+                    {
+                        Id = va.Id,
+                        AttributeId = va.Value.Attribute.Id,
+                        AttributeName = va.Value.Attribute.Name,
+                        Value = new AttributeValueDto()
+                        {
+                            Id = va.Value.Id,
+                            Value = va.Value.Value
+                        }
+                    })
+                }),
+                Packages = product.Variations?.SelectMany(x => x.InventoryUnits)
+                                             .Where(s => s.PackageId != null)?.Select(iu => new PackageDto()
+                                             {
+                                                 Id = (int)iu.PackageId,
+                                                 Description = iu.Package.Description,
+                                                 Label = iu.Package.Label,
+                                                 Price = iu.Package.Price,
+                                                 Location = new LocationDto()
+                                                 {
+                                                     Id = iu.Location.Id,
+                                                     Name = iu.Location.Name,
+                                                 },
+                                                 InventoryUnits = iu.Package.InventoryUnit?.Select(w => new InventoryUnitDto()
+                                                 {
+                                                     Id = w.Id,
+                                                     Quantity = w.Quantity,
+                                                     Variation = new VariationDto()
+                                                     {
+                                                         Id = w.Variation.Id,
+                                                         SKU = w.Variation.SKU
+                                                     }
+                                                 })
+                                             })
+            };
+
         }
 
         public async Task<IEnumerable<ProductDto>> GetProducts(TableDatasourceRequest? request)

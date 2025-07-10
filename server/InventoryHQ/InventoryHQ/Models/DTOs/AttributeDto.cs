@@ -6,7 +6,7 @@
 
         public required string Name { get; set; }
 
-        public List<AttributeValueDto> Values { get; set; }
+        public IEnumerable<AttributeValueDto> Values { get; set; }
 
         public bool? IsVariational { get; set; }
     }

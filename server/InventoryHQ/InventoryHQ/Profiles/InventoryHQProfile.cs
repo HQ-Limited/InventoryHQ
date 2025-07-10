@@ -57,8 +57,9 @@ namespace InventoryHQ.Profiles
         {
             return src.Attributes.Select(vav => new VariationAttributeDto
             {
-                Id = vav.Value.Attribute.Id,
-                Name = vav.Value.Attribute.Name,
+                Id = vav.Id,
+                AttributeId = vav.Value.Attribute.Id,
+                AttributeName = vav.Value.Attribute.Name,
                 Value = new AttributeValueDto
                 {
                     Id = vav.Value.Id,
