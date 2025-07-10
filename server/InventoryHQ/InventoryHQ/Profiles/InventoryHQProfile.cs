@@ -10,6 +10,8 @@ namespace InventoryHQ.Profiles
         {
             CreateMap<Location, LocationDto>().ReverseMap();
 
+            CreateMap<Package, PackageDto>().ReverseMap();
+
             CreateMap<InventoryUnit, InventoryUnitDto>().ReverseMap();
 
             CreateMap<Product, ProductDto>()
