@@ -4,6 +4,8 @@
     {
         public int Id { get; set; }
 
+        public int AttributeId { get; set; }
+
         public required string Name { get; set; }
 
         public IEnumerable<AttributeValueDto> Values { get; set; }

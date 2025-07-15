@@ -1,5 +1,5 @@
 import { Form, Select } from 'antd';
-import { ProductAttribute } from '../../../../types/ProductTypes';
+import { Attribute, ProductAttribute } from '../types/EditProductTypes';
 
 export default function AttributesField({
     attributes,
@@ -8,13 +8,13 @@ export default function AttributesField({
     removeAttributeFromVariations,
     createNewAttribute,
 }: {
-    attributes: ProductAttribute[];
+    attributes: Attribute[];
     removeAttributeFromVariations: (id: number) => void;
     fetchValues: (id: number) => void;
     required?: boolean;
     createNewAttribute: (name: string) => Promise<void>;
 }) {
-    const prevAttributes = Form.useWatch('attributes');
+    const prevAttributes: ProductAttribute[] = Form.useWatch('attributes');
 
     return (
         <>
@@ -31,8 +31,12 @@ export default function AttributesField({
                         return [];
                     }
                     // find out which value was added/removed
-                    const added = values.find((v) => !prevAttributes.find((a) => a.id == v));
-                    const removed = prevAttributes.find((a) => !values.find((v) => v == a.id));
+                    const added = values.find(
+                        (v) => !prevAttributes.find((a) => a.attributeId == v)
+                    );
+                    const removed = prevAttributes.find(
+                        (a) => !values.find((v) => v == a.attributeId)
+                    );
 
                     if (removed) {
                         removeAttributeFromVariations(removed.id);
@@ -51,6 +55,7 @@ export default function AttributesField({
                                 },
                             ];
                         }
+
                         const attribute = attributes.find((a) => a.id == added)!;
 
                         if (attribute.values.length === 0) fetchValues(attribute.id);
@@ -58,7 +63,7 @@ export default function AttributesField({
                         return [
                             ...prevAttributes,
                             {
-                                id: attribute.id,
+                                attributeId: attribute.id,
                                 name: attribute.name,
                                 values: [],
                                 isVariational: false,
@@ -68,7 +73,7 @@ export default function AttributesField({
                 }}
                 getValueProps={(value) => {
                     return {
-                        value: value.map((v: ProductAttribute) => v.id),
+                        value: value.map((v: ProductAttribute) => v.attributeId),
                     };
                 }}
             >

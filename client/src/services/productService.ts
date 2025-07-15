@@ -1,4 +1,4 @@
-import { Product, Variation } from '../types/ProductTypes';
+import { Product, Variation } from '../pages/products/Edit/types/EditProductTypes';
 import api from '../utils/api';
 
 class ProductService {

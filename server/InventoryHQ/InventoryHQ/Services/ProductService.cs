@@ -50,6 +50,7 @@ namespace InventoryHQ.Services
                 Attributes = product.Attributes?.Select(x => new AttributeDto()
                 {
                     Id = x.Id,
+                    AttributeId = x.Attribute.Id,
                     Name = x.Attribute.Name,
                     IsVariational = x.IsVariational,
                     Values = x.Values?.Select(y => new AttributeValueDto()
@@ -93,29 +94,36 @@ namespace InventoryHQ.Services
                         }
                     })
                 }),
-                Packages = product.Variations?.SelectMany(x => x.InventoryUnits)
-                                             .Where(s => s.PackageId != null)?.Select(iu => new PackageDto()
-                                             {
-                                                 Id = (int)iu.PackageId,
-                                                 Description = iu.Package.Description,
-                                                 Label = iu.Package.Label,
-                                                 Price = iu.Package.Price,
-                                                 Location = new LocationDto()
-                                                 {
-                                                     Id = iu.Location.Id,
-                                                     Name = iu.Location.Name,
-                                                 },
-                                                 InventoryUnits = iu.Package.InventoryUnit?.Select(w => new InventoryUnitDto()
-                                                 {
-                                                     Id = w.Id,
-                                                     Quantity = w.Quantity,
-                                                     Variation = new VariationDto()
-                                                     {
-                                                         Id = w.Variation.Id,
-                                                         SKU = w.Variation.SKU
-                                                     }
-                                                 })
-                                             })
+                Packages = product.Variations?
+                    .SelectMany(x => x.InventoryUnits)
+                    .Where(iu => iu.PackageId != null)
+                    .GroupBy(iu => iu.PackageId)
+                    .Select(g =>
+                    {
+                        var first = g.First();
+                        return new PackageDto()
+                        {
+                            Id = (int)first.PackageId,
+                            Description = first.Package.Description,
+                            Label = first.Package.Label,
+                            Price = first.Package.Price,
+                            Location = new LocationDto()
+                            {
+                                Id = first.Location.Id,
+                                Name = first.Location.Name,
+                            },
+                            InventoryUnits = g.Select(w => new InventoryUnitDto()
+                            {
+                                Id = w.Id,
+                                Quantity = w.Quantity,
+                                Variation = new VariationDto()
+                                {
+                                    Id = w.Variation.Id,
+                                    SKU = w.Variation.SKU
+                                }
+                            })
+                        };
+                    })
             };
 
         }

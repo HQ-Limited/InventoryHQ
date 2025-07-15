@@ -36,7 +36,8 @@ export type AttributeValue = {
 
 export type VariationAttribute = {
     id: number; // id of attribute name
-    name: string;
+    attributeName: string;
+    attributeId: number;
     value: AttributeValue; // id of attribute name + value (from attribute_values table)
 };
 
