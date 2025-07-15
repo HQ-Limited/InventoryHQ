@@ -5,60 +5,24 @@ import QuantityField from './QuantityField';
 import { WHOLESALE_ENABLED } from '../../../../global';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { DefaultOptionType } from 'antd/es/select';
-import { Location, ProductAttribute } from '../../../../types/ProductTypes';
+import { Location, ProductAttribute } from '../types/EditProductTypes';
 
 function SelectField({
     name,
     options,
-    variationFieldName,
-    attributeFieldName,
+    attributeName,
 }: {
     name: number;
     options: DefaultOptionType[];
-    variationFieldName: number;
-    attributeFieldName: number;
+    attributeName: string;
 }) {
-    const form = Form.useFormInstance();
-
     return (
         <Form.Item
             name={[name, 'value']}
-            label={form.getFieldValue([
-                'variations',
-                variationFieldName,
-                'attributes',
-                attributeFieldName,
-                'name',
-            ])}
+            label={attributeName}
             rules={[{ required: true, message: 'Select a value' }]}
         >
-            <Select
-                placeholder="Select value"
-                optionFilterProp="value"
-                options={options}
-                onChange={(selectedValue) => {
-                    const selectedObj = options.find((opt) => opt.value === selectedValue);
-                    form.setFieldValue(
-                        [
-                            'variations',
-                            variationFieldName,
-                            'attributes',
-                            attributeFieldName,
-                            'value',
-                        ],
-                        selectedObj
-                    );
-                    form.validateFields([
-                        [
-                            'variations',
-                            variationFieldName,
-                            'attributes',
-                            attributeFieldName,
-                            'value',
-                        ],
-                    ]);
-                }}
-            />
+            <Select placeholder="Select value" optionFilterProp="label" options={options} />
         </Form.Item>
     );
 }
@@ -87,11 +51,14 @@ export default function VariationsCards({ locations }: { locations: Location[] }
                             let tooltipTitle: string | undefined = undefined;
                             if (attributes.length === 0) {
                                 tooltipTitle = 'Add an attribute first';
-                            } else if (!attributes.find((a) => a.isVariational === true)) {
+                            } else if (
+                                !attributes.find((a: ProductAttribute) => a.isVariational === true)
+                            ) {
                                 tooltipTitle = 'Select at least one attribute as variational';
                             } else if (
                                 !attributes.find(
-                                    (a) => a.values?.length > 0 && a.isVariational === true
+                                    (a: ProductAttribute) =>
+                                        a.values?.length > 0 && a.isVariational === true
                                 )
                             ) {
                                 tooltipTitle =
@@ -100,9 +67,12 @@ export default function VariationsCards({ locations }: { locations: Location[] }
 
                             const isDisabled =
                                 !attributes.length ||
-                                !attributes.find((a) => a.isVariational === true) ||
                                 !attributes.find(
-                                    (a) => a.values?.length > 0 && a.isVariational === true
+                                    (a: ProductAttribute) => a.isVariational === true
+                                ) ||
+                                !attributes.find(
+                                    (a: ProductAttribute) =>
+                                        a.values?.length > 0 && a.isVariational === true
                                 );
 
                             if (tooltipTitle) {
@@ -124,7 +94,7 @@ export default function VariationsCards({ locations }: { locations: Location[] }
                                     onClick={() =>
                                         add({
                                             attributes: attributes
-                                                .filter((a) => a.isVariational)
+                                                .filter((a: ProductAttribute) => a.isVariational)
                                                 .map((a: ProductAttribute) => ({
                                                     id: a.id,
                                                     name: a.name,
@@ -166,17 +136,19 @@ export default function VariationsCards({ locations }: { locations: Location[] }
                                                     'attributes',
                                                     attrField.name,
                                                 ]);
-                                                const globalAttribute = attributes.find(
-                                                    (a) => a.id === variationAttribute?.id
-                                                );
+                                                const options = attributes.find(
+                                                    (a: ProductAttribute) =>
+                                                        a.id === variationAttribute.attributeId
+                                                )?.values;
 
                                                 return (
                                                     <SelectField
                                                         key={attrKey}
                                                         name={attrField.name}
-                                                        options={globalAttribute?.values || []}
-                                                        variationFieldName={field.name}
-                                                        attributeFieldName={attrField.name}
+                                                        options={options || []}
+                                                        attributeName={
+                                                            variationAttribute.attributeName
+                                                        }
                                                     />
                                                 );
                                             })}
@@ -191,82 +163,6 @@ export default function VariationsCards({ locations }: { locations: Location[] }
                                         label="Wholesale Price"
                                     />
                                 )}
-                                {/* <Form.Item
-                                    label="Locations"
-                                    name={[field.name, 'inventoryUnits']}
-                                    getValueFromEvent={(values: (number | string)[]) => {
-                                        const prevLocations = form.getFieldValue([
-                                            'variations',
-                                            field.name,
-                                            'inventoryUnits',
-                                        ]);
-                                        console.log({ prevLocations });
-                                        if (values.length == 0) {
-                                            return [];
-                                        }
-                                        // find out which value was added/removed
-                                        const added = values.find(
-                                            (v) =>
-                                                !prevLocations?.find(
-                                                    (inventoryUnit: InventoryUnit) =>
-                                                        inventoryUnit.location.id == v
-                                                )
-                                        );
-
-                                        if (added) {
-                                            return [
-                                                ...(prevLocations || []),
-                                                {
-                                                    location: {
-                                                        id: added,
-                                                        name: locations!.find((l) => l.id == added)!
-                                                            .name,
-                                                    },
-                                                },
-                                            ];
-                                        }
-
-                                        const removed = prevLocations?.find(
-                                            (inventoryUnit: InventoryUnit) =>
-                                                !values.find((v) => v == inventoryUnit.location.id)
-                                        );
-
-                                        if (removed) {
-                                            return prevLocations.filter(
-                                                (a: InventoryUnit) =>
-                                                    a.location.id != removed.location.id
-                                            );
-                                        }
-
-                                        return prevLocations;
-                                    }}
-                                    getValueProps={(inventoryUnits) => {
-                                        console.log({ inventoryUnits });
-                                        return {
-                                            value: inventoryUnits?.map(
-                                                (l: InventoryUnit) => l.location.id
-                                            ),
-                                        };
-                                    }}
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Please select at least one location!',
-                                        },
-                                    ]}
-                                >
-                                    <Select
-                                        mode="multiple"
-                                        allowClear
-                                        showSearch
-                                        placeholder="Select location/s"
-                                        optionFilterProp="label"
-                                        options={locations!.map((location) => ({
-                                            label: location.name,
-                                            value: location.id,
-                                        }))}
-                                    />
-                                </Form.Item> */}
                                 <QuantityField name={[field.name]} locations={locations} />
                             </Card>
                         ))}

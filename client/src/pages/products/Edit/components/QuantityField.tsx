@@ -71,7 +71,6 @@ const LocationField = ({
                 );
 
                 if (added) {
-                    console.log({ added, prevLocations });
                     return [
                         ...(prevLocations || []),
                         {

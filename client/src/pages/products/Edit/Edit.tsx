@@ -11,7 +11,9 @@ import {
     Variation,
     VariationAttribute,
     Location,
-} from '../../../types/ProductTypes';
+    AttributeValue,
+    Attribute,
+} from './types/EditProductTypes';
 import NameField from './components/NameField';
 import DescriptionField from './components/DescriptionField';
 import CategoryField from './components/CategoryField';
@@ -31,15 +33,14 @@ import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
 import locationService from '../../../services/locationService';
 import ManageQuantityCheckbox from './components/ManageQuantityCheckbox';
-import PackagesField from './components/PackagesField';
-import PackagesCard from './components/PackagesCards';
+import PackagesTable from './components/PackagesTable';
 
 const CreateEdit: React.FC = () => {
     const { message } = App.useApp();
     const [isVariable, setIsVariable] = useState(false);
     const params = useParams();
     const id = params.id;
-    const [attributes, setAttributes] = useState<ProductAttribute[]>([]);
+    const [attributes, setAttributes] = useState<Attribute[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [form] = Form.useForm();
     const [values, setValues] = useState<Partial<Product>>({
@@ -67,9 +68,9 @@ const CreateEdit: React.FC = () => {
             setLoading(true);
             product = await productService.getProductById(Number(id));
 
-            const attrs: ProductAttribute[] = await attributeService.getAttributes({
+            const attrs: Attribute[] = await attributeService.getAttributes({
                 includeValues: true,
-                ids: product!.attributes!.map((a) => a.id),
+                ids: product!.attributes!.map((a) => a.attributeId),
             });
 
             setAttributes(attrs);
@@ -225,9 +226,9 @@ const CreateEdit: React.FC = () => {
 
     async function createNewAttribute(name: string) {
         try {
-            const id: number = await attributeService.createAttribute(name);
+            const attributeId: number = await attributeService.createAttribute(name);
             setAttributes((prev) => {
-                return [...prev, { id, name, values: [] }];
+                return [...prev, { id: attributeId, name, values: [] }];
             });
 
             const index = form
@@ -235,7 +236,7 @@ const CreateEdit: React.FC = () => {
                 .findIndex((a: ProductAttribute) => a.name === name);
 
             form.setFieldValue(['attributes', index], {
-                id,
+                attributeId,
                 name,
                 values: [],
                 isVariable,
@@ -264,12 +265,12 @@ const CreateEdit: React.FC = () => {
 
             const index = form
                 .getFieldValue('attributes')
-                .findIndex((a: ProductAttribute) => a.id === id);
+                .findIndex((a: ProductAttribute) => a.attributeId === id);
 
             const newValues = [
                 ...form
                     .getFieldValue(['attributes', index, 'values'])
-                    .filter((a) => a.value !== value),
+                    .filter((a: AttributeValue) => a.value !== value),
                 { id: valueId, value },
             ];
 
@@ -340,7 +341,7 @@ const CreateEdit: React.FC = () => {
             key: 'packages',
             label: 'Packages',
             icon: <AppstoreOutlined />,
-            children: <PackagesCard locations={locations} />,
+            children: <PackagesTable />,
             forceRender: true,
         },
     ];

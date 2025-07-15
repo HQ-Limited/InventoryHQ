@@ -1,6 +1,12 @@
 import { Button, Card, Checkbox, Form, Select, Tooltip } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
-import { ProductAttribute, VariationAttribute } from '../../../../types/ProductTypes';
+import {
+    Attribute,
+    AttributeValue,
+    ProductAttribute,
+    Variation,
+    VariationAttribute,
+} from '../types/EditProductTypes';
 
 export default function AttributeValuesField({
     name,
@@ -12,7 +18,7 @@ export default function AttributeValuesField({
     createNewAttributeValue,
 }: {
     name: number;
-    attributes: ProductAttribute[];
+    attributes: Attribute[];
     onRemove: (id: number) => void;
     showVariationCheckbox?: boolean;
     removeAttributeFromVariations: (id: number) => void;
@@ -22,8 +28,9 @@ export default function AttributeValuesField({
     const form = Form.useFormInstance();
 
     const currentAttribute: ProductAttribute = form.getFieldValue('attributes')[name];
-    const availableValues = attributes.find((x) => x.id == currentAttribute?.id)?.values || [];
-    const prevValues = Form.useWatch(['attributes', name, 'values']);
+    const availableValues =
+        attributes.find((x) => x.id == currentAttribute.attributeId)?.values || [];
+    const prevValues: VariationAttribute[] = Form.useWatch(['attributes', name, 'values']);
 
     return (
         <Card
@@ -40,9 +47,9 @@ export default function AttributeValuesField({
                             // Remove attribute from all variations
                             const variations = form.getFieldValue('variations') || [];
                             if (variations.length > 0) {
-                                const updatedVariations = variations.map((variation: any) => {
+                                const updatedVariations = variations.map((variation: Variation) => {
                                     const attrs = (variation.attributes || []).filter(
-                                        (a: any) => a.id !== currentAttribute?.id
+                                        (a: VariationAttribute) => a.id !== currentAttribute?.id
                                     );
                                     return { ...variation, attributes: attrs };
                                 });
@@ -71,7 +78,9 @@ export default function AttributeValuesField({
                         return prevValues.filter((a: VariationAttribute) => a.id != removed.id);
                     }
 
-                    const attribute = attributes.find((a) => a.id == currentAttribute?.id)!;
+                    const attribute = attributes.find(
+                        (a) => a.id == currentAttribute?.attributeId
+                    )!;
 
                     if (added) {
                         if (typeof added === 'string') {
@@ -95,7 +104,7 @@ export default function AttributeValuesField({
                 }}
                 getValueProps={(value) => {
                     return {
-                        value: value.map((v: { id: number; value: string }) => v.id),
+                        value: value.map((v: AttributeValue) => v.id),
                     };
                 }}
             >
@@ -105,7 +114,7 @@ export default function AttributeValuesField({
                     showSearch
                     placeholder="Select value/s"
                     optionFilterProp="label"
-                    options={availableValues.map((v) => ({
+                    options={availableValues.map((v: AttributeValue) => ({
                         label: v.value,
                         value: v.id,
                     }))}
