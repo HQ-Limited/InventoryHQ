@@ -76,7 +76,10 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
         createPackageForm.setFieldsValue({
             packagesAmount: 1,
             inventoryUnits: variations.map((variation: Variation) => ({
-                variation: variation,
+                variation: {
+                    sku: variation.sku,
+                    id: variation.id,
+                },
             })),
         });
 
@@ -140,7 +143,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                             }}
                         >
                             <Form
-                                preserve={false}
+                                // preserve={false}
                                 layout="vertical"
                                 form={createPackageForm}
                                 onFinish={handleAddPackageForm}
