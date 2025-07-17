@@ -341,7 +341,7 @@ const CreateEdit: React.FC = () => {
             key: 'packages',
             label: 'Packages',
             icon: <AppstoreOutlined />,
-            children: <PackagesTable />,
+            children: <PackagesTable locations={locations} />,
             forceRender: true,
         },
     ];

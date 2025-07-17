@@ -91,17 +91,17 @@ export default function VariationsCards({ locations }: { locations: Location[] }
                             return (
                                 <Button
                                     type="primary"
-                                    onClick={() =>
+                                    onClick={() => {
                                         add({
                                             attributes: attributes
                                                 .filter((a: ProductAttribute) => a.isVariational)
                                                 .map((a: ProductAttribute) => ({
-                                                    id: a.id,
-                                                    name: a.name,
+                                                    attributeId: a.attributeId,
+                                                    attributeName: a.name,
                                                     value: {},
                                                 })),
-                                        })
-                                    }
+                                        });
+                                    }}
                                     icon={<PlusOutlined />}
                                     disabled={isDisabled}
                                 >
@@ -138,7 +138,8 @@ export default function VariationsCards({ locations }: { locations: Location[] }
                                                 ]);
                                                 const options = attributes.find(
                                                     (a: ProductAttribute) =>
-                                                        a.id === variationAttribute.attributeId
+                                                        a.attributeId ===
+                                                        variationAttribute.attributeId
                                                 )?.values;
 
                                                 return (
