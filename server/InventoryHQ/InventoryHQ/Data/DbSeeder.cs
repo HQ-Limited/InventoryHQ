@@ -108,6 +108,16 @@ namespace InventoryHQ.Data
                         },
                         IsVariational = true
                     },
+                    new ProductAttribute
+                    {
+                        Attribute = sizeAttribute,
+                        Values = new List<AttributeValue>
+                        {
+                            dbAttributeValues.First(av => av.AttributeId == sizeAttribute.Id && av.Value == "S"),
+                            dbAttributeValues.First(av => av.AttributeId == sizeAttribute.Id && av.Value == "M")
+                        },
+                        IsVariational = true
+                    },
                 },
                 Variations = new List<Variation>
                 {
@@ -120,6 +130,10 @@ namespace InventoryHQ.Data
                             new VariationAttribute
                             {
                                 AttributeValueId = dbAttributeValues.First(av => av.AttributeId == colorAttribute.Id && av.Value == "Red").Id,
+                            },
+                            new VariationAttribute
+                            {
+                                AttributeValueId = dbAttributeValues.First(av => av.AttributeId == sizeAttribute.Id && av.Value == "S").Id,
                             }
                         },
                         InventoryUnits = new List<InventoryUnit>
@@ -145,6 +159,10 @@ namespace InventoryHQ.Data
                             new VariationAttribute
                             {
                                 AttributeValueId = dbAttributeValues.First(av => av.AttributeId == colorAttribute.Id && av.Value == "Green").Id,
+                            },
+                            new VariationAttribute
+                            {
+                                AttributeValueId = dbAttributeValues.First(av => av.AttributeId == sizeAttribute.Id && av.Value == "M").Id,
                             }
                         },
                         InventoryUnits = new List<InventoryUnit>

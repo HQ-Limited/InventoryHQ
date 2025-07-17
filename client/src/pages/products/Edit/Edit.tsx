@@ -19,7 +19,7 @@ import DescriptionField from './components/DescriptionField';
 import CategoryField from './components/CategoryField';
 import AttributesField from './components/AttributesField';
 import AttributeValuesField from './components/AttributeValuesField';
-import VariationsCards from './components/VariationsCards';
+import VariationsTable from './components/VariationsTable';
 import {
     AppstoreOutlined,
     ControlFilled,
@@ -91,7 +91,7 @@ const CreateEdit: React.FC = () => {
             return;
         }
 
-        const attrs: ProductAttribute[] = id
+        const attrs: Attribute[] = id
             ? await attributeService.getAttributes({
                   includeValues: true,
                   ids: product!.attributes!.map((a) => a.id),
@@ -124,7 +124,7 @@ const CreateEdit: React.FC = () => {
     };
 
     // TODO: Think of a way to make variations generation displayed to the user
-    const onGenerateVariations = () => {
+    /* const onGenerateVariations = () => {
         const variationalAttributes = values.attributes!.filter((attr) => attr.isVariational);
 
         const valueGroups = variationalAttributes.map((attr) =>
@@ -152,7 +152,7 @@ const CreateEdit: React.FC = () => {
         });
 
         form.setFieldsValue({ variations });
-    };
+    }; */
 
     const onFinish: FormProps<Product>['onFinish'] = async (values) => {
         return console.log(values);
@@ -167,7 +167,7 @@ const CreateEdit: React.FC = () => {
 
             setSaving(false);
             message.success('Product successfully updated!');
-        } catch (err) {
+        } catch {
             setSaving(false);
             message.error('Failed to update product');
         }
@@ -229,7 +229,7 @@ const CreateEdit: React.FC = () => {
                 children: [],
             });
             message.success('Category created');
-        } catch (e) {
+        } catch {
             message.error('Failed to create category');
         }
     }
@@ -247,12 +247,12 @@ const CreateEdit: React.FC = () => {
 
             form.setFieldValue(['attributes', index], {
                 attributeId,
-                name,
+                name: name,
                 values: [],
                 isVariable,
             });
             message.success('Attribute created');
-        } catch (e) {
+        } catch {
             message.error('Failed to create attribute');
         }
     }
@@ -286,7 +286,7 @@ const CreateEdit: React.FC = () => {
 
             form.setFieldValue(['attributes', index, 'values'], newValues);
             message.success('Attribute value created');
-        } catch (e) {
+        } catch {
             message.error('Failed to create attribute value');
         }
     }
@@ -344,7 +344,7 @@ const CreateEdit: React.FC = () => {
                         required={isVariable}
                     />
                     <Form.List name="attributes">
-                        {(fields, { add, remove }) => (
+                        {(fields, { remove }) => (
                             <>
                                 <Space wrap>
                                     {fields.map((field, attributeKey) => (
@@ -377,7 +377,7 @@ const CreateEdit: React.FC = () => {
                       key: 'variations',
                       label: 'Variations',
                       icon: <ProductFilled />,
-                      children: <VariationsCards locations={locations} />,
+                      children: <VariationsTable locations={locations} />,
                       forceRender: true,
                   },
               ]
