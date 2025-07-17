@@ -143,7 +143,6 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                             }}
                         >
                             <Form
-                                // preserve={false}
                                 layout="vertical"
                                 form={createPackageForm}
                                 onFinish={handleAddPackageForm}
@@ -373,7 +372,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                     return (
                                         <Form.List name={[row.name, 'inventoryUnits']}>
                                             {(inventoryUnits) => (
-                                                <>
+                                                <Space>
                                                     {inventoryUnits.map((unit) => (
                                                         <QuantityInputField
                                                             key={unit.key}
@@ -392,7 +391,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                                             }
                                                         />
                                                     ))}
-                                                </>
+                                                </Space>
                                             )}
                                             {/* TODO: Possibly add the option to add new content? Currently, when a new variation is added, the contents are not added automatically. */}
                                         </Form.List>

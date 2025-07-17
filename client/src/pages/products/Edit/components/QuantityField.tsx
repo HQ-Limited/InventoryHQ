@@ -5,9 +5,11 @@ import { InventoryUnit, Location } from '../../../../types/ProductTypes';
 export const QuantityInputField = ({
     name,
     label = 'Quantity',
+    layout,
 }: {
     name: (number | string)[];
     label?: string;
+    layout?: 'vertical' | 'horizontal';
 }) => {
     return (
         <Form.Item
@@ -27,6 +29,7 @@ export const QuantityInputField = ({
                     },
                 },
             ]}
+            layout={layout}
         >
             <InputNumber
                 style={{ width: '100%' }}
@@ -43,10 +46,12 @@ const LocationField = ({
     name,
     locations,
     isVariable,
+    required = false,
 }: {
     name: (number | string)[];
     locations: Location[];
     isVariable: boolean;
+    required?: boolean;
 }) => {
     const prevLocations = Form.useWatch([
         ...(isVariable ? ['variations'] : []),
@@ -102,6 +107,7 @@ const LocationField = ({
                         .map((l: InventoryUnit) => l.location.id),
                 };
             }}
+            rules={required ? [{ required: true, message: 'Please select location/s' }] : []}
         >
             <Select
                 mode="multiple"
@@ -134,7 +140,12 @@ export default function QuantityField({
             {manageQuantity && (
                 <>
                     {LOCATIONS_ENABLED && (
-                        <LocationField name={name} locations={locations!} isVariable={isVariable} />
+                        <LocationField
+                            name={name}
+                            locations={locations!}
+                            isVariable={isVariable}
+                            required={true}
+                        />
                     )}
                     <Form.List name={[...name, 'inventoryUnits']}>
                         {(fields) =>
