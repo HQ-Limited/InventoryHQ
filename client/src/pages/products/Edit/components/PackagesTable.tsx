@@ -1,5 +1,6 @@
 import {
     Button,
+    Empty,
     Form,
     FormProps,
     Input,
@@ -7,18 +8,19 @@ import {
     Menu,
     Modal,
     Select,
+    Tooltip,
     Space,
     Table,
     Tag,
-    Typography,
 } from 'antd';
-import { Location, InventoryUnit, Variation, Product, Package } from '../types/EditProductTypes';
-import { CloseOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Location, InventoryUnit, Variation, Package } from '../types/EditProductTypes';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import Column from 'antd/es/table/Column';
 import PriceField from './PriceField';
 import { QuantityInputField } from './QuantityField';
 import DescriptionField from './DescriptionField';
+import { LOCATIONS_ENABLED } from '../../../../global';
 
 const LocationField = ({
     name,
@@ -64,9 +66,10 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
     const [editingIndex, setEditingIndex] = useState(undefined);
     const [createPackageForm] = Form.useForm();
     const form = Form.useFormInstance();
+    const isVariable = Form.useWatch('isVariable');
+    const variations = Form.useWatch('variations');
 
     const showModal = () => {
-        const variations = form.getFieldValue('variations') || [];
         createPackageForm.resetFields();
 
         // Set all variations
@@ -76,11 +79,28 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                 variation: variation,
             })),
         });
+
         setIsModalOpen(true);
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
+    };
+
+    const AddPackageButton = () => {
+        const isDisabled = isVariable && variations.length === 0;
+        return (
+            <Tooltip title={isDisabled ? 'Create at least one variation first' : undefined}>
+                <Button
+                    type="primary"
+                    onClick={showModal}
+                    icon={<PlusOutlined />}
+                    disabled={isDisabled}
+                >
+                    Add Packages
+                </Button>
+            </Tooltip>
+        );
     };
 
     return (
@@ -113,6 +133,11 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                             }}
                             onCancel={handleCancel}
                             centered
+                            styles={{
+                                body: {
+                                    paddingTop: 20,
+                                },
+                            }}
                         >
                             <Form
                                 preserve={false}
@@ -120,51 +145,72 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                 form={createPackageForm}
                                 onFinish={handleAddPackageForm}
                             >
-                                <LocationField name={[]} locations={locations} label="Location" />
+                                {LOCATIONS_ENABLED && (
+                                    <LocationField
+                                        name={[]}
+                                        locations={locations}
+                                        label="Location"
+                                    />
+                                )}
+
                                 <Form.Item name="label" label="Label">
                                     <Input />
                                 </Form.Item>
+
                                 <DescriptionField />
+
                                 <PriceField label="Price" name={['price']} />
+
                                 <Form.List name="inventoryUnits">
-                                    {(inventoryUnits, { add, remove }) => (
-                                        <Table
-                                            dataSource={inventoryUnits}
-                                            pagination={false}
-                                            sticky
-                                            bordered
-                                        >
-                                            <Column
-                                                dataIndex={'sku'}
-                                                title="SKU"
-                                                render={(value, row, index) => {
-                                                    return createPackageForm.getFieldValue([
-                                                        'inventoryUnits',
-                                                        index,
-                                                        'variation',
-                                                        'sku',
-                                                    ]);
-                                                }}
-                                            />
-                                            <Column
-                                                dataIndex="quantity"
-                                                title="Quantity"
-                                                render={(value, row, index) => {
-                                                    return (
-                                                        <QuantityInputField
-                                                            name={[index]}
-                                                            label=""
-                                                        />
-                                                    );
-                                                }}
-                                            />
-                                        </Table>
-                                    )}
+                                    {(inventoryUnits, { add, remove }) => {
+                                        if (!isVariable) {
+                                            return (
+                                                <QuantityInputField
+                                                    name={[0]}
+                                                    label="Quantity in package"
+                                                />
+                                            );
+                                        }
+
+                                        return (
+                                            <Table
+                                                dataSource={inventoryUnits}
+                                                pagination={false}
+                                                sticky
+                                                bordered
+                                            >
+                                                <Column
+                                                    dataIndex={'sku'}
+                                                    title="SKU"
+                                                    render={(value, row) => {
+                                                        return createPackageForm.getFieldValue([
+                                                            'inventoryUnits',
+                                                            row.name,
+                                                            'variation',
+                                                            'sku',
+                                                        ]);
+                                                    }}
+                                                />
+                                                <Column
+                                                    dataIndex="quantity"
+                                                    title="Quantity in package"
+                                                    render={(value, row) => {
+                                                        return (
+                                                            <QuantityInputField
+                                                                name={[row.name]}
+                                                                label=""
+                                                            />
+                                                        );
+                                                    }}
+                                                />
+                                            </Table>
+                                        );
+                                    }}
                                 </Form.List>
 
                                 <Form.Item
                                     name="packagesAmount"
-                                    label="Package to create"
+                                    label="Packages to create"
                                     style={{ marginTop: 20 }}
                                     rules={[
                                         {
@@ -183,11 +229,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                             items={[
                                 {
                                     key: 'add-package',
-                                    label: (
-                                        <Button type="primary" icon={<PlusOutlined />}>
-                                            Add Packages
-                                        </Button>
-                                    ),
+                                    label: <AddPackageButton />,
                                     onClick: showModal,
                                 },
                             ]}
@@ -200,47 +242,59 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                             size="small"
                             sticky
                             bordered
+                            locale={{
+                                emptyText: (
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description="This product has no packages"
+                                    >
+                                        <AddPackageButton />
+                                    </Empty>
+                                ),
+                            }}
                         >
                             <Column
                                 dataIndex={'id'}
                                 title={'ID'}
                                 width={50}
-                                render={(value, row, index) => {
-                                    return form.getFieldValue(['packages', index, 'id']);
+                                render={(value, row) => {
+                                    return form.getFieldValue(['packages', row.name, 'id']);
                                 }}
                             />
-                            <Column
-                                width={200}
-                                dataIndex={'location'}
-                                title={'Location'}
-                                render={(value, row, index) => {
-                                    if (editingIndex !== index)
-                                        return form.getFieldValue([
-                                            'packages',
-                                            index,
-                                            'location',
-                                            'name',
-                                        ]);
+                            {LOCATIONS_ENABLED && (
+                                <Column
+                                    width={200}
+                                    dataIndex={'location'}
+                                    title={'Location'}
+                                    render={(value, row) => {
+                                        if (editingIndex !== row.name)
+                                            return form.getFieldValue([
+                                                'packages',
+                                                row.name,
+                                                'location',
+                                                'name',
+                                            ]);
 
-                                    return (
-                                        <LocationField
-                                            name={[index]}
-                                            locations={locations}
-                                            disabled={editingIndex !== index}
-                                        />
-                                    );
-                                }}
-                            />
+                                        return (
+                                            <LocationField
+                                                name={[row.name]}
+                                                locations={locations}
+                                                disabled={editingIndex !== row.name}
+                                            />
+                                        );
+                                    }}
+                                />
+                            )}
                             <Column
                                 width={200}
                                 dataIndex={'label'}
                                 title={'Label'}
-                                render={(value, row, index) => {
-                                    if (editingIndex !== index)
-                                        return form.getFieldValue(['packages', index, 'label']);
+                                render={(value, row) => {
+                                    if (editingIndex !== row.name)
+                                        return form.getFieldValue(['packages', row.name, 'label']);
 
                                     return (
-                                        <Form.Item name={[index, 'label']}>
+                                        <Form.Item name={[row.name, 'label']}>
                                             <Input />
                                         </Form.Item>
                                     );
@@ -250,16 +304,19 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                 width={250}
                                 dataIndex={'description'}
                                 title={'Description'}
-                                render={(value, row, index) => {
-                                    if (editingIndex !== index)
+                                render={(value, row) => {
+                                    if (editingIndex !== row.name)
                                         return form.getFieldValue([
                                             'packages',
-                                            index,
+                                            row.name,
                                             'description',
                                         ]);
 
                                     return (
-                                        <DescriptionField name={[index, 'description']} label="" />
+                                        <DescriptionField
+                                            name={[row.name, 'description']}
+                                            label=""
+                                        />
                                     );
                                 }}
                             />
@@ -267,51 +324,69 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                 width={150}
                                 dataIndex={'price'}
                                 title={'Price'}
-                                render={(value, row, index) => {
-                                    if (editingIndex !== index)
-                                        return form.getFieldValue(['packages', index, 'price']);
+                                render={(value, row) => {
+                                    if (editingIndex !== row.name)
+                                        return form.getFieldValue(['packages', row.name, 'price']);
 
-                                    return <PriceField name={[index, 'price']} label="" />;
+                                    return <PriceField name={[row.name, 'price']} label="" />;
                                 }}
                             />
                             <Column
                                 dataIndex={'inventoryUnits'}
-                                title={'Contents'}
-                                render={(value, row, index) => {
-                                    if (editingIndex !== index) {
-                                        return (
-                                            <Space>
-                                                {form
-                                                    .getFieldValue([
-                                                        'packages',
-                                                        index,
-                                                        'inventoryUnits',
-                                                    ])
-                                                    .map((unit: InventoryUnit, iuIndex: number) => (
-                                                        <Tag key={iuIndex}>
-                                                            {unit.variation.sku} ({unit.quantity})
-                                                        </Tag>
-                                                    ))}
-                                            </Space>
-                                        );
+                                title={isVariable ? 'Contents' : 'Quantity'}
+                                render={(value, row) => {
+                                    if (editingIndex !== row.name) {
+                                        if (isVariable)
+                                            return (
+                                                <Space>
+                                                    {form
+                                                        .getFieldValue([
+                                                            'packages',
+                                                            row.name,
+                                                            'inventoryUnits',
+                                                        ])
+                                                        .map(
+                                                            (
+                                                                unit: InventoryUnit,
+                                                                iuIndex: number
+                                                            ) => (
+                                                                <Tag key={iuIndex}>
+                                                                    {unit.variation.sku} (
+                                                                    {unit.quantity})
+                                                                </Tag>
+                                                            )
+                                                        )}
+                                                </Space>
+                                            );
+
+                                        return form.getFieldValue([
+                                            'packages',
+                                            row.name,
+                                            'inventoryUnits',
+                                            0,
+                                        ]).quantity;
                                     }
 
                                     return (
-                                        <Form.List name={[index, 'inventoryUnits']}>
-                                            {(inventoryUnits, { add, remove }) => (
+                                        <Form.List name={[row.name, 'inventoryUnits']}>
+                                            {(inventoryUnits) => (
                                                 <>
-                                                    {inventoryUnits.map((unit, iuIndex) => (
+                                                    {inventoryUnits.map((unit) => (
                                                         <QuantityInputField
-                                                            key={iuIndex}
-                                                            name={[iuIndex]}
-                                                            label={form.getFieldValue([
-                                                                'packages',
-                                                                index,
-                                                                'inventoryUnits',
-                                                                iuIndex,
-                                                                'variation',
-                                                                'sku',
-                                                            ])}
+                                                            key={unit.key}
+                                                            name={[unit.name]}
+                                                            label={
+                                                                isVariable
+                                                                    ? form.getFieldValue([
+                                                                          'packages',
+                                                                          row.name,
+                                                                          'inventoryUnits',
+                                                                          unit.name,
+                                                                          'variation',
+                                                                          'sku',
+                                                                      ])
+                                                                    : ''
+                                                            }
                                                         />
                                                     ))}
                                                 </>
@@ -324,7 +399,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                             <Column
                                 width={100}
                                 title={'Action'}
-                                render={(value, row, index) => {
+                                render={(value, row) => {
                                     return (
                                         <Space size="middle">
                                             <Button
@@ -333,7 +408,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                                 color="primary"
                                                 shape={'circle'}
                                                 onClick={() =>
-                                                    editingIndex === index
+                                                    editingIndex === row.name
                                                         ? setEditingIndex(undefined)
                                                         : setEditingIndex(row.name)
                                                 }

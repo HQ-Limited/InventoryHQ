@@ -146,8 +146,6 @@ export default function QuantityField({
                                     field.name,
                                 ]);
 
-                                const location = inventoryUnit.location;
-
                                 if (inventoryUnit.package) return;
 
                                 return (
@@ -156,8 +154,8 @@ export default function QuantityField({
                                         name={[field.name]}
                                         label={
                                             LOCATIONS_ENABLED
-                                                ? `${location.name} quantity`
-                                                : undefined
+                                                ? `${inventoryUnit.location.name} quantity`
+                                                : 'Quantity'
                                         }
                                     />
                                 );
