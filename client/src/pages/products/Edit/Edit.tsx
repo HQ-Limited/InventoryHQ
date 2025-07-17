@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { App, Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps } from 'antd';
+import { App, Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps, Tooltip } from 'antd';
 import { useParams } from 'react-router-dom';
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
@@ -24,11 +24,13 @@ import {
     AppstoreOutlined,
     ControlFilled,
     ProductFilled,
+    QuestionCircleOutlined,
+    SaveOutlined,
     TruckFilled,
     UnorderedListOutlined,
 } from '@ant-design/icons';
 import PriceField from './components/PriceField';
-import { LOCATIONS_ENABLED, WHOLESALE_ENABLED } from '../../../global';
+import { LOCATIONS_ENABLED, PACKAGES_ENABLED, WHOLESALE_ENABLED } from '../../../global';
 import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
 import locationService from '../../../services/locationService';
@@ -46,7 +48,15 @@ const CreateEdit: React.FC = () => {
     const [values, setValues] = useState<Partial<Product>>({
         categories: [],
         attributes: [],
-        variations: [],
+        variations: [
+            ...(!LOCATIONS_ENABLED
+                ? [
+                      {
+                          inventoryUnits: [{}],
+                      },
+                  ]
+                : []),
+        ],
         isVariable: false,
         manageQuantity: true,
     });
@@ -281,7 +291,31 @@ const CreateEdit: React.FC = () => {
         }
     }
 
-    const commonProductItems: TabsProps['items'] = [
+    const productMenuItems: TabsProps['items'] = [
+        ...(!isVariable
+            ? [
+                  {
+                      key: 'general',
+                      label: 'General',
+                      icon: <ControlFilled />,
+                      children: (
+                          <>
+                              <PriceField />
+
+                              {WHOLESALE_ENABLED && (
+                                  <PriceField
+                                      name={[0, 'wholesalePrice']}
+                                      label="Wholesale price"
+                                  />
+                              )}
+
+                              <SKUField />
+                          </>
+                      ),
+                      forceRender: true,
+                  },
+              ]
+            : []),
         {
             key: 'inventory',
             label: 'Inventory',
@@ -337,45 +371,28 @@ const CreateEdit: React.FC = () => {
             ),
             forceRender: true,
         },
-        {
-            key: 'packages',
-            label: 'Packages',
-            icon: <AppstoreOutlined />,
-            children: <PackagesTable locations={locations} />,
-            forceRender: true,
-        },
-    ];
-
-    const simpleProductItems: TabsProps['items'] = [
-        {
-            key: 'general',
-            label: 'General',
-            icon: <ControlFilled />,
-            children: (
-                <>
-                    <PriceField />
-
-                    {WHOLESALE_ENABLED && (
-                        <PriceField name={[0, 'wholesalePrice']} label="Wholesale price" />
-                    )}
-
-                    <SKUField />
-                </>
-            ),
-            forceRender: true,
-        },
-        ...commonProductItems,
-    ];
-
-    const variableProductItems: TabsProps['items'] = [
-        ...commonProductItems,
-        {
-            key: 'variations',
-            label: 'Variations',
-            icon: <ProductFilled />,
-            children: <VariationsCards locations={locations} />,
-            forceRender: true,
-        },
+        ...(isVariable
+            ? [
+                  {
+                      key: 'variations',
+                      label: 'Variations',
+                      icon: <ProductFilled />,
+                      children: <VariationsCards locations={locations} />,
+                      forceRender: true,
+                  },
+              ]
+            : []),
+        ...(PACKAGES_ENABLED
+            ? [
+                  {
+                      key: 'packages',
+                      label: 'Packages',
+                      icon: <AppstoreOutlined />,
+                      children: <PackagesTable locations={locations} />,
+                      forceRender: true,
+                  },
+              ]
+            : []),
     ];
 
     return (
@@ -406,7 +423,22 @@ const CreateEdit: React.FC = () => {
 
                         <Form.Item
                             name={'isVariable'}
-                            label="Product type"
+                            label={
+                                <Space>
+                                    Product type
+                                    {isVariable && (
+                                        <Tooltip
+                                            placement="right"
+                                            color="orange"
+                                            title="Warning: Changing the product type will delete all variations and packages!"
+                                        >
+                                            <QuestionCircleOutlined
+                                                style={{ fontSize: 16, color: 'orange' }}
+                                            />
+                                        </Tooltip>
+                                    )}
+                                </Space>
+                            }
                             rules={[{ required: true }]}
                         >
                             <Select
@@ -417,24 +449,37 @@ const CreateEdit: React.FC = () => {
                                 ]}
                                 value={isVariable}
                                 onChange={(value) => {
+                                    form.setFieldValue('packages', []);
+                                    if (value) {
+                                        form.setFieldValue('variations', []);
+                                    } else {
+                                        form.setFieldValue('variations', [
+                                            ...(!LOCATIONS_ENABLED
+                                                ? [
+                                                      {
+                                                          inventoryUnits: [{}],
+                                                      },
+                                                  ]
+                                                : []),
+                                        ]);
+                                    }
                                     setIsVariable(value);
                                 }}
                             />
                         </Form.Item>
 
-                        <Tabs
-                            items={
-                                form.getFieldValue('isVariable')
-                                    ? variableProductItems
-                                    : simpleProductItems
-                            }
-                            tabPosition="left"
-                        />
+                        <Tabs items={productMenuItems} tabPosition="left" />
                     </Space>
 
-                    <Form.Item style={{ textAlign: 'center' }}>
-                        <Button type="primary" htmlType="submit" size={'large'} loading={saving}>
-                            Save
+                    <Form.Item style={{ textAlign: 'center', marginTop: 50 }}>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            size={'large'}
+                            icon={<SaveOutlined />}
+                            loading={saving}
+                        >
+                            Save product
                         </Button>
                     </Form.Item>
                 </>
