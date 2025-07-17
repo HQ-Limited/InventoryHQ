@@ -1,24 +1,9 @@
-import {
-    Button,
-    Empty,
-    Form,
-    FormProps,
-    Input,
-    InputNumber,
-    Menu,
-    Modal,
-    Select,
-    Tooltip,
-    Space,
-    Table,
-    Tag,
-} from 'antd';
+import { Button, Empty, Form, Menu, Select, Tooltip, Space, Table, Tag } from 'antd';
 
 import {
     Location,
     InventoryUnit,
     Variation,
-    Package,
     ProductAttribute,
     VariationAttribute,
 } from '../types/EditProductTypes';
@@ -26,49 +11,10 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import Column from 'antd/es/table/Column';
 import PriceField from './PriceField';
-import { QuantityInputField } from './QuantityField';
-import DescriptionField from './DescriptionField';
+import QuantityField from './QuantityField';
 import { LOCATIONS_ENABLED } from '../../../../global';
 import { DefaultOptionType } from 'antd/es/select';
-
-const LocationField = ({
-    name,
-    locations,
-    disabled = false,
-    label = '',
-}: {
-    name: (number | string)[];
-    locations: Location[];
-    disabled?: boolean;
-    label?: string;
-}) => {
-    return (
-        <Form.Item
-            name={[...name, 'location']}
-            label={label}
-            rules={[{ required: true, message: 'Please select a location' }]}
-            getValueFromEvent={(value: number) => {
-                return locations.find((l) => l.id == value);
-            }}
-            getValueProps={(values) => {
-                return {
-                    value: values?.id,
-                };
-            }}
-        >
-            <Select
-                disabled={disabled}
-                showSearch
-                placeholder="Select location"
-                optionFilterProp="label"
-                options={locations!.map((location) => ({
-                    label: location.name,
-                    value: location.id,
-                }))}
-            />
-        </Form.Item>
-    );
-};
+import SKUField from './SKUField';
 
 function SelectField({
     name,
@@ -98,11 +44,26 @@ export default function VariationsTable({ locations }: { locations: Location[] }
     const variations = Form.useWatch('variations');
     const attributes = Form.useWatch('attributes') || [];
 
-    const AddVariationButton = () => {
+    const AddVariationButton = ({ add }: { add: (variation: Partial<Variation>) => void }) => {
         const isDisabled = isVariable && variations.length === 0;
         return (
             <Tooltip title={isDisabled ? 'Create at least one variation first' : undefined}>
-                <Button type="primary" icon={<PlusOutlined />} disabled={isDisabled}>
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    disabled={isDisabled}
+                    onClick={() =>
+                        add({
+                            attributes: attributes
+                                .filter((a: ProductAttribute) => a.isVariational)
+                                .map((a: ProductAttribute) => ({
+                                    attributeId: a.attributeId,
+                                    attributeName: a.name,
+                                    value: {},
+                                })),
+                        })
+                    }
+                >
                     Add Variation
                 </Button>
             </Tooltip>
@@ -119,7 +80,7 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                             items={[
                                 {
                                     key: 'add-variation',
-                                    label: <AddVariationButton />,
+                                    label: <AddVariationButton add={add} />,
                                 },
                             ]}
                             selectable={false}
@@ -137,7 +98,7 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                                         description="This product has no variations"
                                     >
-                                        <AddVariationButton />
+                                        <AddVariationButton add={add} />
                                     </Empty>
                                 ),
                             }}
@@ -155,7 +116,9 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                 title={'SKU'}
                                 width={150}
                                 render={(value, row) => {
-                                    return form.getFieldValue(['variations', row.name, 'sku']);
+                                    if (editingIndex !== row.name)
+                                        return form.getFieldValue(['variations', row.name, 'sku']);
+                                    return <SKUField name={[row.name]} label="" />;
                                 }}
                             />
                             <Column
@@ -277,59 +240,37 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                 dataIndex={'inventoryUnits'}
                                 title="Quantity"
                                 render={(value, row) => {
-                                    return (
-                                        <Form.List name={[row.name, 'inventoryUnits']}>
-                                            {(iU, { remove }) => {
-                                                if (!LOCATIONS_ENABLED) {
-                                                    if (editingIndex !== row.name)
-                                                        return form.getFieldValue([
-                                                            'variations',
-                                                            row.name,
-                                                            'inventoryUnits',
-                                                            0,
-                                                            'quantity',
-                                                        ]);
+                                    if (editingIndex !== row.name) {
+                                        if (LOCATIONS_ENABLED)
+                                            return form
+                                                .getFieldValue([
+                                                    'variations',
+                                                    row.name,
+                                                    'inventoryUnits',
+                                                ])
+                                                .map((unit: InventoryUnit) => {
                                                     return (
-                                                        <QuantityInputField name={[0]} label="" />
+                                                        <Tag>
+                                                            {unit.location.name} ({unit.quantity})
+                                                        </Tag>
                                                     );
-                                                }
-                                                return (
-                                                    <>
-                                                        {iU.map((iu) => {
-                                                            if (editingIndex !== row.name) {
-                                                                const inv = form.getFieldValue([
-                                                                    'variations',
-                                                                    row.name,
-                                                                    'inventoryUnits',
-                                                                    iu.name,
-                                                                ]);
-                                                                return (
-                                                                    <Tag>
-                                                                        {inv.location.name} (
-                                                                        {inv.quantity})
-                                                                    </Tag>
-                                                                );
-                                                            }
+                                                });
+                                        return form.getFieldValue([
+                                            'variations',
+                                            row.name,
+                                            'inventoryUnits',
+                                        ])[0].quantity;
+                                    }
 
-                                                            return (
-                                                                <QuantityInputField
-                                                                    name={[iu.name]}
-                                                                    label={form.getFieldValue([
-                                                                        'variations',
-                                                                        row.name,
-                                                                        'inventoryUnits',
-                                                                        iu.name,
-                                                                        'location',
-                                                                        'name',
-                                                                    ])}
-                                                                    layout="horizontal"
-                                                                />
-                                                            );
-                                                        })}
-                                                    </>
-                                                );
+                                    return (
+                                        <QuantityField
+                                            name={[row.name]}
+                                            locations={locations}
+                                            quantity={{
+                                                layout: 'horizontal',
+                                                label: !LOCATIONS_ENABLED ? '' : undefined,
                                             }}
-                                        </Form.List>
+                                        />
                                     );
                                 }}
                             />

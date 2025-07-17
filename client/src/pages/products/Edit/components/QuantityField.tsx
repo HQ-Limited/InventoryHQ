@@ -127,9 +127,14 @@ const LocationField = ({
 export default function QuantityField({
     name,
     locations,
+    quantity,
 }: {
     name: (number | string)[];
     locations?: Location[];
+    quantity: {
+        layout?: 'vertical' | 'horizontal';
+        label?: string;
+    };
 }) {
     const form = Form.useFormInstance();
     const manageQuantity = Form.useWatch('manageQuantity');
@@ -164,10 +169,13 @@ export default function QuantityField({
                                         key={field.key}
                                         name={[field.name]}
                                         label={
-                                            LOCATIONS_ENABLED
-                                                ? `${inventoryUnit.location.name} quantity`
-                                                : 'Quantity'
+                                            quantity.label !== undefined
+                                                ? quantity.label
+                                                : LOCATIONS_ENABLED
+                                                  ? `${inventoryUnit.location.name}`
+                                                  : 'Quantity'
                                         }
+                                        layout={quantity.layout}
                                     />
                                 );
                             })
