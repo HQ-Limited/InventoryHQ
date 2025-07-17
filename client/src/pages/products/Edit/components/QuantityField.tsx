@@ -2,7 +2,7 @@ import { Form, InputNumber, Select } from 'antd';
 import { LOCATIONS_ENABLED } from '../../../../global';
 import { InventoryUnit, Location } from '../../../../types/ProductTypes';
 
-const QuantityInputField = ({
+export const QuantityInputField = ({
     name,
     label = 'Quantity',
 }: {
@@ -102,12 +102,6 @@ const LocationField = ({
                         .map((l: InventoryUnit) => l.location.id),
                 };
             }}
-            rules={[
-                {
-                    required: true,
-                    message: 'Please select at least one location!',
-                },
-            ]}
         >
             <Select
                 mode="multiple"
