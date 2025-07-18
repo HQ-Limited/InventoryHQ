@@ -73,6 +73,8 @@ namespace InventoryHQ.Controllers
             return Ok(createdAttribute);
         }
 
+        //TODO: UpdateAttribute method. Check the notes in the client/src/services/attributeService.ts.
+
         /// <summary>
         /// Creates a new attribute value for an attribute.
         /// </summary>
