@@ -1,4 +1,4 @@
-import { HomeOutlined, ProductOutlined } from '@ant-design/icons';
+import { HomeOutlined, ProductOutlined, TableOutlined } from '@ant-design/icons';
 import { CSSProperties } from 'react';
 
 type Route = {
@@ -24,6 +24,12 @@ const routes: Route[] = [
         label: 'Products',
         url: '/products',
         pinned: true,
+    },
+    {
+        key: 3,
+        icon: (style?: CSSProperties) => <TableOutlined style={{ ...style }} />,
+        label: 'Attributes',
+        url: '/attributes',
     },
 ];
 

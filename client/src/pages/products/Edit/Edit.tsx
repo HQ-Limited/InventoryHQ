@@ -236,9 +236,9 @@ const CreateEdit: React.FC = () => {
 
     async function createNewAttribute(name: string) {
         try {
-            const attributeId: number = await attributeService.createAttribute(name);
+            const attribute = await attributeService.createAttribute({ name });
             setAttributes((prev) => {
-                return [...prev, { id: attributeId, name, values: [] }];
+                return [...prev, attribute];
             });
 
             const index = form
@@ -246,7 +246,7 @@ const CreateEdit: React.FC = () => {
                 .findIndex((a: ProductAttribute) => a.name === name);
 
             form.setFieldValue(['attributes', index], {
-                attributeId,
+                attributeId: attribute.id,
                 name: name,
                 values: [],
                 isVariable,

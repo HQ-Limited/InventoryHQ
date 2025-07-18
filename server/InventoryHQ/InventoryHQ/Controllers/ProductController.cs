@@ -69,7 +69,7 @@ namespace InventoryHQ.Controllers
         /// <summary>
         /// Updates an existing product.
         /// </summary>
-        /// <param name="simpleProductDto">The product to update.</param>
+        /// <param name="simpleProductDto">The product to update. Values are optional.</param>
         /// <returns>The ID of the updated product.</returns>
         [HttpPut]
         public async Task<ActionResult<ProductDto>> UpdateProduct(ProductDto simpleProductDto)

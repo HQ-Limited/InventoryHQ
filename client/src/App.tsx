@@ -8,6 +8,7 @@ import PartnersCreateEdit from './pages/partners/CreateEdit';
 import Home from './pages/Home';
 import { useState } from 'react';
 import Page404 from './pages/404';
+import AttributesView from './pages/attributes/View/View';
 
 function MainApp() {
     const [isDark, setIsDark] = useState(true);
@@ -38,6 +39,7 @@ function MainApp() {
                             <Route path="/partners" element={<PartnersView />} />
                             <Route path="/partners/new" element={<PartnersCreateEdit />} />
                             <Route path="/partners/:id" element={<PartnersCreateEdit />} />
+                            <Route path="/attributes" element={<AttributesView />} />
                             <Route path="*" element={<Page404 />} />
                         </Routes>
                     </MainLayout>

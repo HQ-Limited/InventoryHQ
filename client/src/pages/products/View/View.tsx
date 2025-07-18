@@ -25,8 +25,8 @@ import {
 } from '@ant-design/icons';
 import productService from '../../../services/productService';
 import { Product, Variation } from '../../../types/ProductTypes';
-import { TextFilter } from './components/TextFilter';
-import { NumberFilter } from './components/NumberFilter';
+import { TextFilter } from '../../../components/TableTextFilter';
+import { NumberFilter } from '../../../components/TableNumberFilter';
 import { generateCategoriesTree, Tree } from '../../../utils/generate';
 import categoryService from '../../../services/categoryService';
 import { LOCATIONS_ENABLED } from '../../../global';

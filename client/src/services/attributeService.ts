@@ -1,5 +1,14 @@
-import { AttributeValue, ProductAttribute, VariationAttribute } from '../types/ProductTypes';
+import { Attribute, AttributeValue, ProductAttribute } from '../types/AttributeTypes';
 import api from '../utils/api';
+
+type CreateAttribute = {
+    name: string;
+    values?: CreateAttributeValue[];
+};
+
+type CreateAttributeValue = {
+    value: string;
+};
 
 class AttributeService {
     async getAttributes(options?: {
@@ -24,13 +33,39 @@ class AttributeService {
         return response.data;
     }
 
-    async createAttribute(name: string): Promise<number> {
-        const response = await api.post<number>('Attribute', null, { params: { name } });
+    async createAttribute(attribute: CreateAttribute): Promise<Attribute> {
+        const response = await api.post<Attribute>('Attribute', attribute);
+        return response.data;
+    }
+
+    async updateAttribute(attribute: Attribute): Promise<Attribute> {
+        //TODO: DO BACKEND
+        /* NOTES for backend
+           - Check if any of the attribute values were deleted.
+              - If true, check if they are used in any variations or products.
+                  - If true, return an error message as string.
+                  - If false, delete the attribute values.
+           - Check if any new attribute values were added. If so, create them.
+        */
+        const response = await api.put<Attribute>(`Attribute/${attribute.id}`, {
+            name: attribute.name,
+            values: attribute.values,
+        });
         return response.data;
     }
 
     async createAttributeValue({ id, value }: { id: number; value: string }): Promise<number> {
         const response = await api.post<number>(`Attribute/${id}`, null, { params: { value } });
+        return response.data;
+    }
+
+    async deleteAttribute(id: number): Promise<void> {
+        const response = await api.delete(`Attribute/${id}`);
+        return response.data;
+    }
+
+    async deleteAttributeValue(attributeId: number, valueId: number): Promise<void> {
+        const response = await api.delete(`Attribute/${attributeId}/${valueId}`);
         return response.data;
     }
 }
