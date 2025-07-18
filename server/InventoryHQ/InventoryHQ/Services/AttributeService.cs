@@ -22,7 +22,7 @@ namespace InventoryHQ.Services
 
 
         // TODO: REFACTOR
-        public async Task<IEnumerable<AttributeDto>> GetAttributes(bool includeValues = false, int[] ids = null)
+        public async Task<IEnumerable<EditAttributeDto>> GetAttributes(bool includeValues = false, int[] ids = null)
         {
             ids ??= Array.Empty<int>();
             IQueryable<Data.Models.Attribute> query = _data.Attributes;
@@ -64,7 +64,7 @@ namespace InventoryHQ.Services
                 attributes = await query.ToListAsync();
             }
 
-            var result = _mapper.Map<IEnumerable<AttributeDto>>(attributes);
+            var result = _mapper.Map<IEnumerable<EditAttributeDto>>(attributes);
             return result;
         }
 
@@ -78,20 +78,14 @@ namespace InventoryHQ.Services
             return result;
         }
 
-        public async Task<int?> CreateAttribute(string name)
+        public async Task<EditAttributeDto> CreateAttribute(CreateAttributeDto attribute)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                return null;
+            var attributeToCreate = _mapper.Map<Data.Models.Attribute>(attribute);
 
-            var attribute = new Data.Models.Attribute
-            {
-                Name = name
-            };
-
-            await _data.Attributes.AddAsync(attribute);
+            await _data.Attributes.AddAsync(attributeToCreate);
             await _data.SaveChangesAsync();
 
-            return attribute.Id;
+            return _mapper.Map<EditAttributeDto>(attributeToCreate);
         }
 
         public async Task<int?> CreateAttributeValue(int id, string value)
@@ -113,6 +107,51 @@ namespace InventoryHQ.Services
             await _data.SaveChangesAsync();
 
             return attributeValue.Id;
+        }
+
+        public async Task<string?> DeleteAttribute(int id)
+        {
+            var attribute = await _data.Attributes.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (attribute == null)
+                return "NotFound";
+
+            // Check if attribute is used in any variations or products
+            var variations = await _data.Variations
+                .Where(x => x.Attributes.Any(a => a.Value.AttributeId == id))
+                .ToListAsync();
+            var products = await _data.Products.Where(x => x.Attributes.Any(a => a.AttributeId == id)).ToListAsync();
+            if (variations.Count > 0 || products.Count > 0)
+                return "Attribute is used in variations or products";
+
+            _data.Attributes.Remove(attribute);
+            await _data.SaveChangesAsync();
+
+            return "Ok";
+        }
+
+        public async Task<string?> DeleteAttributeValue(int attributeId, int valueId)
+        {
+            var attributeValue = await _data.AttributeValues.FirstOrDefaultAsync(x => x.Id == valueId && x.AttributeId == attributeId);
+
+            if (attributeValue == null)
+                return "NotFound";
+
+            // Check if attribute value is used in any variations or products
+            var variations = await _data.Variations
+                .Where(x => x.Attributes.Any(a => a.Value.AttributeId == attributeId && a.Value.Id == valueId))
+                .ToListAsync();
+            var products = await _data.Products
+                .Where(x => x.Attributes.Any(a => a.AttributeId == attributeId && a.Values.Any(v => v.Id == valueId)))
+                .ToListAsync();
+
+            if (variations.Count > 0 || products.Count > 0)
+                return "Attribute value is used in variations or products";
+
+            _data.AttributeValues.Remove(attributeValue);
+            await _data.SaveChangesAsync();
+
+            return "Ok";
         }
     }
 }
