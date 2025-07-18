@@ -40,14 +40,13 @@ function SelectField({
 export default function VariationsTable({ locations }: { locations: Location[] }) {
     const [editingIndex, setEditingIndex] = useState(undefined);
     const form = Form.useFormInstance();
-    const isVariable = Form.useWatch('isVariable');
-    const variations = Form.useWatch('variations');
     const attributes = Form.useWatch('attributes') || [];
 
     const AddVariationButton = ({ add }: { add: (variation: Partial<Variation>) => void }) => {
-        const isDisabled = isVariable && variations.length === 0;
+        const isDisabled =
+            attributes.length === 0 || !attributes.find((a: ProductAttribute) => a.isVariational);
         return (
-            <Tooltip title={isDisabled ? 'Create at least one variation first' : undefined}>
+            <Tooltip title={isDisabled ? 'Mark at least one attribute as variational' : undefined}>
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}
@@ -61,6 +60,7 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                     attributeName: a.name,
                                     value: {},
                                 })),
+                            inventoryUnits: [],
                         })
                     }
                 >
@@ -71,7 +71,19 @@ export default function VariationsTable({ locations }: { locations: Location[] }
     };
 
     return (
-        <Form.List name="variations">
+        <Form.List
+            name="variations"
+            rules={[
+                {
+                    validator: (_, value) => {
+                        if (!value || value.length === 0) {
+                            return Promise.reject(new Error('At least one variation is required.'));
+                        }
+                        return Promise.resolve();
+                    },
+                },
+            ]}
+        >
             {(variations, { add, remove }) => {
                 return (
                     <>

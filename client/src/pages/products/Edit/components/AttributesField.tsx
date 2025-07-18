@@ -24,6 +24,7 @@ export default function AttributesField({
                 rules={[
                     {
                         required,
+                        message: 'Select at least one attribute',
                     },
                 ]}
                 getValueFromEvent={(values: (number | string)[]) => {

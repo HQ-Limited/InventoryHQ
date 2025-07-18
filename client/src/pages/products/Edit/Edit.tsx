@@ -174,7 +174,7 @@ const CreateEdit: React.FC = () => {
     };
 
     const onFinishFailed: FormProps<Product>['onFinishFailed'] = (errorInfo) => {
-        message.error('Some fields have errors!');
+        message.error(errorInfo.errorFields[0].errors[0]);
         console.log('Failed:', errorInfo);
     };
 

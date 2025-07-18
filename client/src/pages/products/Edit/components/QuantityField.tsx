@@ -131,7 +131,7 @@ export default function QuantityField({
 }: {
     name: (number | string)[];
     locations?: Location[];
-    quantity: {
+    quantity?: {
         layout?: 'vertical' | 'horizontal';
         label?: string;
     };
