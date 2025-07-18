@@ -39,14 +39,6 @@ class AttributeService {
     }
 
     async updateAttribute(attribute: Attribute): Promise<Attribute> {
-        //TODO: DO BACKEND
-        /* NOTES for backend
-           - Check if any of the attribute values were deleted.
-              - If true, check if they are used in any variations or products.
-                  - If true, return an error message as string.
-                  - If false, delete the attribute values.
-           - Check if any new attribute values were added. If so, create them.
-        */
         const response = await api.put<Attribute>(`Attribute/${attribute.id}`, {
             name: attribute.name,
             values: attribute.values,

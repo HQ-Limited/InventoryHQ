@@ -21,7 +21,6 @@ namespace InventoryHQ.Services
         }
 
 
-        // TODO: REFACTOR
         public async Task<IEnumerable<EditAttributeDto>> GetAttributes(bool includeValues = false, int[] ids = null)
         {
             ids ??= Array.Empty<int>();

@@ -136,6 +136,7 @@ const View: React.FC = () => {
         {
             title: 'Actions',
             dataIndex: 'actions',
+            width: 100,
             render: (_, record) => (
                 <Space size="middle">
                     <Button
@@ -176,7 +177,7 @@ const View: React.FC = () => {
         fetchAttributes();
     }, []);
 
-    // TODO: Check whats the best way to use filters: frontend or backend
+    // TODO: Should we use backend or frontend filters?
     const filters = TextFilter<AttributeValue>();
 
     return (
