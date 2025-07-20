@@ -1,4 +1,18 @@
-import { App, Button, Col, Flex, Form, FormProps, Input, Row, Space, Table, Tag, Grid } from 'antd';
+import {
+    App,
+    Button,
+    Col,
+    Flex,
+    Form,
+    FormProps,
+    Input,
+    Row,
+    Space,
+    Table,
+    Tag,
+    Grid,
+    Popconfirm,
+} from 'antd';
 import { Attribute, AttributeValue } from '../../../types/AttributeTypes';
 import { useEffect, useState } from 'react';
 import { ColumnsType } from 'antd/es/table';
@@ -17,8 +31,6 @@ const View: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [createAttributeLoading, setCreateAttributeLoading] = useState(false);
     const [editingIndex, setEditingIndex] = useState<number | undefined>(undefined);
-    const [deleteAttributeValueLoading, setDeleteAttributeValueLoading] = useState<number[]>([]);
-    const [deleteAttributeLoading, setDeleteAttributeLoading] = useState<number[]>([]);
     const [formHidden, setFormHidden] = useState(true);
     const screens = useBreakpoint();
 
@@ -27,7 +39,7 @@ const View: React.FC = () => {
             const attribute = attributes.find((attribute) => attribute.id === editingIndex);
             form.setFieldsValue(attribute);
         } else form.resetFields();
-    }, [editingIndex]);
+    }, [editingIndex, attributes, form]);
 
     const onFinish: FormProps<Attribute>['onFinish'] = async (values: Attribute) => {
         // Check for duplicate values and mark them in the form
@@ -90,14 +102,16 @@ const View: React.FC = () => {
 
     const onDeleteAttribute = async (id: number) => {
         try {
-            setDeleteAttributeLoading([...deleteAttributeLoading, id]);
             await attributeService.deleteAttribute(id);
+            if (editingIndex === id) {
+                setEditingIndex(undefined);
+                setFormHidden(true);
+                form.resetFields();
+            }
             setAttributes(attributes.filter((attribute) => attribute.id !== id));
         } catch (e) {
             const err = e as AxiosError;
             message.error(err.response?.data as string);
-        } finally {
-            setDeleteAttributeLoading(deleteAttributeLoading.filter((id) => id !== id));
         }
     };
 
@@ -109,16 +123,11 @@ const View: React.FC = () => {
         const valueId: number = form.getFieldValue(['values', index]).id;
 
         try {
-            setDeleteAttributeValueLoading([...deleteAttributeValueLoading, index]);
             await attributeService.deleteAttributeValue(attributeId, valueId);
             removeFromTable(index);
         } catch (e) {
             const err = e as AxiosError;
             message.error(err.response?.data as string);
-        } finally {
-            setDeleteAttributeValueLoading(
-                deleteAttributeValueLoading.filter((id) => id !== index)
-            );
         }
     };
 
@@ -154,14 +163,28 @@ const View: React.FC = () => {
                             }
                         }}
                     />
-                    <Button
-                        icon={<DeleteOutlined />}
-                        shape={'circle'}
-                        variant="solid"
-                        color="danger"
-                        loading={deleteAttributeLoading.includes(record.id)}
-                        onClick={() => onDeleteAttribute(record.id)}
-                    />
+                    <Popconfirm
+                        title="Delete attribute"
+                        styles={{
+                            body: {
+                                maxWidth: 500,
+                            },
+                        }}
+                        description="This will also permanently delete all variations using this attribute's values and remove it from all products. Are you sure you want to delete this attribute?"
+                        onConfirm={() => onDeleteAttribute(record.id)}
+                        okText="Yes"
+                        okButtonProps={{
+                            danger: true,
+                        }}
+                        cancelText="No"
+                    >
+                        <Button
+                            icon={<DeleteOutlined />}
+                            shape={'circle'}
+                            variant="solid"
+                            color="danger"
+                        />
+                    </Popconfirm>
                 </Space>
             ),
         },
@@ -242,18 +265,30 @@ const View: React.FC = () => {
                                             title={'Actions'}
                                             render={(value, row) => {
                                                 return (
-                                                    <Button
-                                                        variant="solid"
-                                                        color="danger"
-                                                        shape="circle"
-                                                        icon={<DeleteOutlined />}
-                                                        loading={deleteAttributeValueLoading.includes(
-                                                            row.name
-                                                        )}
-                                                        onClick={() =>
+                                                    <Popconfirm
+                                                        title="Delete attribute"
+                                                        styles={{
+                                                            body: {
+                                                                maxWidth: 500,
+                                                            },
+                                                        }}
+                                                        description="This will also permanently delete all variations using this attribute value and remove it from all products. Are you sure you want to delete this attribute value?"
+                                                        onConfirm={() =>
                                                             onDeleteAttributeValue(row.name, remove)
                                                         }
-                                                    />
+                                                        okText="Yes"
+                                                        okButtonProps={{
+                                                            danger: true,
+                                                        }}
+                                                        cancelText="No"
+                                                    >
+                                                        <Button
+                                                            variant="solid"
+                                                            color="danger"
+                                                            shape="circle"
+                                                            icon={<DeleteOutlined />}
+                                                        />
+                                                    </Popconfirm>
                                                 );
                                             }}
                                         />
