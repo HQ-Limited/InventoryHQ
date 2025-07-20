@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import type { CheckboxProps, GetProp, MenuProps, TableProps } from 'antd';
+import type { CheckboxProps, MenuProps, TablePaginationConfig, TableProps } from 'antd';
 import {
     App,
     Button,
@@ -14,7 +14,6 @@ import {
     Tooltip,
     Typography,
 } from 'antd';
-import type { SorterResult } from 'antd/es/table/interface';
 import { Link } from 'react-router-dom';
 import {
     DeleteOutlined,
@@ -30,16 +29,9 @@ import { NumberFilter } from '../../../components/TableNumberFilter';
 import { generateCategoriesTree, Tree } from '../../../utils/generate';
 import categoryService from '../../../services/categoryService';
 import { LOCATIONS_ENABLED } from '../../../global';
-
-type ColumnsType<T extends object = object> = TableProps<T>['columns'];
-type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
-
-interface TableParams {
-    pagination?: TablePaginationConfig;
-    sortField?: SorterResult<any>['field'];
-    sortOrder?: SorterResult<any>['order'];
-    filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
-}
+import { ColumnsType, RequestTableParams, TableParams } from '../../../types/TableTypes';
+import { convertFiltersToDescriptors } from '../../../utils/table';
+import { FilterValue, SorterResult } from 'antd/es/table/interface';
 
 const StatusTag = ({ quantity }: { quantity: number }) => {
     if (quantity > 0) {
@@ -255,7 +247,12 @@ const View: React.FC = () => {
         },
     ];
 
-    const onVariationTableChange = (pagination, filters, sorter, product: Product) => {
+    const onVariationTableChange = (
+        pagination: TablePaginationConfig,
+        filters: Record<string, FilterValue | null>,
+        sorter: SorterResult<Variation> | SorterResult<Variation>[],
+        product: Product
+    ) => {
         setLoading(true);
 
         const filterDescriptors = convertFiltersToDescriptors(filters);
@@ -267,7 +264,7 @@ const View: React.FC = () => {
             sortField: Array.isArray(sorter) ? undefined : sorter.field,
         };
 
-        const dataRequest = {
+        const dataRequest: RequestTableParams<Variation> = {
             pagination,
             filters: filterDescriptors,
             sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
@@ -276,7 +273,7 @@ const View: React.FC = () => {
 
         setVariationTableParams(newTableParams);
 
-        async function fetchVariations(dataRequest: any) {
+        async function fetchVariations(dataRequest: RequestTableParams<Variation>) {
             return await productService.getVariations(product.id, dataRequest);
         }
 
@@ -442,40 +439,11 @@ const View: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    function convertFiltersToDescriptors(data) {
-        const descriptors = [];
-
-        for (const [field, filters] of Object.entries(data)) {
-            if (Array.isArray(filters)) {
-                if (
-                    typeof filters[0] === 'object' &&
-                    filters[0] !== null &&
-                    'operator' in filters[0]
-                ) {
-                    for (const f of filters) {
-                        descriptors.push({
-                            fieldName: field,
-                            value: f.input,
-                            operator: f.operator,
-                        });
-                    }
-                } else {
-                    // Simple array of values, assume equality
-                    for (const val of filters) {
-                        descriptors.push({
-                            fieldName: field,
-                            value: val,
-                            operator: 'eq',
-                        });
-                    }
-                }
-            }
-        }
-
-        return descriptors;
-    }
-
-    const onTableChange: TableProps<Product>['onChange'] = (pagination, filters, sorter) => {
+    const onTableChange: TableProps<Product>['onChange'] = (
+        pagination: TablePaginationConfig,
+        filters: Record<string, FilterValue | null>,
+        sorter: SorterResult<Product> | SorterResult<Product>[]
+    ) => {
         setLoading(true);
 
         const filterDescriptors = convertFiltersToDescriptors(filters);
@@ -494,9 +462,7 @@ const View: React.FC = () => {
             }))
         );
 
-        console.log({ filters });
-
-        const dataRequest = {
+        const dataRequest: RequestTableParams<Product> = {
             pagination,
             filters: filterDescriptors,
             sortOrder: Array.isArray(sorter) ? undefined : sorter.order,

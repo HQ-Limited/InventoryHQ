@@ -21,7 +21,7 @@ namespace InventoryHQ.Services
         }
 
 
-        public async Task<IEnumerable<EditAttributeDto>> GetAttributes(bool includeValues = false, int[] ids = null)
+        public async Task<IEnumerable<EditAttributeDto>> GetAttributes(bool includeValues = false, int[] ids = null, TableDatasourceRequest? tableParams = null)
         {
             ids ??= Array.Empty<int>();
             IQueryable<Data.Models.Attribute> query = _data.Attributes;
@@ -62,6 +62,8 @@ namespace InventoryHQ.Services
                 // Only attributes, no values
                 attributes = await query.ToListAsync();
             }
+
+            //TODO: Apply filters
 
             var result = _mapper.Map<IEnumerable<EditAttributeDto>>(attributes);
             return result;

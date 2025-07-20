@@ -1,4 +1,5 @@
 import { Attribute, AttributeValue, ProductAttribute } from '../types/AttributeTypes';
+import { RequestTableParams } from '../types/TableTypes';
 import api from '../utils/api';
 
 type CreateAttribute = {
@@ -12,12 +13,14 @@ type CreateAttributeValue = {
 
 class AttributeService {
     async getAttributes(options?: {
+        tableParams?: RequestTableParams<Attribute>;
         includeValues?: boolean;
         ids?: number[];
     }): Promise<ProductAttribute[]> {
-        const { includeValues = false, ids = [] } = options || {};
+        const { includeValues = false, ids = [], tableParams = {} } = options || {};
         const response = await api.get('Attribute', {
             params: {
+                tableParams,
                 includeValues,
                 ids: ids.length > 0 ? ids : undefined,
             },

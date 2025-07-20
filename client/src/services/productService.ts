@@ -1,9 +1,10 @@
 import { Product, Variation } from '../pages/products/Edit/types/EditProductTypes';
+import { RequestTableParams } from '../types/TableTypes';
 import api from '../utils/api';
 
 class ProductService {
-    async getProducts(payload: any): Promise<Product[]> {
-        const response = await api.post<Product[]>('Product/search', payload ?? {});
+    async getProducts(tableParams?: RequestTableParams<Product>): Promise<Product[]> {
+        const response = await api.post<Product[]>('Product/search', tableParams);
         return response.data;
     }
 

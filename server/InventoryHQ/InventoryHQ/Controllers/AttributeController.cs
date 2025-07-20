@@ -25,9 +25,10 @@ namespace InventoryHQ.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EditAttributeDto>>> Get(
             [FromQuery] bool includeValues = false,
-            [FromQuery(Name = "ids")] int[] ids = null)
+            [FromQuery(Name = "ids")] int[] ids = null,
+            [FromQuery] TableDatasourceRequest? tableParams = null)
         {
-            var attributes = await _attributeService.GetAttributes(includeValues, ids);
+            var attributes = await _attributeService.GetAttributes(includeValues, ids, tableParams);
 
             if (attributes == null || !attributes.Any())
             {

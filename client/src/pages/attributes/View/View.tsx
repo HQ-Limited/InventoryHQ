@@ -15,12 +15,15 @@ import {
 } from 'antd';
 import { Attribute, AttributeValue } from '../../../types/AttributeTypes';
 import { useEffect, useState } from 'react';
-import { ColumnsType } from 'antd/es/table';
+import { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
 import attributeService from '../../../services/attributeService';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import Column from 'antd/es/table/Column';
 import { TextFilter } from '../../../components/TableTextFilter';
 import { AxiosError } from 'axios';
+import { RequestTableParams, TableParams } from '../../../types/TableTypes';
+import { FilterValue, SorterResult } from 'antd/es/table/interface';
+import { convertFiltersToDescriptors } from '../../../utils/table';
 
 const { useBreakpoint } = Grid;
 
@@ -28,11 +31,19 @@ const View: React.FC = () => {
     const { message } = App.useApp();
     const [attributes, setAttributes] = useState<Attribute[]>([]);
     const [form] = Form.useForm();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [createAttributeLoading, setCreateAttributeLoading] = useState(false);
     const [editingIndex, setEditingIndex] = useState<number | undefined>(undefined);
     const [formHidden, setFormHidden] = useState(true);
     const screens = useBreakpoint();
+    const [tableParams, setTableParams] = useState<TableParams>({
+        pagination: {
+            current: 1,
+            pageSize: 20,
+            position: ['bottomCenter'],
+            hideOnSinglePage: true,
+        },
+    });
 
     useEffect(() => {
         if (editingIndex) {
@@ -190,18 +201,56 @@ const View: React.FC = () => {
         },
     ];
 
+    const fetchAttributes = async (tableParams: RequestTableParams<Attribute> = {}) => {
+        const data = await attributeService.getAttributes({ tableParams, includeValues: true });
+        return data;
+    };
+
     useEffect(() => {
-        const fetchAttributes = async () => {
-            setLoading(true);
-            const response = await attributeService.getAttributes({ includeValues: true });
-            setAttributes(response);
-            setLoading(false);
-        };
-        fetchAttributes();
+        fetchAttributes(tableParams)
+            .then((attributes) => {
+                setAttributes(attributes);
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, []);
 
     // TODO: Should we use backend or frontend filters?
     const filters = TextFilter<AttributeValue>();
+
+    const onTableChange: TableProps<Attribute>['onChange'] = (
+        pagination: TablePaginationConfig,
+        filters: Record<string, FilterValue | null>,
+        sorter: SorterResult<Attribute> | SorterResult<Attribute>[]
+    ) => {
+        setLoading(true);
+
+        const filterDescriptors = convertFiltersToDescriptors(filters);
+
+        const newTableParams = {
+            pagination,
+            filters,
+            sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
+            sortField: Array.isArray(sorter) ? undefined : sorter.field,
+        };
+
+        const dataRequest: RequestTableParams<Attribute> = {
+            pagination,
+            filters: filterDescriptors,
+            sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
+            sortField: Array.isArray(sorter) ? undefined : sorter.field,
+        };
+
+        setTableParams(newTableParams);
+
+        setLoading(true);
+        fetchAttributes(dataRequest)
+            .then((attributes) => {
+                setAttributes(attributes);
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    };
 
     return (
         <Row gutter={32}>
@@ -332,7 +381,18 @@ const View: React.FC = () => {
                 )}
             </Col>
             <Col xs={24} xl={18}>
-                <Table columns={columns} dataSource={attributes} rowKey="id" loading={loading} />
+                <Table<Attribute>
+                    columns={columns}
+                    dataSource={attributes}
+                    rowKey="id"
+                    loading={loading}
+                    onChange={onTableChange}
+                    bordered
+                    size="small"
+                    sticky
+                    pagination={tableParams.pagination}
+                    scroll={{ x: 'max-content', scrollToFirstRowOnChange: false }}
+                />
             </Col>
         </Row>
     );
