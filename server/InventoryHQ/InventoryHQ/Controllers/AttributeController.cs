@@ -23,11 +23,12 @@ namespace InventoryHQ.Controllers
         /// <param name="ids">An array of attribute IDs to fill with values. If includeValues is false, this array is ignored. If null or empty, returns all attributes with all values.</param>
         /// <returns>A list of attributes.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AttributeDto>>> Get(
+        public async Task<ActionResult<IEnumerable<EditAttributeDto>>> Get(
             [FromQuery] bool includeValues = false,
-            [FromQuery(Name = "ids")] int[] ids = null)
+            [FromQuery(Name = "ids")] int[] ids = null,
+            [FromQuery] TableDatasourceRequest? tableParams = null)
         {
-            var attributes = await _attributeService.GetAttributes(includeValues, ids);
+            var attributes = await _attributeService.GetAttributes(includeValues, ids, tableParams);
 
             if (attributes == null || !attributes.Any())
             {
@@ -38,10 +39,10 @@ namespace InventoryHQ.Controllers
         }
 
         /// <summary>
-        /// Retrieves an attribute by ID.
+        /// Retrieves all attribute values.
         /// </summary>
-        /// <param name="id">The ID of the attribute to retrieve.</param>
-        /// <returns>The attribute with the given ID.</returns>
+        /// <param name="id">The ID of the attribute.</param>
+        /// <returns>The attribute values.</returns>
         [HttpGet("{id:int}")]
         public async Task<ActionResult<IEnumerable<AttributeValueDto>>> GetAttributeValues(int id)
         {
@@ -58,20 +59,29 @@ namespace InventoryHQ.Controllers
         /// <summary>
         /// Creates a new attribute.
         /// </summary>
-        /// <param name="name">The name of the attribute to create.</param>
-        /// <returns>The ID of the created attribute.</returns>
+        /// <param name="attribute">The attribute to create.</param>
+        /// <returns>The created attribute.</returns>
         [HttpPost]
-        public async Task<ActionResult<int?>> CreateAttribute(string name)
+        public async Task<IActionResult> CreateAttribute(CreateAttributeDto attribute)
         {
-            var id = await _attributeService.CreateAttribute(name);
+            var createdAttribute = await _attributeService.CreateAttribute(attribute);
 
-            if (id == null)
+            if (createdAttribute == null)
             {
-                return BadRequest();
+                return BadRequest("Failed to create attribute");
             }
 
-            return Ok(id);
+            return Ok(createdAttribute);
         }
+
+        //TODO: UpdateAttribute method.
+        /* NOTES
+           - Check if any of the attribute values were deleted.
+              - If true, check if they are used in any variations or products.
+                  - If true, return an error message as string.
+                  - If false, delete the attribute values.
+           - Check if any new attribute values were added. If so, create them.
+        */
 
         /// <summary>
         /// Creates a new attribute value for an attribute.
@@ -92,5 +102,51 @@ namespace InventoryHQ.Controllers
             return Ok(valueId);
         }
 
+        /// <summary>
+        /// Deletes an attribute.
+        /// </summary>
+        /// <param name="id">The ID of the attribute to delete.</param>
+        /// <returns>Status 200</returns>
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> DeleteAttribute(int id)
+        {
+            var result = await _attributeService.DeleteAttribute(id);
+
+            if (result == "Ok")
+            {
+                return Ok();
+            }
+
+            if (result == "NotFound")
+            {
+                return NotFound();
+            }
+
+            return BadRequest(result);
+        }
+
+        /// <summary>
+        /// Deletes an attribute value.
+        /// </summary>
+        /// <param name="attributeId">The ID of the attribute to delete the value from.</param>
+        /// <param name="valueId">The ID of the value to delete.</param>
+        /// <returns>Status 200</returns>
+        [HttpDelete("{attributeId:int}/{valueId:int}")]
+        public async Task<ActionResult> DeleteAttributeValue(int attributeId, int valueId)
+        {
+            var result = await _attributeService.DeleteAttributeValue(attributeId, valueId);
+
+            if (result == "Ok")
+            {
+                return Ok();
+            }
+
+            if (result == "NotFound")
+            {
+                return NotFound();
+            }
+
+            return BadRequest(result);
+        }
     }
 }

@@ -53,7 +53,14 @@ namespace InventoryHQ.Data
                 {
                     new AttributeValue { Value = "Red" },
                     new AttributeValue { Value = "Green" },
-                    new AttributeValue { Value = "Blue" }
+                    new AttributeValue { Value = "Blue" },
+                    new AttributeValue { Value = "Yellow" },
+                    new AttributeValue { Value = "Orange" },
+                    new AttributeValue { Value = "Purple" },
+                    new AttributeValue { Value = "Pink" },
+                    new AttributeValue { Value = "Brown" },
+                    new AttributeValue { Value = "Gray" },
+                    new AttributeValue { Value = "Black" },
                 }
             };
             var materialAttribute = new Models.Attribute
