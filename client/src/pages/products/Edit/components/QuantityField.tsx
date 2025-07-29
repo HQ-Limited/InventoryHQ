@@ -1,6 +1,6 @@
 import { Form, InputNumber, Select } from 'antd';
 import { LOCATIONS_ENABLED } from '../../../../global';
-import { InventoryUnit, Location } from '../../../../types/ProductTypes';
+import { InventoryUnit, Location } from '../types/EditProductTypes';
 
 export const QuantityInputField = ({
     name,
@@ -169,13 +169,13 @@ export default function QuantityField({
                                         key={field.key}
                                         name={[field.name]}
                                         label={
-                                            quantity.label !== undefined
+                                            quantity?.label !== undefined
                                                 ? quantity.label
                                                 : LOCATIONS_ENABLED
                                                   ? `${inventoryUnit.location.name}`
                                                   : 'Quantity'
                                         }
-                                        layout={quantity.layout}
+                                        layout={quantity?.layout}
                                     />
                                 );
                             })

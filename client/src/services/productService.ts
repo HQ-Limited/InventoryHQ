@@ -1,9 +1,10 @@
 import { Product, Variation } from '../pages/products/Edit/types/EditProductTypes';
+import { Product as ViewProduct } from '../pages/products/View/types/ViewProductTypes';
 import api from '../utils/api';
 
 class ProductService {
-    async getProducts(payload: any): Promise<Product[]> {
-        const response = await api.post<Product[]>('Product/search', payload ?? {});
+    async getProducts(payload: any): Promise<ViewProduct[]> {
+        const response = await api.post<ViewProduct[]>('Product/search', payload);
         return response.data;
     }
 

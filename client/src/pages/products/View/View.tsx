@@ -24,7 +24,13 @@ import {
     PlusOutlined,
 } from '@ant-design/icons';
 import productService from '../../../services/productService';
-import { Product, Variation } from '../../../types/ProductTypes';
+import {
+    Product,
+    VariableProduct,
+    Variation,
+    isSimpleProduct,
+    isVariableProduct,
+} from './types/ViewProductTypes';
 import { TextFilter } from './components/TextFilter';
 import { NumberFilter } from './components/NumberFilter';
 import { generateCategoriesTree, Tree } from '../../../utils/generate';
@@ -80,18 +86,19 @@ const View: React.FC = () => {
         },
         {
             width: 100,
-            key: 'locations',
+            key: 'quantity',
             title: 'Quantity',
             dataIndex: 'inventoryUnits',
             render: (_, record) => {
                 if (LOCATIONS_ENABLED) {
+                    //TODO: Display the sum of all locations quantities and on hover, display a popup with the quantity of each location
                     return record.inventoryUnits!.map((unit) => (
                         <Tag key={unit.location.id}>
                             {unit.location.name} ({unit.quantity})
                         </Tag>
                     ));
                 }
-                return record.inventoryUnits![0].quantity;
+                return record.inventoryUnits!.reduce((sum, unit) => sum + unit.quantity, 0);
             },
             ...NumberFilter(),
         },
@@ -102,7 +109,7 @@ const View: React.FC = () => {
             title: 'Attributes',
             dataIndex: 'attributes',
             render: (_, record) =>
-                record.attributes?.map((attr, i) => <Tag key={i}>{attr.value.value}</Tag>),
+                record.attributes?.map((attr, i) => <Tag key={i}>{attr.value}</Tag>),
         },
     ]);
 
@@ -121,8 +128,9 @@ const View: React.FC = () => {
             key: 'sku',
             title: 'SKU',
             render: (_, record) => {
-                if (record.isVariable === false) {
-                    return record.variations[0].sku;
+                // check if record is simple product type or variable product type
+                if (isSimpleProduct(record)) {
+                    return record.sku;
                 } else {
                     return 'N/A';
                 }
@@ -134,11 +142,11 @@ const View: React.FC = () => {
             width: 100,
             key: 'price',
             title: 'Price',
-            dataIndex: 'price',
+            dataIndex: 'retailPrice',
             sorter: true,
             render: (_, record) => {
-                if (record.isVariable === false) {
-                    return record.variations[0].retailPrice;
+                if (isSimpleProduct(record)) {
+                    return record.retailPrice;
                 } else {
                     return 'N/A';
                 }
@@ -152,16 +160,19 @@ const View: React.FC = () => {
             render: (_, record) => {
                 if (record.manageQuantity === false) return 'Infinite';
 
-                if (record.isVariable === false) {
+                if (isSimpleProduct(record)) {
                     if (LOCATIONS_ENABLED) {
-                        return record.variations[0].inventoryUnits!.map((unit) => (
-                            <Tag key={unit.location.id}>
-                                {unit.location.name} ({unit.quantity})
+                        //TODO: Display the sum of all locations quantities and on hover, display a popup with the quantity of each location
+
+                        return record.quantity.map((qty, index) => (
+                            <Tag key={index}>
+                                {qty.locationName} ({qty.quantity})
                             </Tag>
                         ));
                     }
-                    return record.variations[0].inventoryUnits![0].quantity;
+                    return record.quantity.reduce((sum, qty) => sum + qty.quantity, 0);
                 } else {
+                    //TODO: Display the sum of all locations quantities and on hover, display a popup with the quantity of each location
                     return (
                         <IconTooltip
                             title="Sum of all variation quantities"
@@ -186,7 +197,7 @@ const View: React.FC = () => {
                         key={i}
                         content={attr.values.map((v) => (
                             <Tag style={{ marginLeft: 3, marginRight: 3 }} tabIndex={-1}>
-                                {v.value}
+                                {v}
                             </Tag>
                         ))}
                     >
@@ -209,6 +220,7 @@ const View: React.FC = () => {
                     return (
                         <Space>
                             {record.categories.map((category, i) => (
+                                // TODO: Possibly make it so if you click on a category, it will filter the products by that category
                                 <Link key={i} to={`/categories/${category.id}`}>
                                     {category.name}
                                 </Link>
@@ -295,13 +307,11 @@ const View: React.FC = () => {
             .finally(() => setLoading(false));
     };
 
-    const variationsRowRender = (record: Product, index: number) => (
+    const variationsRowRender = (record: VariableProduct, index: number) => (
         <Table<Variation>
             key={index}
             columns={variationColumns}
-            rowKey={(record) => {
-                return record.id;
-            }}
+            rowKey={(record) => record.id}
             size="small"
             bordered
             pagination={variationTableParams.pagination}
@@ -494,8 +504,6 @@ const View: React.FC = () => {
             }))
         );
 
-        console.log({ filters });
-
         const dataRequest = {
             pagination,
             filters: filterDescriptors,
@@ -526,8 +534,9 @@ const View: React.FC = () => {
                 dataSource={data}
                 size="small"
                 expandable={{
-                    expandedRowRender: variationsRowRender,
-                    rowExpandable: (record) => record.isVariable,
+                    expandedRowRender: (record, index) =>
+                        variationsRowRender(record as VariableProduct, index),
+                    rowExpandable: (record) => isVariableProduct(record),
                 }}
                 sticky
                 pagination={tableParams.pagination}
