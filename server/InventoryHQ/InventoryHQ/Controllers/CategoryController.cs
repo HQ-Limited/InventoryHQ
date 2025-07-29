@@ -35,16 +35,30 @@ namespace InventoryHQ.Controllers
         /// <summary>
         /// Retrieves a list of all categories with their children as a tree.
         /// </summary>
-        [HttpGet("tree")]
-        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetTree()
+        [HttpGet("nestedTree")]
+        public async Task<ActionResult<IEnumerable<CategoryTreeDto>>> GetNestedCategoriesTree()
         {
-            var categories = await _categoryService.GetCategoriesTree();
+            var categories = await _categoryService.GetNestedCategoriesTree();
+            return Ok(categories);
+        }
 
-            if (categories == null || !categories.Any())
-            {
-                return NotFound();
-            }
+        /// <summary>
+        /// Retrieves a list of all root categories without children.
+        /// </summary>
+        [HttpGet("rootTree")]
+        public async Task<ActionResult<IEnumerable<CategoryTreeDto>>> GetRootCategoriesTree()
+        {
+            var categories = await _categoryService.GetRootCategoriesTree();
+            return Ok(categories);
+        }
 
+        /// <summary>
+        /// Retrieves a list of all children categories of a given parent category.
+        /// </summary>
+        [HttpGet("{parentId}/childrenTree")]
+        public async Task<ActionResult<IEnumerable<CategoryTreeDto>>> GetChildrenCategoriesTree(int parentId)
+        {
+            var categories = await _categoryService.GetChildrenCategoriesTree(parentId);
             return Ok(categories);
         }
 

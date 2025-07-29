@@ -1,39 +1,69 @@
-import { HomeOutlined, ProductOutlined, UserOutlined } from '@ant-design/icons';
-import React, { CSSProperties } from 'react';
+import { FolderOutlined, HomeOutlined, ProductOutlined, UserOutlined } from '@ant-design/icons';
+import { CSSProperties } from 'react';
 import Home from './pages/Home';
 import ProductsView from './pages/products/View/View';
-import CustomersView from './pages/customers/View/View';
+import CategoriesView from './pages/categories/View/View';
 import ProductsEdit from './pages/products/Edit/Edit';
-import CustomersEdit from './pages/customers/Edit/Edit';
-import SuppliersView from './pages/suppliers/View/View';
-import SuppliersEdit from './pages/suppliers/Edit/Edit';
+import PartnersView from './pages/partners/View';
+import PartnersCreateEdit from './pages/partners/CreateEdit';
 
 type Route = {
-    icon?: (style?: CSSProperties) => React.ReactNode;
+    icon?: (style?: CSSProperties) => React.ReactElement;
     label?: string;
     url: string;
     pinned?: boolean;
-    showOnHome?: boolean;
+    hidden?: boolean;
     children?: Route[];
-    page: React.ReactNode;
+    element?: React.ReactNode;
 };
 
 const productsRoutes: Route[] = [
     {
-        icon: (style) => <ProductOutlined style={{ ...style }} />,
+        icon: (style?: CSSProperties) => <HomeOutlined style={{ ...style }} />,
+        label: 'Home',
+        url: '/',
+        pinned: true,
+        element: <Home />,
+    },
+    {
+        icon: (style?: CSSProperties) => <ProductOutlined style={{ ...style }} />,
         label: 'Products',
         url: '/products',
         pinned: true,
-        showOnHome: true,
-        page: <ProductsView />,
+        element: <ProductsView />,
     },
     {
         url: '/products/new',
-        page: <ProductsEdit />,
+        element: <ProductsEdit />,
+        hidden: true,
     },
     {
         url: '/products/:id',
-        page: <ProductsEdit />,
+        element: <ProductsEdit />,
+        hidden: true,
+    },
+    {
+        icon: (style?: CSSProperties) => <FolderOutlined style={{ ...style }} />,
+        label: 'Categories',
+        url: '/categories',
+        pinned: false,
+        element: <CategoriesView />,
+    },
+    {
+        icon: (style?: CSSProperties) => <UserOutlined style={{ ...style }} />,
+        label: 'Partners',
+        url: '/partners',
+        element: <PartnersView />,
+    },
+    {
+        url: '/partners/new',
+        element: <PartnersCreateEdit />,
+        hidden: true,
+    },
+    {
+        url: '/partners/:id',
+        element: <PartnersCreateEdit />,
+        hidden: true,
     },
 ];
 

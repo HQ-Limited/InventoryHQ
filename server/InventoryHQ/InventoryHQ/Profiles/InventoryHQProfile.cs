@@ -56,6 +56,9 @@ namespace InventoryHQ.Profiles
             CreateMap<Variation, PricelistVariationDto>()
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.RetailPrice))
                 .ReverseMap();
+            CreateMap<Category, CategoryTreeDto>()
+                .ForMember(dest => dest.IsLeaf, opt => opt.MapFrom(src => src.Children == null || !src.Children.Any()))
+                .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.ParentId));
         }
 
         private object GetProductAttributes(Product src)
