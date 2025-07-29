@@ -1,4 +1,4 @@
-import { AttributeValue, ProductAttribute, VariationAttribute } from '../types/ProductTypes';
+import { AttributeValue, ProductAttribute } from '../pages/products/Edit/types/EditProductTypes';
 import api from '../utils/api';
 
 class AttributeService {

@@ -1,5 +1,5 @@
 import { Form, TreeSelect } from 'antd';
-import { Category } from '../../../../types/ProductTypes';
+import { Category } from '../types/EditProductTypes';
 
 export default function CategoryField({
     categories,
