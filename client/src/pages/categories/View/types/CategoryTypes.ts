@@ -16,3 +16,9 @@ export type EditCategory = {
     name: string;
     parentId?: number;
 };
+
+export type Category = {
+    id: number;
+    name: string;
+    parentId?: number;
+};

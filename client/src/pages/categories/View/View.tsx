@@ -12,10 +12,11 @@ import {
     Grid,
     Flex,
     App,
+    Spin,
 } from 'antd';
 import categoryService from '../../../services/categoryService';
 import { useEffect, useState } from 'react';
-import { CategoryTree, CreateCategory, EditCategory } from './types/CategoryTypes';
+import { Category, CategoryTree, CreateCategory, EditCategory } from './types/CategoryTypes';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { EventDataNode } from 'antd/es/tree';
 import { AxiosError } from 'axios';
@@ -44,10 +45,12 @@ const ParentSelect = ({ categories }: { categories: CategoryTree[] }) => {
 };
 
 const { useBreakpoint } = Grid;
+const { Search } = Input;
 
 const View: React.FC = () => {
     const { message } = App.useApp();
-    const [data, setData] = useState<CategoryTree[]>([]);
+    const [categoriesTree, setCategoriesTree] = useState<CategoryTree[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingNode, setEditingNode] = useState<CategoryTree | null>(null);
     const [selectedNode, setSelectedNode] = useState<
@@ -57,17 +60,26 @@ const View: React.FC = () => {
     const screens = useBreakpoint();
     const [formHidden, setFormHidden] = useState(true);
     const [createCategoryLoading, setCreateCategoryLoading] = useState(false);
+    const [searchValue, setSearchValue] = useState('');
+    const [expandedKeys, setExpandedKeys] = useState<number[]>([]);
+    const [searchResultsIds, setSearchResultsIds] = useState<number[]>([]);
+
+    const fetchCategoriesTree = async () => {
+        return await categoryService.getNestedCategoriesTree();
+    };
 
     const fetchCategories = async () => {
-        return await categoryService.getNestedCategoriesTree();
+        return await categoryService.getCategories();
     };
 
     useEffect(() => {
         setLoading(true);
-
-        fetchCategories()
-            .then((categories) => {
-                setData(categories);
+        fetchCategoriesTree()
+            .then((categoriesTree) => {
+                setCategoriesTree(categoriesTree);
+                fetchCategories().then((categories) => {
+                    setCategories(categories);
+                });
                 form.resetFields();
             })
             .catch(console.error)
@@ -104,24 +116,58 @@ const View: React.FC = () => {
     const onFinish = async (values: CreateCategory | EditCategory) => {
         setCreateCategoryLoading(true);
         try {
-            if (values?.id) await categoryService.editCategory(values as EditCategory);
+            if ('id' in values) await categoryService.editCategory(values as EditCategory);
             else await categoryService.createCategory(values as CreateCategory);
             setEditingNode(null);
             setFormHidden(true);
             form.resetFields();
 
-            const categories = await fetchCategories();
-            setData(categories);
-            message.success(`Category ${values?.id ? 'updated' : 'created'} successfully`);
+            const categories = await fetchCategoriesTree();
+            setCategoriesTree(categories);
+            message.success(`Category ${'id' in values ? 'updated' : 'created'} successfully`);
         } catch (e) {
             const err = e as AxiosError;
             message.error(
                 (err.response?.data as string) ||
-                    `Failed to ${values.id ? 'update' : 'create'} category`
+                    `Failed to ${'id' in values ? 'update' : 'create'} category`
             );
         } finally {
             setCreateCategoryLoading(false);
         }
+    };
+
+    const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = e.target;
+        setSearchValue(value);
+
+        if (value === '' || value.length < 3) {
+            setExpandedKeys([]);
+            setSearchResultsIds([]);
+            return;
+        }
+
+        // Find the nodes that contains the search value
+        const nodes = categories.filter((category) =>
+            category.name.toLowerCase().includes(value.toLowerCase())
+        );
+        const idsToExpand = new Set<number>();
+        const idsToSelect = new Set<number>();
+
+        for (const node of nodes) {
+            let noParent = node.parentId !== null;
+            let currentNode = node;
+
+            while (noParent) {
+                idsToExpand.add(currentNode.parentId!);
+                currentNode = categories.find((category) => category.id === currentNode.parentId)!;
+                noParent = currentNode.parentId !== null;
+            }
+
+            idsToSelect.add(node.id);
+        }
+
+        setExpandedKeys(Array.from(idsToExpand));
+        setSearchResultsIds(Array.from(idsToSelect));
     };
 
     return (
@@ -142,7 +188,7 @@ const View: React.FC = () => {
                             <Input />
                         </Form.Item>
 
-                        <ParentSelect categories={data} />
+                        <ParentSelect categories={categoriesTree} />
 
                         <Flex justify="end" gap={16} style={{ marginTop: 16 }}>
                             {(!screens.lg || editingNode) && (
@@ -169,34 +215,68 @@ const View: React.FC = () => {
                 )}
             </Col>
             <Col xs={24} xl={18}>
-                <Typography.Text type="secondary">
-                    Right-click on a category to open the context menu.
-                </Typography.Text>
-                <Dropdown
-                    onOpenChange={(open) => {
-                        if (!open) setSelectedNode(null);
-                    }}
-                    menu={{ items: contextMenuItems }}
-                    trigger={['contextMenu']}
-                >
-                    <Tree
-                        // draggable
-                        // onDragEnter={onDragEnter}
-                        // onDrop={onDrop}
-                        blockNode
-                        onRightClick={onRightClick}
-                        filterTreeNode={(node) => {
-                            return node.id === selectedNode?.id;
+                <Spin spinning={loading} size="large" style={{ height: '100vh' }}>
+                    <Search placeholder="Search (min. 3 characters)" onChange={onSearch} />
+                    <Typography.Text type="secondary">
+                        Right-click on a category to open the context menu.
+                    </Typography.Text>
+                    <Dropdown
+                        onOpenChange={(open) => {
+                            if (!open) setSelectedNode(null);
                         }}
-                        selectable={false}
-                        fieldNames={{
-                            key: 'id',
-                            title: 'name',
-                            children: 'children',
-                        }}
-                        treeData={data}
-                    />
-                </Dropdown>
+                        menu={{ items: contextMenuItems }}
+                        trigger={['contextMenu']}
+                    >
+                        <Tree
+                            // draggable
+                            // onDragEnter={onDragEnter}
+                            // onDrop={onDrop}
+                            onExpand={(keys, info) => {
+                                if (info.node.isLeaf) return;
+                                setExpandedKeys(keys as number[]);
+                            }}
+                            expandedKeys={expandedKeys}
+                            blockNode
+                            onRightClick={onRightClick}
+                            filterTreeNode={(node) => {
+                                return (
+                                    node.id === selectedNode?.id ||
+                                    searchResultsIds.includes(node.id)
+                                );
+                            }}
+                            titleRender={(node) => {
+                                if (searchResultsIds.includes(node.id)) {
+                                    const searchValueLower = searchValue.toLowerCase();
+                                    const startIndex = node.name
+                                        .toLowerCase()
+                                        .indexOf(searchValueLower);
+                                    const endIndex = startIndex + searchValueLower.length;
+
+                                    const before = node.name.slice(0, startIndex);
+                                    const match = node.name.slice(startIndex, endIndex);
+                                    const after = node.name.slice(endIndex);
+
+                                    return (
+                                        <Typography.Text>
+                                            {before}
+                                            <Typography.Text mark={true}>{match}</Typography.Text>
+                                            {after}
+                                        </Typography.Text>
+                                    );
+                                }
+
+                                return node.name;
+                            }}
+                            selectable={false}
+                            fieldNames={{
+                                key: 'id',
+                                title: 'name',
+                                children: 'children',
+                            }}
+                            treeData={categoriesTree}
+                        />
+                    </Dropdown>
+                </Spin>
             </Col>
         </Row>
     );
