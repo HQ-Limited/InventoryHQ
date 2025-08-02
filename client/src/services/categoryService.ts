@@ -27,16 +27,18 @@ class ProductService {
         return response.data;
     }
 
-    async createCategory(data: CreateCategory): Promise<number> {
-        // const response = await api.post<Category>('/Category', data);
-        // return response.data;
-        return Math.floor(Math.random() * 100);
+    async createCategory(category: CreateCategory): Promise<Category> {
+        const response = await api.post<Category>('/Category', category);
+        return response.data;
     }
 
-    async editCategory(data: EditCategory): Promise<number> {
-        // const response = await api.put<Category>('/Category', data);
-        // return response.data;
-        return Math.floor(Math.random() * 100);
+    async editCategory(category: EditCategory): Promise<Category> {
+        const response = await api.put<Category>('/Category', category);
+        return response.data;
+    }
+
+    async deleteCategory(id: number): Promise<void> {
+        await api.delete(`/Category/${id}`);
     }
 }
 

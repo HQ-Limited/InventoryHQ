@@ -13,6 +13,7 @@ import {
     Flex,
     App,
     Spin,
+    Popconfirm,
 } from 'antd';
 import categoryService from '../../../services/categoryService';
 import { useEffect, useState } from 'react';
@@ -23,7 +24,7 @@ import { AxiosError } from 'axios';
 
 const ParentSelect = ({ categories }: { categories: CategoryTree[] }) => {
     return (
-        <Form.Item label="Parent" name="parent">
+        <Form.Item label="Parent" name="parentId">
             <TreeSelect
                 showSearch
                 style={{ width: '100%' }}
@@ -63,23 +64,21 @@ const View: React.FC = () => {
     const [searchValue, setSearchValue] = useState('');
     const [expandedKeys, setExpandedKeys] = useState<number[]>([]);
     const [searchResultsIds, setSearchResultsIds] = useState<number[]>([]);
-
-    const fetchCategoriesTree = async () => {
-        return await categoryService.getNestedCategoriesTree();
-    };
+    const [draggingNode, setDraggingNode] = useState<HTMLElement | null>(null);
 
     const fetchCategories = async () => {
-        return await categoryService.getCategories();
+        const [categoriesTree, categories] = await Promise.all([
+            categoryService.getNestedCategoriesTree(),
+            categoryService.getCategories(),
+        ]);
+        setCategoriesTree(categoriesTree);
+        setCategories(categories);
     };
 
     useEffect(() => {
         setLoading(true);
-        fetchCategoriesTree()
-            .then((categoriesTree) => {
-                setCategoriesTree(categoriesTree);
-                fetchCategories().then((categories) => {
-                    setCategories(categories);
-                });
+        fetchCategories()
+            .then(() => {
                 form.resetFields();
             })
             .catch(console.error)
@@ -90,6 +89,19 @@ const View: React.FC = () => {
         setSelectedNode(node);
     };
 
+    const onDelete = async () => {
+        // fake promise after 3 sec
+        try {
+            if (!selectedNode) return;
+            await categoryService.deleteCategory(selectedNode.id as number);
+            await fetchCategories();
+            message.success('Category deleted successfully');
+        } catch (e) {
+            const err = e as AxiosError;
+            message.error((err.response?.data as string) || 'Failed to delete category');
+        }
+    };
+
     const contextMenuItems: MenuProps['items'] = [
         {
             label: 'Edit',
@@ -98,15 +110,20 @@ const View: React.FC = () => {
             onClick: async () => {
                 setEditingNode(selectedNode as CategoryTree);
                 setFormHidden(false);
-                form.setFieldsValue({
-                    id: selectedNode!.id,
-                    name: selectedNode!.name,
-                    parent: selectedNode!.parentId,
-                });
+                form.setFieldsValue(selectedNode as EditCategory);
             },
         },
         {
-            label: 'Delete',
+            label: (
+                <Popconfirm
+                    title="Deleting this category will also delete all its children categories and any products assigned to them."
+                    onConfirm={onDelete}
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                >
+                    Delete
+                </Popconfirm>
+            ),
             key: 'delete',
             danger: true,
             icon: <DeleteOutlined />,
@@ -118,12 +135,12 @@ const View: React.FC = () => {
         try {
             if ('id' in values) await categoryService.editCategory(values as EditCategory);
             else await categoryService.createCategory(values as CreateCategory);
+
             setEditingNode(null);
             setFormHidden(true);
             form.resetFields();
 
-            const categories = await fetchCategoriesTree();
-            setCategoriesTree(categories);
+            await fetchCategories();
             message.success(`Category ${'id' in values ? 'updated' : 'created'} successfully`);
         } catch (e) {
             const err = e as AxiosError;
@@ -170,6 +187,33 @@ const View: React.FC = () => {
         setSearchResultsIds(Array.from(idsToSelect));
     };
 
+    function onDragStart({ event }: { event: React.MouseEvent<HTMLDivElement> }) {
+        setDraggingNode(event.target as HTMLElement);
+    }
+
+    async function onDrop({
+        event,
+        node,
+        dragNode,
+    }: {
+        event: React.MouseEvent<HTMLDivElement>;
+        node: CategoryTree;
+        dragNode: CategoryTree;
+    }) {
+        try {
+            const category = categories.find((c) => c.id === dragNode.id)!;
+
+            if (draggingNode == event.target) category.parentId = null;
+            else category.parentId = node.id;
+            await categoryService.editCategory(category);
+        } catch (e) {
+            const err = e as AxiosError;
+            message.error((err.response?.data as string) || 'Failed to update category parent');
+        }
+
+        await fetchCategories();
+    }
+
     return (
         <Row gutter={32}>
             <Col
@@ -183,7 +227,8 @@ const View: React.FC = () => {
                     </Button>
                 ) : (
                     <Form layout="vertical" form={form} onFinish={onFinish}>
-                        <Form.Item label="ID" name="id" hidden></Form.Item>
+                        {editingNode && <Form.Item name="id" hidden></Form.Item>}
+
                         <Form.Item label="Name" name="name" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
@@ -228,9 +273,9 @@ const View: React.FC = () => {
                         trigger={['contextMenu']}
                     >
                         <Tree
-                            // draggable
-                            // onDragEnter={onDragEnter}
-                            // onDrop={onDrop}
+                            draggable
+                            onDragStart={onDragStart}
+                            onDrop={onDrop}
                             onExpand={(keys, info) => {
                                 if (info.node.isLeaf) return;
                                 setExpandedKeys(keys as number[]);

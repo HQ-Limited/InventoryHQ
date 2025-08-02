@@ -62,5 +62,60 @@ namespace InventoryHQ.Controllers
             return Ok(categories);
         }
 
+        /// <summary>
+        /// Creates a new category.
+        /// </summary>
+        /// <param name="createCategoryDto">The category to create.</param>
+        /// <returns>The created category.</returns>
+        [HttpPost]
+        public async Task<ActionResult<CategoryDto>> CreateCategory(CreateCategoryDto createCategoryDto)
+        {
+            // echo the createCategoryDto
+            var category = await _categoryService.CreateCategory(createCategoryDto);
+
+            if (category == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(category);
+        }
+
+        /// <summary>
+        /// Updates an existing category.
+        /// </summary>
+        /// <param name="categoryDto">The category to update.</param>
+        /// <returns>The updated category.</returns>
+        [HttpPut]
+        public async Task<ActionResult<CategoryDto>> UpdateCategory(CategoryDto categoryDto)
+        {
+            var category = await _categoryService.UpdateCategory(categoryDto);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(category);  
+        }
+
+        /// <summary>
+        /// Deletes a category.
+        /// </summary>
+        /// <param name="id">The ID of the category to delete.</param>
+        /// <returns>The ID of the deleted category.</returns>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<int>> DeleteCategory(int id)
+        {
+            var category = await _categoryService.DeleteCategory(id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(category);
+        }
+
     }
 }

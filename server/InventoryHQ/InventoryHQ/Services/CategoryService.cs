@@ -55,5 +55,45 @@ namespace InventoryHQ.Services
             var categories = _mapper.Map<List<CategoryTreeDto>>(childrenCategories);
             return categories;
         }
+
+        public async Task<CategoryDto?> CreateCategory(CreateCategoryDto createCategoryDto)
+        {
+            var category = _mapper.Map<Category>(createCategoryDto);
+            await _data.Categories.AddAsync(category);
+
+            await _data.SaveChangesAsync();
+
+            return _mapper.Map<CategoryDto>(category);
+        }
+
+        public async Task<CategoryDto?> UpdateCategory(CategoryDto categoryDto)
+        {
+            var category = await _data.Categories.FirstAsync(x => x.Id == categoryDto.Id);
+
+            if (category == null)
+            {
+                return null;
+            }
+
+            _mapper.Map(categoryDto, category);
+
+            await _data.SaveChangesAsync();
+            return _mapper.Map<CategoryDto>(category);
+        }
+
+        public async Task<int?> DeleteCategory(int id)
+        {
+            var category = await _data.Categories.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (category == null)
+            {
+                return null;
+            }
+
+            _data.Categories.Remove(category);
+            await _data.SaveChangesAsync();
+
+            return category.Id;
+        }
     }
 }
