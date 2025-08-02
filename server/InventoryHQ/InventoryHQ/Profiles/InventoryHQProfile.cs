@@ -61,6 +61,8 @@ namespace InventoryHQ.Profiles
             CreateMap<Category, CategoryTreeDto>()
                 .ForMember(dest => dest.IsLeaf, opt => opt.MapFrom(src => src.Children == null || !src.Children.Any()))
                 .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.ParentId));
+
+            CreateMap<Category, CreateCategoryDto>().ReverseMap();
             CreateMap<Data.Models.Product, ViewProductDto>()
                 .ReverseMap();
 
