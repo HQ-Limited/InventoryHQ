@@ -6,7 +6,7 @@ const Home = () => {
     return (
         <Row gutter={[32, { xs: 30, sm: 40, md: 40, lg: 50 }]}>
             {routes!
-                .filter((page) => page.url !== '/')
+                .filter((page) => page.url !== '/' && !page.hidden)
                 .map((page, i) => (
                     <Col
                         key={i}
@@ -16,7 +16,7 @@ const Home = () => {
                         md={{ flex: '33%' }}
                         lg={{ flex: '20%' }}
                     >
-                        <Link key={page.key} to={page.url}>
+                        <Link key={page.url} to={page.url}>
                             <Button
                                 style={{
                                     display: 'flex',
@@ -26,8 +26,8 @@ const Home = () => {
                                 block
                                 className="home-button"
                             >
-                                {page.icon()}
-                                <span>{page.label}</span>
+                                {page.icon && page.icon()}
+                                <span>{page.label!}</span>
                             </Button>
                         </Link>
                     </Col>
