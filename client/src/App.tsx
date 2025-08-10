@@ -6,11 +6,17 @@ import ProductsEdit from './pages/products/Edit/Edit';
 import PartnersView from './pages/partners/View';
 import PartnersCreateEdit from './pages/partners/CreateEdit';
 import Home from './pages/Home';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Page404 from './pages/404';
 
 function MainApp() {
-    const [isDark, setIsDark] = useState(true);
+    // get from local storage
+    const [isDark, setIsDark] = useState(localStorage.getItem('isDark') === 'true');
+
+    useEffect(() => {
+        localStorage.setItem('isDark', isDark.toString());
+    }, [isDark]);
+
     return (
         <ConfigProvider
             theme={{
