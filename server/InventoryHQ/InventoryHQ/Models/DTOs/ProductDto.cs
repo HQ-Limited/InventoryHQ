@@ -8,6 +8,8 @@
 
         public string? Description { get; set; }
 
+        public string? UnitOfMeasure { get; set; }
+
         public bool IsVariable { get; set; }
 
         public bool ManageQuantity { get; set; }
@@ -19,5 +21,7 @@
         public List<VariationDto> Variations { get; set; }
 
         public List<ProductAttributeDto>? Attributes { get; set; }
+
+        public List<UnitOfMeasurementDto>? UnitsOfMeasurement { get; set; }
     }
 }

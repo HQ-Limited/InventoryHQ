@@ -38,6 +38,7 @@ namespace InventoryHQ.Services
                                 .Include(x => x.Variations)
                                     .ThenInclude(v => v.InventoryUnits)
                                         .ThenInclude(iu => iu.Package)
+                                .Include(x => x.UnitsOfMeasurement)
                                 .FirstOrDefaultAsync();
 
             return new EditProductDto()
@@ -46,6 +47,15 @@ namespace InventoryHQ.Services
                 Description = product.Description,
                 Name = product.Name,
                 ManageQuantity = product.ManageQuantity,
+                UnitOfMeasure = product.UnitOfMeasure,
+                UnitsOfMeasurement = product.UnitsOfMeasurement?.Select(x => new UnitOfMeasurementDto()
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Abbreviation = x.Abbreviation,
+                    Multiplier = x.Multiplier,
+                    Barcode = x.Barcode,
+                }),
                 IsVariable = product.isVariable,
                 Attributes = product.Attributes?.Select(x => new AttributeDto()
                 {
@@ -69,17 +79,25 @@ namespace InventoryHQ.Services
                     Id = v.Id,
                     Description = v.Description,
                     SKU = v.SKU,
+                    Barcode = v.Barcode,
                     InventoryUnits = v.InventoryUnits?
-                                    .Where(q => q.PackageId == null)?
+                                    .Where(iu => iu.PackageId == null)
                                     .Select(viu => new InventoryUnitDto()
                                     {
                                         Id = viu.Id,
-                                        Location = new LocationDto()
+                                        Location = viu.Location != null ? new LocationDto()
                                         {
                                             Id = viu.Location.Id,
                                             Name = viu.Location.Name
-                                        },
+                                        } : null,
                                         Quantity = viu.Quantity,
+                                        Package = viu.Package != null ? new PackageDto()
+                                        {
+                                            Id = viu.Package.Id,
+                                            Description = viu.Package.Description,
+                                            Label = viu.Package.Label,
+                                            Price = viu.Package.Price
+                                        } : null
                                     }),
                     RetailPrice = v.RetailPrice,
                     Attributes = v.Attributes?.Select(va => new VariationAttributeDto()
@@ -107,11 +125,11 @@ namespace InventoryHQ.Services
                             Description = first.Package.Description,
                             Label = first.Package.Label,
                             Price = first.Package.Price,
-                            Location = new LocationDto()
+                            Location = first.Location != null ? new LocationDto()
                             {
                                 Id = first.Location.Id,
-                                Name = first.Location.Name,
-                            },
+                                Name = first.Location.Name
+                            } : null,
                             InventoryUnits = g.Select(w => new InventoryUnitDto()
                             {
                                 Id = w.Id,
@@ -125,7 +143,6 @@ namespace InventoryHQ.Services
                         };
                     })
             };
-
         }
 
         public async Task<IEnumerable<ProductDto>> GetProducts(TableDatasourceRequest? request)

@@ -14,9 +14,13 @@ namespace InventoryHQ.Profiles
 
             CreateMap<InventoryUnit, InventoryUnitDto>().ReverseMap();
 
-            CreateMap<Product, ProductDto>()
+            CreateMap<Data.Models.Product, ProductDto>()
                 .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src => GetProductAttributes(src)))
                 .ReverseMap();
+
+            CreateMap<Data.Models.Product, EditProductDto>().ReverseMap();
+
+            CreateMap<UnitOfMeasurement, UnitOfMeasurementDto>().ReverseMap();
 
             CreateMap<Category, CategoryDto>().ReverseMap();
 

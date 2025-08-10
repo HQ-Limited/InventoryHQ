@@ -96,6 +96,24 @@ namespace InventoryHQ.Data
                 Categories = new List<Category> { categories[0] },
                 isVariable = true,
                 ManageQuantity = true,
+                UnitOfMeasure = "pcs",
+                UnitsOfMeasurement = new List<UnitOfMeasurement>
+                {
+                    new UnitOfMeasurement
+                    {
+                        Name = "Box",
+                        Multiplier = 12,
+                        Abbreviation = "box",
+                        Barcode = "1234567890",
+                    },
+                    new UnitOfMeasurement
+                    {
+                        Name = "Pallet",
+                        Multiplier = 100,
+                        Abbreviation = "pallet",
+                        Barcode = "1234567891",
+                    },
+                },
                 Attributes = new List<ProductAttribute>
                 {
                     new ProductAttribute
@@ -125,6 +143,7 @@ namespace InventoryHQ.Data
                     {
                         SKU = "ABC123",
                         RetailPrice = 20,
+                        Barcode = "123123123",
                         Attributes = new List<VariationAttribute>
                         {
                             new VariationAttribute
@@ -154,6 +173,7 @@ namespace InventoryHQ.Data
                     {
                         SKU = "ABC1234",
                         RetailPrice = 25,
+                        Barcode = "123123124",
                         Attributes = new List<VariationAttribute>
                         {
                             new VariationAttribute
@@ -189,7 +209,18 @@ namespace InventoryHQ.Data
                 Description = "Comfortable t-shirt",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
+                UnitOfMeasure = "kg",
                 ManageQuantity = true,
+                UnitsOfMeasurement = new List<UnitOfMeasurement>
+                {
+                    new UnitOfMeasurement
+                    {
+                        Name = "Carton",
+                        Multiplier = 4,
+                        Abbreviation = "cart",
+                        Barcode = "142423132",
+                    },
+                },
                 Attributes = new List<ProductAttribute>
                 {
                     new ProductAttribute
@@ -208,6 +239,7 @@ namespace InventoryHQ.Data
                     {
                         SKU = "ABC12345",
                         RetailPrice = 12,
+                        Barcode = "123123125",
                         InventoryUnits = new List<InventoryUnit>
                         {
                             new InventoryUnit
@@ -228,7 +260,7 @@ namespace InventoryHQ.Data
 
             var simpleProduct2 = new Product
             {
-                Name = "Simple product in 2 locations (Unmannaged quantity)",
+                Name = "Simple product (Unmannaged quantity)",
                 Description = "Comfortable t-shirt",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
@@ -239,6 +271,13 @@ namespace InventoryHQ.Data
                     {
                         SKU = "ABC123456",
                         RetailPrice = 12,
+                        InventoryUnits = new List<InventoryUnit>
+                        {
+                            new InventoryUnit
+                            {
+                                Quantity = 0,
+                            },
+                        }
                     }
                 }
             };
@@ -273,11 +312,11 @@ namespace InventoryHQ.Data
 
             var simpleProductPackages = new Product
             {
-                Name = "Simple product with 2 packages",
+                Name = "Simple product with 2 packages (1 location)",
                 Description = "This product contains 2 packages with the following data inside: Package 1 - 10$ - 10 pieces inside, Package 2 - 5$ - 5 pieces inside",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
-                ManageQuantity = true,
+                ManageQuantity = false,
                 Attributes = new List<ProductAttribute>
                 {
                     new ProductAttribute
@@ -304,13 +343,11 @@ namespace InventoryHQ.Data
                                 Quantity = 10,
                                 PackageId = package1.Id
                             },
+                            new InventoryUnit
                             {
-                                new InventoryUnit
-                                {
-                                    LocationId = dbLocations[0].Id,
-                                    Quantity = 5,
-                                    PackageId = package2.Id
-                                }
+                                LocationId = dbLocations[0].Id,
+                                Quantity = 5,
+                                PackageId = package2.Id
                             }
                         },
                     },
@@ -320,11 +357,11 @@ namespace InventoryHQ.Data
 
             var variableProductPackages = new Product
             {
-                Name = "Variable Product with 2 packages",
+                Name = "Variable Product with 2 packages (No locations)",
                 Description = "This product contains 2 packages with the following data inside: Package 1 - 10$ - 10 pieces of variation 1 and 10 pieces of variation 2, Package 2 - 5$ - 10 pieces of variation 1 and 5 pieces of variation 2",
                 Categories = new List<Category> { categories[0] },
                 isVariable = true,
-                ManageQuantity = true,
+                ManageQuantity = false,
                 Attributes = new List<ProductAttribute>
                 {
                     new ProductAttribute
@@ -355,13 +392,11 @@ namespace InventoryHQ.Data
                         {
                             new InventoryUnit
                             {
-                                LocationId = dbLocations[0].Id,
                                 Quantity = 10,
                                 PackageId = package3.Id
                             },
                             new InventoryUnit
                             {
-                                LocationId = dbLocations[0].Id,
                                 Quantity = 10,
                                 PackageId = package4.Id
                             },
@@ -382,13 +417,11 @@ namespace InventoryHQ.Data
                         {
                             new InventoryUnit
                             {
-                                LocationId = dbLocations[0].Id,
                                 Quantity = 10,
                                 PackageId = package3.Id
                             },
                             new InventoryUnit
                             {
-                                LocationId = dbLocations[0].Id,
                                 Quantity = 5,
                                 PackageId = package4.Id
                             },

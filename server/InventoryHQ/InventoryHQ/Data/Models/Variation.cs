@@ -4,10 +4,12 @@ using Microsoft.EntityFrameworkCore;
 namespace InventoryHQ.Data.Models
 {
     [Index(nameof(SKU), IsUnique = true)]
+    [Index(nameof(Barcode), IsUnique = true)]
     public class Variation : BaseEntity
     {
-        [Required]
-        public required string SKU { get; set; }
+        public string? SKU { get; set; }
+
+        public string? Barcode { get; set; }
 
         [Required]
         public required decimal RetailPrice { get; set; }
