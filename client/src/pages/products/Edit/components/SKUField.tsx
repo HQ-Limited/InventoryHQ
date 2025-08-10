@@ -8,11 +8,7 @@ export default function SKUField({
     label?: string;
 }) {
     return (
-        <Form.Item
-            label={label}
-            rules={[{ required: true, message: 'Please enter the SKU!' }, { max: 100 }]}
-            name={[...name, 'sku']}
-        >
+        <Form.Item label={label} rules={[{ max: 100 }]} name={[...name, 'sku']}>
             <Input />
         </Form.Item>
     );

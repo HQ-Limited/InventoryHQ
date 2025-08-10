@@ -25,7 +25,7 @@ namespace InventoryHQ.Controllers
         /// <param name="id">The ID of the product to retrieve.</param>
         /// <returns>The product with the given ID.</returns>
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<ProductDto>> GetById(int id)
+        public async Task<ActionResult<EditProductDto>> GetById(int id)
         {
             var product = await _productService.GetById(id);
 

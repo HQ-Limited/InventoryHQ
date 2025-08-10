@@ -36,6 +36,12 @@ import SKUField from './components/SKUField';
 import locationService from '../../../services/locationService';
 import ManageQuantityCheckbox from './components/ManageQuantityCheckbox';
 import PackagesTable from './components/PackagesTable';
+import UnitOfMeasureField from './components/UnitOfMeasure';
+import UnitsOfMeasurementTable from './components/UnitsOfMeasurementTable';
+import BarcodeField from './components/BarcodeField';
+import QuantityTable from './components/QuantityTable';
+import { Context } from './context';
+import LocationField from './components/LocationField';
 
 const CreateEdit: React.FC = () => {
     const { message } = App.useApp();
@@ -63,46 +69,41 @@ const CreateEdit: React.FC = () => {
     const [loading, setLoading] = useState(id ? true : false);
     const [saving, setSaving] = useState(false);
     const [locations, setLocations] = useState<Location[]>([]);
-
-    const fetchData = async () => {
-        const categories = await categoryService.getCategories();
-        setCategories(categories);
-
-        if (LOCATIONS_ENABLED) {
-            const locations = await locationService.getLocations();
-            setLocations(locations);
-        }
-
-        let product: Product | undefined;
-        if (id) {
-            setLoading(true);
-            product = await productService.getProductById(Number(id));
-
-            const attrs: Attribute[] = await attributeService.getAttributes({
-                includeValues: true,
-                ids: product!.attributes!.map((a) => a.attributeId),
-            });
-
-            setAttributes(attrs);
-            setIsVariable(product.isVariable);
-            setValues(product);
-            form.setFieldsValue(product);
-            setLoading(false);
-            return;
-        }
-
-        const attrs: Attribute[] = id
-            ? await attributeService.getAttributes({
-                  includeValues: true,
-                  ids: product!.attributes!.map((a) => a.id),
-              })
-            : await attributeService.getAttributes();
-        setAttributes(attrs);
-    };
+    const manageQuantity = Form.useWatch('manageQuantity', form);
 
     useEffect(() => {
+        const fetchData = async () => {
+            const categories = await categoryService.getCategories();
+            setCategories(categories);
+
+            if (LOCATIONS_ENABLED) {
+                const locations = await locationService.getLocations();
+                setLocations(locations);
+            }
+
+            let product: Product | undefined;
+            if (id) {
+                setLoading(true);
+                product = await productService.getProductById(Number(id));
+
+                const attrs: Attribute[] = await attributeService.getAttributes({
+                    includeValues: true,
+                    ids: product!.attributes!.map((a) => a.attributeId),
+                });
+
+                setAttributes(attrs);
+                setIsVariable(product.isVariable);
+                setValues(product);
+                form.setFieldsValue(product);
+                setLoading(false);
+                return;
+            }
+
+            const attrs: Attribute[] = await attributeService.getAttributes();
+            setAttributes(attrs);
+        };
         fetchData();
-    }, []);
+    }, [id, form]);
 
     const fetchAttributeValues = async (id: number) => {
         const fetchData = async () => {
@@ -310,6 +311,7 @@ const CreateEdit: React.FC = () => {
                               )}
 
                               <SKUField />
+                              <BarcodeField />
                           </>
                       ),
                       forceRender: true,
@@ -323,9 +325,17 @@ const CreateEdit: React.FC = () => {
             children: (
                 <>
                     <ManageQuantityCheckbox />
-                    {!isVariable && (
-                        <QuantityField name={['variations', 0]} locations={locations} />
+                    {!isVariable && manageQuantity && LOCATIONS_ENABLED && (
+                        <>
+                            <LocationField required name={['variations', 0]} />
+                            <QuantityTable />
+                        </>
                     )}
+                    {!isVariable && !LOCATIONS_ENABLED && (
+                        <QuantityField name={['variations', 0]} />
+                    )}
+                    <UnitOfMeasureField style={{ marginTop: 20 }} />
+                    <UnitsOfMeasurementTable />
                 </>
             ),
             forceRender: true,
@@ -377,7 +387,7 @@ const CreateEdit: React.FC = () => {
                       key: 'variations',
                       label: 'Variations',
                       icon: <ProductFilled />,
-                      children: <VariationsTable locations={locations} />,
+                      children: <VariationsTable />,
                       forceRender: true,
                   },
               ]
@@ -388,7 +398,7 @@ const CreateEdit: React.FC = () => {
                       key: 'packages',
                       label: 'Packages',
                       icon: <AppstoreOutlined />,
-                      children: <PackagesTable locations={locations} />,
+                      children: <PackagesTable />,
                       forceRender: true,
                   },
               ]
@@ -396,95 +406,97 @@ const CreateEdit: React.FC = () => {
     ];
 
     return (
-        <Form
-            form={form}
-            style={{ padding: '20px' }}
-            layout="vertical"
-            variant="filled"
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
-            scrollToFirstError
-            initialValues={values}
-        >
-            {loading ? (
-                <Spin size="large" fullscreen />
-            ) : (
-                <>
-                    <Space style={{ display: 'block' }}>
-                        <NameField />
+        <Context.Provider value={{ locations, isVariable }}>
+            <Form
+                form={form}
+                style={{ padding: '20px' }}
+                layout="vertical"
+                variant="filled"
+                onFinish={onFinish}
+                onFinishFailed={onFinishFailed}
+                autoComplete="off"
+                scrollToFirstError
+                initialValues={values}
+            >
+                {loading ? (
+                    <Spin size="large" fullscreen />
+                ) : (
+                    <>
+                        <Space style={{ display: 'block' }}>
+                            <NameField />
 
-                        <DescriptionField />
+                            <DescriptionField />
 
-                        <CategoryField
-                            categories={categories}
-                            createNewCategory={createNewCategory}
-                        />
-
-                        <Form.Item
-                            name={'isVariable'}
-                            label={
-                                <Space>
-                                    Product type
-                                    {isVariable && (
-                                        <Tooltip
-                                            placement="right"
-                                            color="orange"
-                                            title="Warning: Changing the product type will delete all variations and packages!"
-                                        >
-                                            <QuestionCircleOutlined
-                                                style={{ fontSize: 16, color: 'orange' }}
-                                            />
-                                        </Tooltip>
-                                    )}
-                                </Space>
-                            }
-                            rules={[{ required: true }]}
-                        >
-                            <Select
-                                style={{ width: 120 }}
-                                options={[
-                                    { value: false, label: 'Simple' },
-                                    { value: true, label: 'Variable' },
-                                ]}
-                                value={isVariable}
-                                onChange={(value) => {
-                                    form.setFieldValue('packages', []);
-                                    if (value) {
-                                        form.setFieldValue('variations', []);
-                                    } else {
-                                        form.setFieldValue('variations', [
-                                            ...(!LOCATIONS_ENABLED
-                                                ? [
-                                                      {
-                                                          inventoryUnits: [{}],
-                                                      },
-                                                  ]
-                                                : []),
-                                        ]);
-                                    }
-                                    setIsVariable(value);
-                                }}
+                            <CategoryField
+                                categories={categories}
+                                createNewCategory={createNewCategory}
                             />
+
+                            <Form.Item
+                                name={'isVariable'}
+                                label={
+                                    <Space>
+                                        Product type
+                                        {isVariable && (
+                                            <Tooltip
+                                                placement="right"
+                                                color="orange"
+                                                title="Warning: Changing the product type will delete all variations and packages!"
+                                            >
+                                                <QuestionCircleOutlined
+                                                    style={{ fontSize: 16, color: 'orange' }}
+                                                />
+                                            </Tooltip>
+                                        )}
+                                    </Space>
+                                }
+                                rules={[{ required: true }]}
+                            >
+                                <Select
+                                    style={{ width: 120 }}
+                                    options={[
+                                        { value: false, label: 'Simple' },
+                                        { value: true, label: 'Variable' },
+                                    ]}
+                                    value={isVariable}
+                                    onChange={(value) => {
+                                        form.setFieldValue('packages', []);
+                                        if (value) {
+                                            form.setFieldValue('variations', []);
+                                        } else {
+                                            form.setFieldValue('variations', [
+                                                ...(!LOCATIONS_ENABLED
+                                                    ? [
+                                                          {
+                                                              inventoryUnits: [{}],
+                                                          },
+                                                      ]
+                                                    : []),
+                                            ]);
+                                        }
+                                        setIsVariable(value);
+                                    }}
+                                />
+                            </Form.Item>
+
+                            <Tabs items={productMenuItems} tabPosition="left" />
+                        </Space>
+
+                        <Form.Item style={{ textAlign: 'center', marginTop: 50 }}>
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                size={'large'}
+                                icon={<SaveOutlined />}
+                                loading={saving}
+                            >
+                                Save product
+                            </Button>
                         </Form.Item>
-
-                        <Tabs items={productMenuItems} tabPosition="left" />
-                    </Space>
-
-                    <Form.Item style={{ textAlign: 'center', marginTop: 50 }}>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            size={'large'}
-                            icon={<SaveOutlined />}
-                            loading={saving}
-                        >
-                            Save product
-                        </Button>
-                    </Form.Item>
-                </>
-            )}
-        </Form>
+                    </>
+                )}
+            </Form>
+        </Context.Provider>
     );
 };
 
