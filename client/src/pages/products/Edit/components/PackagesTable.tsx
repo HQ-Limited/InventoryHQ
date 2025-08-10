@@ -5,39 +5,36 @@ import {
     FormProps,
     Input,
     InputNumber,
-    Menu,
     Modal,
     Select,
-    Tooltip,
     Space,
     Table,
     Tag,
 } from 'antd';
 import { Location, InventoryUnit, Variation, Package } from '../types/EditProductTypes';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { useContext, useState } from 'react';
 import Column from 'antd/es/table/Column';
 import PriceField from './PriceField';
 import { QuantityInputField } from './QuantityField';
 import DescriptionField from './DescriptionField';
 import { LOCATIONS_ENABLED } from '../../../../global';
+import { Context } from '../Context';
+import AddButtonTable from '../../../../components/AddButtonTable';
 
 const LocationField = ({
     name,
     locations,
-    disabled = false,
     label = '',
 }: {
     name: (number | string)[];
     locations: Location[];
-    disabled?: boolean;
     label?: string;
 }) => {
     return (
         <Form.Item
             name={[...name, 'location']}
             label={label}
-            rules={[{ required: true, message: 'Please select a location' }]}
             getValueFromEvent={(value: number) => {
                 return locations.find((l) => l.id == value);
             }}
@@ -48,9 +45,9 @@ const LocationField = ({
             }}
         >
             <Select
-                disabled={disabled}
+                allowClear
                 showSearch
-                placeholder="Select location"
+                placeholder="None"
                 optionFilterProp="label"
                 options={locations!.map((location) => ({
                     label: location.name,
@@ -61,13 +58,13 @@ const LocationField = ({
     );
 };
 
-export default function PackagesTable({ locations }: { locations: Location[] }) {
+export default function PackagesTable() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingIndex, setEditingIndex] = useState(undefined);
     const [createPackageForm] = Form.useForm();
     const form = Form.useFormInstance();
-    const isVariable = Form.useWatch('isVariable');
     const variations = Form.useWatch('variations');
+    const { locations, isVariable } = useContext(Context);
 
     const showModal = () => {
         createPackageForm.resetFields();
@@ -88,22 +85,6 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
 
     const handleCancel = () => {
         setIsModalOpen(false);
-    };
-
-    const AddPackageButton = () => {
-        const isDisabled = isVariable && variations.length === 0;
-        return (
-            <Tooltip title={isDisabled ? 'Create at least one variation first' : undefined}>
-                <Button
-                    type="primary"
-                    onClick={showModal}
-                    icon={<PlusOutlined />}
-                    disabled={isDisabled}
-                >
-                    Add Packages
-                </Button>
-            </Tooltip>
-        );
     };
 
     return (
@@ -164,7 +145,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                 <PriceField label="Price" name={['price']} />
 
                                 <Form.List name="inventoryUnits">
-                                    {(inventoryUnits, { add, remove }) => {
+                                    {(inventoryUnits) => {
                                         if (!isVariable) {
                                             return (
                                                 <QuantityInputField
@@ -226,18 +207,6 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                             </Form>
                         </Modal>
 
-                        <Menu
-                            mode="horizontal"
-                            items={[
-                                {
-                                    key: 'add-package',
-                                    label: <AddPackageButton />,
-                                    onClick: showModal,
-                                },
-                            ]}
-                            selectable={false}
-                        />
-
                         <Table
                             dataSource={packages}
                             pagination={false}
@@ -249,9 +218,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                     <Empty
                                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                                         description="This product has no packages"
-                                    >
-                                        <AddPackageButton />
-                                    </Empty>
+                                    ></Empty>
                                 ),
                             }}
                         >
@@ -259,7 +226,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                 dataIndex={'id'}
                                 title={'ID'}
                                 width={50}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     return form.getFieldValue(['packages', row.name, 'id']);
                                 }}
                             />
@@ -268,7 +235,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                     width={200}
                                     dataIndex={'location'}
                                     title={'Location'}
-                                    render={(value, row) => {
+                                    render={(_, row) => {
                                         if (editingIndex !== row.name)
                                             return form.getFieldValue([
                                                 'packages',
@@ -281,7 +248,6 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                             <LocationField
                                                 name={[row.name]}
                                                 locations={locations}
-                                                disabled={editingIndex !== row.name}
                                             />
                                         );
                                     }}
@@ -427,6 +393,8 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                 }}
                             />
                         </Table>
+
+                        <AddButtonTable onClick={showModal} />
                     </>
                 );
             }}

@@ -1,13 +1,6 @@
-import { Button, Empty, Form, Menu, Select, Tooltip, Space, Table, Tag } from 'antd';
-
-import {
-    Location,
-    InventoryUnit,
-    Variation,
-    ProductAttribute,
-    VariationAttribute,
-} from '../types/EditProductTypes';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Empty, Form, Select, Space, Table, Tag, Tooltip } from 'antd';
+import { InventoryUnit, ProductAttribute, VariationAttribute } from '../types/EditProductTypes';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import Column from 'antd/es/table/Column';
 import PriceField from './PriceField';
@@ -15,6 +8,8 @@ import QuantityField from './QuantityField';
 import { LOCATIONS_ENABLED } from '../../../../global';
 import { DefaultOptionType } from 'antd/es/select';
 import SKUField from './SKUField';
+import BarcodeField from './BarcodeField';
+import AddButtonTable from '../../../../components/AddButtonTable';
 
 function SelectField({
     name,
@@ -37,38 +32,13 @@ function SelectField({
     );
 }
 
-export default function VariationsTable({ locations }: { locations: Location[] }) {
+export default function VariationsTable() {
     const [editingIndex, setEditingIndex] = useState(undefined);
     const form = Form.useFormInstance();
     const attributes = Form.useWatch('attributes') || [];
-
-    const AddVariationButton = ({ add }: { add: (variation: Partial<Variation>) => void }) => {
-        const isDisabled =
-            attributes.length === 0 || !attributes.find((a: ProductAttribute) => a.isVariational);
-        return (
-            <Tooltip title={isDisabled ? 'Mark at least one attribute as variational' : undefined}>
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    disabled={isDisabled}
-                    onClick={() =>
-                        add({
-                            attributes: attributes
-                                .filter((a: ProductAttribute) => a.isVariational)
-                                .map((a: ProductAttribute) => ({
-                                    attributeId: a.attributeId,
-                                    attributeName: a.name,
-                                    value: {},
-                                })),
-                            inventoryUnits: [],
-                        })
-                    }
-                >
-                    Add Variation
-                </Button>
-            </Tooltip>
-        );
-    };
+    const manageQuantity = Form.useWatch('manageQuantity');
+    const isDisabled =
+        attributes.length === 0 || !attributes.find((a: ProductAttribute) => a.isVariational);
 
     return (
         <Form.List
@@ -87,17 +57,6 @@ export default function VariationsTable({ locations }: { locations: Location[] }
             {(variations, { add, remove }) => {
                 return (
                     <>
-                        <Menu
-                            mode="horizontal"
-                            items={[
-                                {
-                                    key: 'add-variation',
-                                    label: <AddVariationButton add={add} />,
-                                },
-                            ]}
-                            selectable={false}
-                        />
-
                         <Table
                             dataSource={variations}
                             pagination={false}
@@ -109,9 +68,7 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                     <Empty
                                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                                         description="This product has no variations"
-                                    >
-                                        <AddVariationButton add={add} />
-                                    </Empty>
+                                    ></Empty>
                                 ),
                             }}
                         >
@@ -119,25 +76,42 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                 dataIndex={'id'}
                                 title={'ID'}
                                 width={50}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     return form.getFieldValue(['variations', row.name, 'id']);
                                 }}
                             />
+
                             <Column
                                 dataIndex={'sku'}
                                 title={'SKU'}
                                 width={150}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     if (editingIndex !== row.name)
                                         return form.getFieldValue(['variations', row.name, 'sku']);
                                     return <SKUField name={[row.name]} label="" />;
                                 }}
                             />
+
+                            <Column
+                                dataIndex={'barcode'}
+                                title={'Barcode'}
+                                width={150}
+                                render={(_, row) => {
+                                    if (editingIndex !== row.name)
+                                        return form.getFieldValue([
+                                            'variations',
+                                            row.name,
+                                            'barcode',
+                                        ]);
+                                    return <BarcodeField name={[row.name]} label="" />;
+                                }}
+                            />
+
                             <Column
                                 width={150}
                                 dataIndex={'price'}
                                 title={'Price'}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     if (editingIndex !== row.name)
                                         return form.getFieldValue([
                                             'variations',
@@ -148,10 +122,12 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                     return <PriceField name={[row.name, 'retailPrice']} label="" />;
                                 }}
                             />
+
+                            {/* TODO: Decide if all products should be in one column or every attribute should be in a separate column */}
                             <Column
                                 dataIndex={'attributes'}
                                 title={'Attributes'}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     const attributes = form.getFieldValue([
                                         'variations',
                                         row.name,
@@ -160,8 +136,8 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                     if (editingIndex !== row.name) {
                                         return attributes.map((a: VariationAttribute) => {
                                             return (
-                                                <Tag>
-                                                    {a.attributeName} ({a.value.value})
+                                                <Tag key={a.attributeId}>
+                                                    {a.attributeName} ({a.value.value || 'None'})
                                                 </Tag>
                                             );
                                         });
@@ -212,7 +188,7 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                     <Column
                                         dataIndex={attribute.name}
                                         title={attribute.name}
-                                        render={(value, row) => {
+                                        render={(_, row) => {
                                             const variationAttributes = form.getFieldValue([
                                                 'variations',
                                                 row.name,
@@ -248,48 +224,55 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                     />
                                 ))}
 
-                            <Column
-                                dataIndex={'inventoryUnits'}
-                                title="Quantity"
-                                render={(value, row) => {
-                                    if (editingIndex !== row.name) {
-                                        if (LOCATIONS_ENABLED)
-                                            return form
-                                                .getFieldValue([
-                                                    'variations',
-                                                    row.name,
-                                                    'inventoryUnits',
-                                                ])
-                                                .map((unit: InventoryUnit) => {
-                                                    return (
-                                                        <Tag>
-                                                            {unit.location.name} ({unit.quantity})
-                                                        </Tag>
-                                                    );
-                                                });
-                                        return form.getFieldValue([
-                                            'variations',
-                                            row.name,
-                                            'inventoryUnits',
-                                        ])[0].quantity;
-                                    }
+                            {(manageQuantity || LOCATIONS_ENABLED) && (
+                                <Column
+                                    dataIndex={'inventoryUnits'}
+                                    title={manageQuantity ? 'Quantity' : 'Locations'}
+                                    render={(_, row) => {
+                                        if (editingIndex !== row.name) {
+                                            if (LOCATIONS_ENABLED)
+                                                return form
+                                                    .getFieldValue([
+                                                        'variations',
+                                                        row.name,
+                                                        'inventoryUnits',
+                                                    ])
+                                                    .map((unit: InventoryUnit) => {
+                                                        return (
+                                                            <Tag key={unit.id}>
+                                                                {unit.location!.name}{' '}
+                                                                {manageQuantity
+                                                                    ? `(${unit.quantity})`
+                                                                    : ''}
+                                                            </Tag>
+                                                        );
+                                                    });
+                                            return form.getFieldValue([
+                                                'variations',
+                                                row.name,
+                                                'inventoryUnits',
+                                            ])[0].quantity;
+                                        }
 
-                                    return (
-                                        <QuantityField
-                                            name={[row.name]}
-                                            locations={locations}
-                                            quantity={{
-                                                layout: 'horizontal',
-                                                label: !LOCATIONS_ENABLED ? '' : undefined,
-                                            }}
-                                        />
-                                    );
-                                }}
-                            />
+                                        return (
+                                            <QuantityField
+                                                name={[row.name]}
+                                                showLocationLabel={manageQuantity}
+                                                locationRequired={false}
+                                                quantity={{
+                                                    layout: 'horizontal',
+                                                    label: !LOCATIONS_ENABLED ? '' : undefined,
+                                                }}
+                                            />
+                                        );
+                                    }}
+                                />
+                            )}
+
                             <Column
                                 width={100}
                                 title={'Action'}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     return (
                                         <Space size="middle">
                                             <Button
@@ -315,6 +298,32 @@ export default function VariationsTable({ locations }: { locations: Location[] }
                                 }}
                             />
                         </Table>
+
+                        <Tooltip
+                            title={
+                                isDisabled
+                                    ? 'Mark at least one attribute as variational'
+                                    : undefined
+                            }
+                        >
+                            <>
+                                <AddButtonTable
+                                    disabled={isDisabled}
+                                    onClick={() =>
+                                        add({
+                                            attributes: attributes
+                                                .filter((a: ProductAttribute) => a.isVariational)
+                                                .map((a: ProductAttribute) => ({
+                                                    attributeId: a.attributeId,
+                                                    attributeName: a.name,
+                                                    value: {},
+                                                })),
+                                            inventoryUnits: [],
+                                        })
+                                    }
+                                />
+                            </>
+                        </Tooltip>
                     </>
                 );
             }}
