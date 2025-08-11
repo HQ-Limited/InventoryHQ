@@ -17,7 +17,7 @@ export default function QuantityTable() {
                     return (
                         <>
                             <Table
-                                style={{ marginTop: 10 }}
+                                style={{ marginTop: 10, marginBottom: 20 }}
                                 dataSource={inventoryUnits}
                                 pagination={false}
                                 size="small"
@@ -43,18 +43,34 @@ export default function QuantityTable() {
                                     dataIndex={'quantity'}
                                     title={'Quantity'}
                                     render={(_, row) => {
-                                        if (editingIndex !== row.name)
-                                            return form.getFieldValue([
-                                                'variations',
-                                                0,
-                                                'inventoryUnits',
-                                                row.name,
-                                                'quantity',
-                                            ]);
                                         return (
-                                            <Form.Item label="" name={[row.name, 'quantity']}>
-                                                <InputNumber style={{ width: '100%' }} min={1} />
-                                            </Form.Item>
+                                            <>
+                                                {editingIndex !== row.name &&
+                                                    form.getFieldValue([
+                                                        'variations',
+                                                        0,
+                                                        'inventoryUnits',
+                                                        row.name,
+                                                        'quantity',
+                                                    ])}
+                                                <Form.Item
+                                                    style={{ marginBottom: 0 }}
+                                                    hidden={editingIndex !== row.name}
+                                                    rules={[
+                                                        {
+                                                            required: true,
+                                                            message: 'Quantity is required.',
+                                                        },
+                                                    ]}
+                                                    label=""
+                                                    name={[row.name, 'quantity']}
+                                                >
+                                                    <InputNumber
+                                                        style={{ width: '100%' }}
+                                                        min={1}
+                                                    />
+                                                </Form.Item>
+                                            </>
                                         );
                                     }}
                                 />

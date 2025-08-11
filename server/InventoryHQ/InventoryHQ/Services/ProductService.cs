@@ -47,14 +47,15 @@ namespace InventoryHQ.Services
                 Description = product.Description,
                 Name = product.Name,
                 ManageQuantity = product.ManageQuantity,
-                UnitOfMeasure = product.UnitOfMeasure,
-                UnitsOfMeasurement = product.UnitsOfMeasurement?.Select(x => new UnitOfMeasurementDto()
+                UnitsOfMeasurement = product.UnitsOfMeasurement.OrderBy(x => x.Id).Select(x => new UnitOfMeasurementDto()
                 {
                     Id = x.Id,
                     Name = x.Name,
                     Abbreviation = x.Abbreviation,
                     Multiplier = x.Multiplier,
                     Barcode = x.Barcode,
+                    IsDefault = x.IsDefault,
+                    IsBase = x.IsBase,
                 }),
                 IsVariable = product.isVariable,
                 Attributes = product.Attributes?.Select(x => new AttributeDto()

@@ -1,4 +1,4 @@
-import { Button, Empty, Form, Select, Space, Table, Tag, Tooltip } from 'antd';
+import { Button, Empty, Form, FormItemProps, Select, Space, Table, Tag, Tooltip } from 'antd';
 import { InventoryUnit, ProductAttribute, VariationAttribute } from '../types/EditProductTypes';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useState } from 'react';
@@ -15,16 +15,19 @@ function SelectField({
     name,
     options,
     attributeName,
+    props,
 }: {
     name: (number | string)[];
     options: DefaultOptionType[];
     attributeName: string;
+    props?: FormItemProps;
 }) {
     return (
         <Form.Item
+            {...props}
             name={[...name, 'value']}
             label={attributeName}
-            rules={[{ required: true, message: 'Select a value' }]}
+            rules={[{ required: true, message: 'Value is required.' }]}
             layout="horizontal"
         >
             <Select placeholder="Select value" optionFilterProp="label" options={options} />
@@ -88,7 +91,15 @@ export default function VariationsTable() {
                                 render={(_, row) => {
                                     if (editingIndex !== row.name)
                                         return form.getFieldValue(['variations', row.name, 'sku']);
-                                    return <SKUField name={[row.name]} label="" />;
+                                    return (
+                                        <SKUField
+                                            props={{
+                                                style: { marginBottom: 0 },
+                                            }}
+                                            name={[row.name]}
+                                            label=""
+                                        />
+                                    );
                                 }}
                             />
 
@@ -103,7 +114,15 @@ export default function VariationsTable() {
                                             row.name,
                                             'barcode',
                                         ]);
-                                    return <BarcodeField name={[row.name]} label="" />;
+                                    return (
+                                        <BarcodeField
+                                            props={{
+                                                style: { marginBottom: 0 },
+                                            }}
+                                            name={[row.name]}
+                                            label=""
+                                        />
+                                    );
                                 }}
                             />
 
@@ -112,6 +131,25 @@ export default function VariationsTable() {
                                 dataIndex={'price'}
                                 title={'Price'}
                                 render={(_, row) => {
+                                    return (
+                                        <>
+                                            {editingIndex !== row.name &&
+                                                form.getFieldValue([
+                                                    'variations',
+                                                    row.name,
+                                                    'retailPrice',
+                                                ])}
+
+                                            <PriceField
+                                                props={{
+                                                    hidden: editingIndex !== row.name,
+                                                    style: { marginBottom: 0 },
+                                                }}
+                                                name={[row.name, 'retailPrice']}
+                                                label=""
+                                            />
+                                        </>
+                                    );
                                     if (editingIndex !== row.name)
                                         return form.getFieldValue([
                                             'variations',
@@ -119,7 +157,7 @@ export default function VariationsTable() {
                                             'retailPrice',
                                         ]);
 
-                                    return <PriceField name={[row.name, 'retailPrice']} label="" />;
+                                    return;
                                 }}
                             />
 
@@ -133,51 +171,58 @@ export default function VariationsTable() {
                                         row.name,
                                         'attributes',
                                     ]);
-                                    if (editingIndex !== row.name) {
-                                        return attributes.map((a: VariationAttribute) => {
-                                            return (
-                                                <Tag key={a.attributeId}>
-                                                    {a.attributeName} ({a.value.value || 'None'})
-                                                </Tag>
-                                            );
-                                        });
-                                    }
-
                                     return (
-                                        <Form.List name={[row.name, 'attributes']}>
-                                            {(fields) => (
-                                                <>
-                                                    {fields.map((attrField, attrKey) => {
-                                                        const variationAttribute =
-                                                            form.getFieldValue([
-                                                                'variations',
-                                                                row.name,
-                                                                'attributes',
-                                                                attrField.name,
-                                                            ]);
+                                        <>
+                                            {editingIndex !== row.name &&
+                                                attributes.map((a: VariationAttribute) => {
+                                                    return (
+                                                        <Tag key={a.attributeId}>
+                                                            {a.attributeName} (
+                                                            {a.value.value || 'None'})
+                                                        </Tag>
+                                                    );
+                                                })}
 
-                                                        const options = form
-                                                            .getFieldValue('attributes')
-                                                            .find(
-                                                                (a: ProductAttribute) =>
-                                                                    a.attributeId ===
-                                                                    variationAttribute.attributeId
-                                                            )?.values;
+                                            <Form.List name={[row.name, 'attributes']}>
+                                                {(fields) => (
+                                                    <>
+                                                        {fields.map((attrField, attrKey) => {
+                                                            const variationAttribute =
+                                                                form.getFieldValue([
+                                                                    'variations',
+                                                                    row.name,
+                                                                    'attributes',
+                                                                    attrField.name,
+                                                                ]);
 
-                                                        return (
-                                                            <SelectField
-                                                                key={attrKey}
-                                                                name={[attrField.name]}
-                                                                options={options || []}
-                                                                attributeName={
-                                                                    variationAttribute.attributeName
-                                                                }
-                                                            />
-                                                        );
-                                                    })}
-                                                </>
-                                            )}
-                                        </Form.List>
+                                                            const options = form
+                                                                .getFieldValue('attributes')
+                                                                .find(
+                                                                    (a: ProductAttribute) =>
+                                                                        a.attributeId ===
+                                                                        variationAttribute.attributeId
+                                                                )?.values;
+
+                                                            return (
+                                                                <SelectField
+                                                                    props={{
+                                                                        hidden:
+                                                                            editingIndex !==
+                                                                            row.name,
+                                                                    }}
+                                                                    key={attrKey}
+                                                                    name={[attrField.name]}
+                                                                    options={options || []}
+                                                                    attributeName={
+                                                                        variationAttribute.attributeName
+                                                                    }
+                                                                />
+                                                            );
+                                                        })}
+                                                    </>
+                                                )}
+                                            </Form.List>
+                                        </>
                                     );
                                 }}
                             />
@@ -200,25 +245,31 @@ export default function VariationsTable() {
                                                     a.attributeId === attribute.attributeId
                                             ).value.value;
 
-                                            if (editingIndex !== row.name) return attributeValue;
-
                                             return (
-                                                <SelectField
-                                                    name={[
-                                                        row.name,
-                                                        'attributes',
-                                                        variationAttributes.findIndex(
-                                                            (a: VariationAttribute) =>
-                                                                a.attributeId ===
-                                                                attribute.attributeId
-                                                        ),
-                                                    ]}
-                                                    options={attribute.values.map((v) => ({
-                                                        label: v.value,
-                                                        value: v.id,
-                                                    }))}
-                                                    attributeName={''}
-                                                />
+                                                <>
+                                                    {editingIndex !== row.name && attributeValue}
+
+                                                    <SelectField
+                                                        name={[
+                                                            row.name,
+                                                            'attributes',
+                                                            variationAttributes.findIndex(
+                                                                (a: VariationAttribute) =>
+                                                                    a.attributeId ===
+                                                                    attribute.attributeId
+                                                            ),
+                                                        ]}
+                                                        options={attribute.values.map((v) => ({
+                                                            label: v.value,
+                                                            value: v.id,
+                                                        }))}
+                                                        attributeName={''}
+                                                        props={{
+                                                            style: { marginBottom: 0 },
+                                                            hidden: editingIndex !== row.name,
+                                                        }}
+                                                    />
+                                                </>
                                             );
                                         }}
                                     />
@@ -229,41 +280,53 @@ export default function VariationsTable() {
                                     dataIndex={'inventoryUnits'}
                                     title={manageQuantity ? 'Quantity' : 'Locations'}
                                     render={(_, row) => {
-                                        if (editingIndex !== row.name) {
-                                            if (LOCATIONS_ENABLED)
-                                                return form
-                                                    .getFieldValue([
-                                                        'variations',
-                                                        row.name,
-                                                        'inventoryUnits',
-                                                    ])
-                                                    .map((unit: InventoryUnit) => {
-                                                        return (
-                                                            <Tag key={unit.id}>
-                                                                {unit.location!.name}{' '}
-                                                                {manageQuantity
-                                                                    ? `(${unit.quantity})`
-                                                                    : ''}
-                                                            </Tag>
-                                                        );
-                                                    });
-                                            return form.getFieldValue([
-                                                'variations',
-                                                row.name,
-                                                'inventoryUnits',
-                                            ])[0].quantity;
-                                        }
-
                                         return (
-                                            <QuantityField
-                                                name={[row.name]}
-                                                showLocationLabel={manageQuantity}
-                                                locationRequired={false}
-                                                quantity={{
-                                                    layout: 'horizontal',
-                                                    label: !LOCATIONS_ENABLED ? '' : undefined,
-                                                }}
-                                            />
+                                            <>
+                                                {editingIndex !== row.name &&
+                                                    (LOCATIONS_ENABLED
+                                                        ? form
+                                                              .getFieldValue([
+                                                                  'variations',
+                                                                  row.name,
+                                                                  'inventoryUnits',
+                                                              ])
+                                                              .map((unit: InventoryUnit) => {
+                                                                  return (
+                                                                      <Tag key={unit.id}>
+                                                                          {unit.location!.name}{' '}
+                                                                          {manageQuantity
+                                                                              ? `(${unit.quantity})`
+                                                                              : ''}
+                                                                      </Tag>
+                                                                  );
+                                                              })
+                                                        : form.getFieldValue([
+                                                              'variations',
+                                                              row.name,
+                                                              'inventoryUnits',
+                                                          ])[0].quantity)}
+
+                                                <QuantityField
+                                                    quantityProps={{
+                                                        style: {
+                                                            marginBottom: LOCATIONS_ENABLED
+                                                                ? undefined
+                                                                : 0,
+                                                        },
+                                                        hidden: editingIndex !== row.name,
+                                                    }}
+                                                    locationProps={{
+                                                        hidden: editingIndex !== row.name,
+                                                    }}
+                                                    name={[row.name]}
+                                                    showLocationLabel={manageQuantity}
+                                                    locationRequired={false}
+                                                    quantity={{
+                                                        layout: 'horizontal',
+                                                        label: !LOCATIONS_ENABLED ? '' : undefined,
+                                                    }}
+                                                />
+                                            </>
                                         );
                                     }}
                                 />

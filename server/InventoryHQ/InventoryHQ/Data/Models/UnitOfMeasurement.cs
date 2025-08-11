@@ -4,16 +4,21 @@ namespace InventoryHQ.Data.Models
 {
     public class UnitOfMeasurement : BaseEntity
     {
-        [Required]
-        public required string Name { get; set; }
-
-        public string? Abbreviation { get; set; }
+        public string? Name { get; set; }
 
         [Required]
-        public required float Multiplier { get; set; }
+        public required string Abbreviation { get; set; }
+
+        public float? Multiplier { get; set; }
 
         public string? Barcode { get; set; }
 
         public Product Product { get; set; }
+
+        [Required]
+        public required bool IsDefault { get; set; }
+
+        [Required]
+        public required bool IsBase { get; set; }
     }
 }

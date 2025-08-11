@@ -9,8 +9,6 @@ namespace InventoryHQ.Data.Models
 
         public string? Description { get; set; }
 
-        public string? UnitOfMeasure { get; set; }
-
         [Required]
         public required bool ManageQuantity { get; set; }
 
@@ -23,7 +21,8 @@ namespace InventoryHQ.Data.Models
 
         public List<Category>? Categories { get; set; } = new List<Category>();
 
-        public List<UnitOfMeasurement>? UnitsOfMeasurement { get; set; } = new List<UnitOfMeasurement>();
+        [Required]
+        public required List<UnitOfMeasurement> UnitsOfMeasurement { get; set; }
 
         public bool isVariable { get; set; }
     }

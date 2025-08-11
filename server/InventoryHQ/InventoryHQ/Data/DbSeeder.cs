@@ -96,15 +96,22 @@ namespace InventoryHQ.Data
                 Categories = new List<Category> { categories[0] },
                 isVariable = true,
                 ManageQuantity = true,
-                UnitOfMeasure = "pcs",
                 UnitsOfMeasurement = new List<UnitOfMeasurement>
                 {
+                    new UnitOfMeasurement
+                    {
+                        Abbreviation = "pcs",
+                        IsDefault = true,
+                        IsBase = true,
+                    },
                     new UnitOfMeasurement
                     {
                         Name = "Box",
                         Multiplier = 12,
                         Abbreviation = "box",
                         Barcode = "1234567890",
+                        IsDefault = false,
+                        IsBase = false,
                     },
                     new UnitOfMeasurement
                     {
@@ -112,6 +119,8 @@ namespace InventoryHQ.Data
                         Multiplier = 100,
                         Abbreviation = "pallet",
                         Barcode = "1234567891",
+                        IsDefault = false,
+                        IsBase = false,
                     },
                 },
                 Attributes = new List<ProductAttribute>
@@ -209,16 +218,23 @@ namespace InventoryHQ.Data
                 Description = "Comfortable t-shirt",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
-                UnitOfMeasure = "kg",
                 ManageQuantity = true,
                 UnitsOfMeasurement = new List<UnitOfMeasurement>
                 {
+                    new UnitOfMeasurement
+                    {
+                        Abbreviation = "kg",
+                        IsDefault = false,
+                        IsBase = true,
+                    },
                     new UnitOfMeasurement
                     {
                         Name = "Carton",
                         Multiplier = 4,
                         Abbreviation = "cart",
                         Barcode = "142423132",
+                        IsDefault = true,
+                        IsBase = false,
                     },
                 },
                 Attributes = new List<ProductAttribute>
@@ -265,6 +281,15 @@ namespace InventoryHQ.Data
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
                 ManageQuantity = false,
+                UnitsOfMeasurement = new List<UnitOfMeasurement>
+                {
+                    new UnitOfMeasurement
+                    {
+                        Abbreviation = "pcs",
+                        IsDefault = true,
+                        IsBase = true,
+                    },
+                },
                 Variations = new List<Variation>
                 {
                     new Variation
@@ -317,6 +342,15 @@ namespace InventoryHQ.Data
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
                 ManageQuantity = false,
+                UnitsOfMeasurement = new List<UnitOfMeasurement>
+                {
+                    new UnitOfMeasurement
+                    {
+                        Abbreviation = "pcs",
+                        IsDefault = true,
+                        IsBase = true,
+                    },
+                },
                 Attributes = new List<ProductAttribute>
                 {
                     new ProductAttribute
@@ -362,6 +396,15 @@ namespace InventoryHQ.Data
                 Categories = new List<Category> { categories[0] },
                 isVariable = true,
                 ManageQuantity = false,
+                UnitsOfMeasurement = new List<UnitOfMeasurement>
+                {
+                    new UnitOfMeasurement
+                    {
+                        Abbreviation = "pcs",
+                        IsDefault = true,
+                        IsBase = true,
+                    },
+                },
                 Attributes = new List<ProductAttribute>
                 {
                     new ProductAttribute

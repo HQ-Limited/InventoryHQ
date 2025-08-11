@@ -48,10 +48,7 @@ const CreateEdit: React.FC = () => {
             <Form.Item<PartnerType>
                 label="Company"
                 name="company"
-                rules={[
-                    { required: true, message: 'Please enter the name of the company!' },
-                    { max: 100 },
-                ]}
+                rules={[{ required: true, message: 'Company name is required.' }, { max: 100 }]}
             >
                 <Input />
             </Form.Item>
@@ -187,7 +184,7 @@ const CreateEdit: React.FC = () => {
             <Form.Item<PartnerType>
                 label="Price group"
                 name="priceGroup"
-                rules={[{ required: true, message: 'Please select a price group!' }]}
+                rules={[{ required: true, message: 'Price group is required.' }]}
             >
                 <Select>
                     <Select.Option value="retail">Retail</Select.Option>
@@ -198,7 +195,7 @@ const CreateEdit: React.FC = () => {
             <Form.Item<PartnerType>
                 label="Type"
                 name="type"
-                rules={[{ required: true, message: 'Please select a type!' }]}
+                rules={[{ required: true, message: 'Type is required.' }]}
             >
                 <Select>
                     <Select.Option value="customer">Customer</Select.Option>

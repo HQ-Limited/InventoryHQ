@@ -2,6 +2,7 @@ import {
     Button,
     Empty,
     Form,
+    FormItemProps,
     FormProps,
     Input,
     InputNumber,
@@ -26,13 +27,16 @@ const LocationField = ({
     name,
     locations,
     label = '',
+    props,
 }: {
     name: (number | string)[];
     locations: Location[];
     label?: string;
+    props?: FormItemProps;
 }) => {
     return (
         <Form.Item
+            {...props}
             name={[...name, 'location']}
             label={label}
             getValueFromEvent={(value: number) => {
@@ -198,7 +202,7 @@ export default function PackagesTable() {
                                     rules={[
                                         {
                                             required: true,
-                                            message: 'Please enter the packages amount',
+                                            message: 'Packages amount is required.',
                                         },
                                     ]}
                                 >
@@ -246,6 +250,9 @@ export default function PackagesTable() {
 
                                         return (
                                             <LocationField
+                                                props={{
+                                                    style: { marginBottom: 0 },
+                                                }}
                                                 name={[row.name]}
                                                 locations={locations}
                                             />
@@ -257,12 +264,15 @@ export default function PackagesTable() {
                                 width={200}
                                 dataIndex={'label'}
                                 title={'Label'}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     if (editingIndex !== row.name)
                                         return form.getFieldValue(['packages', row.name, 'label']);
 
                                     return (
-                                        <Form.Item name={[row.name, 'label']}>
+                                        <Form.Item
+                                            style={{ marginBottom: 0 }}
+                                            name={[row.name, 'label']}
+                                        >
                                             <Input />
                                         </Form.Item>
                                     );
@@ -272,7 +282,7 @@ export default function PackagesTable() {
                                 width={250}
                                 dataIndex={'description'}
                                 title={'Description'}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     if (editingIndex !== row.name)
                                         return form.getFieldValue([
                                             'packages',
@@ -282,6 +292,10 @@ export default function PackagesTable() {
 
                                     return (
                                         <DescriptionField
+                                            rows={1}
+                                            props={{
+                                                style: { marginBottom: 0 },
+                                            }}
                                             name={[row.name, 'description']}
                                             label=""
                                         />
@@ -292,82 +306,97 @@ export default function PackagesTable() {
                                 width={150}
                                 dataIndex={'price'}
                                 title={'Price'}
-                                render={(value, row) => {
-                                    if (editingIndex !== row.name)
-                                        return form.getFieldValue(['packages', row.name, 'price']);
+                                render={(_, row) => {
+                                    return (
+                                        <>
+                                            {editingIndex !== row.name &&
+                                                form.getFieldValue(['packages', row.name, 'price'])}
 
-                                    return <PriceField name={[row.name, 'price']} label="" />;
+                                            <PriceField
+                                                props={{
+                                                    hidden: editingIndex !== row.name,
+                                                    style: { marginBottom: 0 },
+                                                }}
+                                                name={[row.name, 'price']}
+                                                label=""
+                                            />
+                                        </>
+                                    );
                                 }}
                             />
                             <Column
                                 dataIndex={'inventoryUnits'}
                                 title={isVariable ? 'Contents' : 'Quantity'}
-                                render={(value, row) => {
-                                    if (editingIndex !== row.name) {
-                                        if (isVariable)
-                                            return (
-                                                <Space>
-                                                    {form
-                                                        .getFieldValue([
-                                                            'packages',
-                                                            row.name,
-                                                            'inventoryUnits',
-                                                        ])
-                                                        .map(
-                                                            (
-                                                                unit: InventoryUnit,
-                                                                iuIndex: number
-                                                            ) => (
-                                                                <Tag key={iuIndex}>
-                                                                    {unit.variation.sku} (
-                                                                    {unit.quantity})
-                                                                </Tag>
-                                                            )
-                                                        )}
-                                                </Space>
-                                            );
-
-                                        return form.getFieldValue([
-                                            'packages',
-                                            row.name,
-                                            'inventoryUnits',
-                                            0,
-                                        ]).quantity;
-                                    }
-
+                                render={(_, row) => {
                                     return (
-                                        <Form.List name={[row.name, 'inventoryUnits']}>
-                                            {(inventoryUnits) => (
-                                                <Space>
-                                                    {inventoryUnits.map((unit) => (
-                                                        <QuantityInputField
-                                                            key={unit.key}
-                                                            name={[unit.name]}
-                                                            label={
-                                                                isVariable
-                                                                    ? form.getFieldValue([
-                                                                          'packages',
-                                                                          row.name,
-                                                                          'inventoryUnits',
-                                                                          unit.name,
-                                                                          'variation',
-                                                                          'sku',
-                                                                      ])
-                                                                    : ''
-                                                            }
-                                                        />
-                                                    ))}
-                                                </Space>
-                                            )}
-                                            {/* TODO: Possibly add the option to add new content? Currently, when a new variation is added, the contents are not added automatically. */}
-                                        </Form.List>
+                                        <>
+                                            {editingIndex !== row.name &&
+                                                (isVariable ? (
+                                                    <Space>
+                                                        {form
+                                                            .getFieldValue([
+                                                                'packages',
+                                                                row.name,
+                                                                'inventoryUnits',
+                                                            ])
+                                                            .map(
+                                                                (
+                                                                    unit: InventoryUnit,
+                                                                    iuIndex: number
+                                                                ) => (
+                                                                    <Tag key={iuIndex}>
+                                                                        {unit.variation.sku} (
+                                                                        {unit.quantity})
+                                                                    </Tag>
+                                                                )
+                                                            )}
+                                                    </Space>
+                                                ) : (
+                                                    form.getFieldValue([
+                                                        'packages',
+                                                        row.name,
+                                                        'inventoryUnits',
+                                                        0,
+                                                    ]).quantity
+                                                ))}
+
+                                            <Form.List name={[row.name, 'inventoryUnits']}>
+                                                {(inventoryUnits) => (
+                                                    <Space>
+                                                        {inventoryUnits.map((unit) => (
+                                                            <QuantityInputField
+                                                                props={{
+                                                                    hidden:
+                                                                        editingIndex !== row.name,
+                                                                }}
+                                                                key={unit.key}
+                                                                name={[unit.name]}
+                                                                label={
+                                                                    isVariable
+                                                                        ? form.getFieldValue([
+                                                                              'packages',
+                                                                              row.name,
+                                                                              'inventoryUnits',
+                                                                              unit.name,
+                                                                              'variation',
+                                                                              'sku',
+                                                                          ])
+                                                                        : ''
+                                                                }
+                                                            />
+                                                        ))}
+                                                    </Space>
+                                                )}
+                                                {/* TODO: Possibly add the option to add new content? Currently, when a new variation is added, the contents are not added automatically. */}
+                                            </Form.List>
+                                        </>
                                     );
                                 }}
                             />
                             <Column
                                 width={100}
                                 title={'Action'}
-                                render={(value, row) => {
+                                render={(_, row) => {
                                     return (
                                         <Space size="middle">
                                             <Button

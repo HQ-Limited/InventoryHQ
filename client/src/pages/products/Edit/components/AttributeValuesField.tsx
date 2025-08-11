@@ -65,7 +65,7 @@ export default function AttributeValuesField({
             <Form.Item
                 name={[name, 'values']}
                 label="Values"
-                rules={[{ required: true, message: 'Please select at least one value' }]}
+                rules={[{ required: true, message: 'At least one value is required.' }]}
                 getValueFromEvent={(values: (number | string)[]) => {
                     if (values.length == 0) {
                         return [];
