@@ -5,10 +5,7 @@ export default function NameField() {
         <Form.Item
             label="Name"
             name="name"
-            rules={[
-                { required: true, message: 'Please enter the name of the product!' },
-                { max: 100 },
-            ]}
+            rules={[{ required: true, message: 'Product name is required.' }, { max: 100 }]}
         >
             <Input />
         </Form.Item>

@@ -1,4 +1,4 @@
-import { Form, InputNumber } from 'antd';
+import { Form, FormItemProps, InputNumber } from 'antd';
 import { LOCATIONS_ENABLED } from '../../../../global';
 import LocationField from './LocationField';
 import { Context } from '../Context';
@@ -8,24 +8,27 @@ export const QuantityInputField = ({
     name,
     label = 'Quantity',
     layout = 'vertical',
+    props,
 }: {
     name: (number | string)[];
     label?: string;
     layout?: 'vertical' | 'horizontal';
+    props?: FormItemProps;
 }) => {
     return (
         <Form.Item
+            {...props}
             label={label}
             name={[...name, 'quantity']}
             rules={[
                 {
                     required: true,
-                    message: 'Please enter quantity!',
+                    message: 'Quantity is required.',
                 },
                 {
                     validator: (_, value) => {
                         if (value <= 0) {
-                            return Promise.reject('Quantity must be greater than 0!');
+                            return Promise.reject('Quantity must be greater than 0.');
                         }
                         return Promise.resolve();
                     },
@@ -129,6 +132,8 @@ export default function QuantityField({
     quantity,
     showLocationLabel,
     locationRequired = true,
+    locationProps,
+    quantityProps,
 }: {
     name: (number | string)[];
     showLocationLabel?: boolean;
@@ -137,6 +142,8 @@ export default function QuantityField({
         label?: string;
     };
     locationRequired?: boolean;
+    locationProps?: FormItemProps;
+    quantityProps?: FormItemProps;
 }) {
     const form = Form.useFormInstance();
     const manageQuantity = Form.useWatch('manageQuantity');
@@ -149,6 +156,7 @@ export default function QuantityField({
                     name={name}
                     required={locationRequired}
                     showLabel={showLocationLabel}
+                    props={locationProps}
                 />
             )}
             {manageQuantity && (
@@ -176,6 +184,7 @@ export default function QuantityField({
                                               : 'Quantity'
                                     }
                                     layout={quantity?.layout}
+                                    props={quantityProps}
                                 />
                             );
                         })

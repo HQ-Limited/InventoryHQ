@@ -36,11 +36,10 @@ import SKUField from './components/SKUField';
 import locationService from '../../../services/locationService';
 import ManageQuantityCheckbox from './components/ManageQuantityCheckbox';
 import PackagesTable from './components/PackagesTable';
-import UnitOfMeasureField from './components/UnitOfMeasure';
 import UnitsOfMeasurementTable from './components/UnitsOfMeasurementTable';
 import BarcodeField from './components/BarcodeField';
 import QuantityTable from './components/QuantityTable';
-import { Context } from './context';
+import { Context } from './Context';
 import LocationField from './components/LocationField';
 
 const CreateEdit: React.FC = () => {
@@ -350,6 +349,7 @@ const CreateEdit: React.FC = () => {
                               )}
 
                               <SKUField />
+
                               <BarcodeField />
                           </>
                       ),
@@ -370,10 +370,11 @@ const CreateEdit: React.FC = () => {
                             <QuantityTable />
                         </>
                     )}
+
                     {!isVariable && !LOCATIONS_ENABLED && (
                         <QuantityField name={['variations', 0]} />
                     )}
-                    <UnitOfMeasureField style={{ marginTop: 20 }} />
+
                     <UnitsOfMeasurementTable />
                 </>
             ),
