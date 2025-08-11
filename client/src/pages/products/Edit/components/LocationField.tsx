@@ -1,4 +1,4 @@
-import { Form, Select } from 'antd';
+import { Form, FormItemProps, Select } from 'antd';
 import { useContext } from 'react';
 import { InventoryUnit } from '../../../../types/ProductTypes';
 import { Context } from '../Context';
@@ -8,11 +8,13 @@ export default function LocationField({
     required = false,
     label = 'Locations',
     showLabel = true,
+    props,
 }: {
     name: (number | string)[];
     required?: boolean;
     label?: string;
     showLabel?: boolean;
+    props?: FormItemProps;
 }) {
     const { locations, isVariable } = useContext(Context);
 
@@ -24,6 +26,7 @@ export default function LocationField({
 
     return (
         <Form.Item
+            {...props}
             label={showLabel ? label : undefined}
             name={[...name, 'inventoryUnits']}
             getValueFromEvent={(values: (number | string)[]) => {
@@ -70,7 +73,7 @@ export default function LocationField({
                         .map((l: InventoryUnit) => l.location.id),
                 };
             }}
-            rules={required ? [{ required: true, message: 'Please select location/s' }] : []}
+            rules={required ? [{ required: true, message: 'Location/s is required.' }] : []}
         >
             <Select
                 mode="multiple"

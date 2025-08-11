@@ -2,8 +2,7 @@ export type Product = {
     id: number;
     name: string;
     description?: string;
-    unitOfMeasure?: string;
-    unitsOfMeasurement?: UnitOfMeasurement[];
+    unitsOfMeasurement: UnitOfMeasurement[];
     isVariable: boolean;
     manageQuantity: boolean;
     attributes?: ProductAttribute[];
@@ -14,9 +13,12 @@ export type Product = {
 
 export type UnitOfMeasurement = {
     id: number;
-    name: string;
-    abbreviation?: string;
-    multiplier: number;
+    name?: string;
+    abbreviation: string;
+    multiplier?: number;
+    isDefault: boolean;
+    isBase: boolean;
+    barcode?: string;
 };
 
 export type Category = {
@@ -33,6 +35,7 @@ export type Variation = {
     description?: string;
     attributes?: VariationAttribute[];
     inventoryUnits?: InventoryUnit[];
+    barcode?: string;
 };
 
 export type VariationAttribute = {

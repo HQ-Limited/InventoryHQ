@@ -4,13 +4,17 @@ namespace InventoryHQ.Models.DTOs
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string? Abbreviation { get; set; }
+        public string Abbreviation { get; set; }
         
         public string? Barcode { get; set; }
 
-        public float Multiplier { get; set; }
+        public float? Multiplier { get; set; }
+
+        public bool IsDefault { get; set; }
+
+        public bool IsBase { get; set; }
 
     }
 }
