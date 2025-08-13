@@ -1,4 +1,4 @@
-import { Location } from '../types/ProductTypes';
+import { Location } from '../pages/products/Edit/types/EditProductTypes';
 import api from '../utils/api';
 
 class LocationService {

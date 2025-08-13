@@ -1,6 +1,6 @@
 import { Form, InputNumber, Select } from 'antd';
 import { LOCATIONS_ENABLED } from '../../../../global';
-import { InventoryUnit, Location } from '../../../../types/ProductTypes';
+import { InventoryUnit, Location } from '../types/EditProductTypes';
 
 export const QuantityInputField = ({
     name,
