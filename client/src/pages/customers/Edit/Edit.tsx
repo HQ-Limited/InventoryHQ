@@ -6,6 +6,7 @@ import { SaveOutlined, SearchOutlined } from '@ant-design/icons';
 import { Customer, CustomerGroup } from '../types/Customer';
 import customerService from '../../../services/customerService';
 import customerGroupService from '../../../services/customerGroupService';
+import vatService from '../../../services/external/vatService';
 
 const Update: React.FC = () => {
     const { message } = App.useApp();
@@ -56,6 +57,26 @@ const Update: React.FC = () => {
         message.error(errorInfo.errorFields[0].errors[0]);
         console.log('Failed:', errorInfo);
     };
+
+    async function checkVAT() {
+        const vat = form.getFieldValue('taxVAT');
+
+        if (!vat) return;
+
+        const pattern = /^(?<Prefix>[a-zA-Z]+)(?<Number>\d+)$/;
+
+        const match = vat.match(pattern);
+
+        if (!match || !match.groups) return message.error('Invalid VAT number.');
+
+        const countryCode = match.groups['Prefix'].toUpperCase();
+        const vatNumber = match.groups['Number'];
+
+        const response = await vatService.checkVAT({ countryCode, vatNumber });
+
+        console.log(response);
+        // TODO: fix CORS error
+    }
 
     return (
         <Form
@@ -135,8 +156,7 @@ const Update: React.FC = () => {
                         <Form.Item name="taxVAT" label="Tax VAT">
                             <Space.Compact style={{ width: '100%' }}>
                                 <Input />
-                                <Button icon={<SearchOutlined />} type="primary">
-                                    {/* TODO: Add search functionality through VIES API */}
+                                <Button icon={<SearchOutlined />} type="primary" onClick={checkVAT}>
                                     Search
                                 </Button>
                             </Space.Compact>
