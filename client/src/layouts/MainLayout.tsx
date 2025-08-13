@@ -136,7 +136,7 @@ const MainLayout = (props: Props) => {
                                                     paddingBottom: '10px',
                                                 }}
                                             >
-                                                {route.icon({ fontSize: '1.6rem' })}
+                                                {route.icon && route.icon({ fontSize: '1.6rem' })}
                                                 <div
                                                     style={{ fontSize: '12px', lineHeight: '25px' }}
                                                 >
