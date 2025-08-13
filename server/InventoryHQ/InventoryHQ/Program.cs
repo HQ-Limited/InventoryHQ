@@ -50,6 +50,8 @@ builder.Services.AddTransient<ProductService>();
 builder.Services.AddTransient<AttributeService>();
 builder.Services.AddTransient<CategoryService>();
 builder.Services.AddTransient<LocationService>();
+builder.Services.AddTransient<CustomerService>();
+builder.Services.AddTransient<CustomerGroupService>();
 builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile<InventoryHQProfile>();

@@ -404,6 +404,47 @@ namespace InventoryHQ.Data
             context.Products.Add(simpleProduct2);
             context.Products.Add(simpleProductPackages);
             context.Products.Add(variableProductPackages);
+
+            var customerGroup = new CustomerGroup
+            {
+                Name = "Wholesale",
+                Discount = 10,
+            };
+
+            context.CustomerGroup.Add(customerGroup);
+            context.SaveChanges();
+
+            var customer = new Customer
+            {
+                Name = "Customer 1",
+                PMR = "John Joe",
+                Phone = "+359891231231",
+                Email = "customer1@gmail.com",
+                VAT = "123456789",
+                TaxVAT = "BG123456789",
+                Address = "Bulgaria, Sofia, 1000, Tsarigradsko shose 12",
+                DeliveryAddress = "Bulgaria, Sofia, 1000, Borisova 3",
+                Discount = 10,
+                Receivers = new List<Receiver>
+                {
+                    new Receiver
+                    {
+                        Name = "John Doe",
+                    }
+                },
+                CustomerGroup = customerGroup
+            };
+
+            var customer2 = new Customer
+            {
+                Name = "Customer 2",
+                PMR = "Johny Bravo",
+                VAT = "123123123",
+            };
+
+            context.Customers.Add(customer);
+            context.Customers.Add(customer2);
+
             context.SaveChanges();
             Console.WriteLine("Seeding completed successfully.");
         }
