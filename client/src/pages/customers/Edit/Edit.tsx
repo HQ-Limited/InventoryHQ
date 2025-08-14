@@ -6,7 +6,7 @@ import { SaveOutlined, SearchOutlined } from '@ant-design/icons';
 import { Customer, CustomerGroup } from '../types/Customer';
 import customerService from '../../../services/customerService';
 import customerGroupService from '../../../services/customerGroupService';
-import vatService from '../../../services/external/vatService';
+import vatService, { CheckVATResponse } from '../../../services/external/vatService';
 
 const Update: React.FC = () => {
     const { message } = App.useApp();
@@ -72,10 +72,25 @@ const Update: React.FC = () => {
         const countryCode = match.groups['Prefix'].toUpperCase();
         const vatNumber = match.groups['Number'];
 
-        const response = await vatService.checkVAT({ countryCode, vatNumber });
+        const response: CheckVATResponse = await vatService.checkVAT({ countryCode, vatNumber });
 
-        console.log(response);
-        // TODO: fix CORS error
+        if (response.valid) {
+            form.setFieldsValue({
+                address: response.address,
+                name: response.name,
+                vat: vatNumber,
+            });
+            message.success(
+                'VAT number is valid. Address, name and VAT have been filled automatically.'
+            );
+        } else {
+            form.setFieldsValue({
+                vat: '',
+                address: '',
+                name: '',
+            });
+            message.error('Invalid VAT number.');
+        }
     }
 
     return (
