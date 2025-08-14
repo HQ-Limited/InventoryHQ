@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { App, Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps, Tooltip } from 'antd';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import productService from '../../../services/productService';
 import categoryService from '../../../services/categoryService';
 import attributeService from '../../../services/attributeService';
@@ -63,6 +63,7 @@ const CreateEdit: React.FC = () => {
     const [loading, setLoading] = useState(id ? true : false);
     const [saving, setSaving] = useState(false);
     const [locations, setLocations] = useState<Location[]>([]);
+    const navigate = useNavigate();
 
     const fetchData = async () => {
         const categories = await categoryService.getCategories();
@@ -161,8 +162,11 @@ const CreateEdit: React.FC = () => {
         try {
             if (id) {
                 await productService.updateProduct({ ...values, id: Number(id) });
+                message.success('Product successfully updated!');
             } else {
-                await productService.createProduct(values);
+                const createdId = await productService.createProduct(values);
+                message.success('Product successfully created!');
+                navigate(`/products/${createdId}`);
             }
 
             setSaving(false);

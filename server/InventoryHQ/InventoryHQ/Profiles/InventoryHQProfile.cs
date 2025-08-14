@@ -42,6 +42,16 @@ namespace InventoryHQ.Profiles
             CreateMap<Customer, CustomerDto>().ReverseMap();
 
             CreateMap<CustomerGroup, CustomerGroupDto>().ReverseMap();
+
+            CreateMap<Supplier, SupplierDto>().ReverseMap();
+
+            CreateMap<Pricelist, PricelistDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Variation.Product.Name))
+                .ReverseMap();
+
+            CreateMap<Variation, PricelistVariationDto>()
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.RetailPrice))
+                .ReverseMap();
         }
 
         private object GetProductAttributes(Product src)

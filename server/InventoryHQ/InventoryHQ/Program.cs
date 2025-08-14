@@ -52,6 +52,7 @@ builder.Services.AddTransient<CategoryService>();
 builder.Services.AddTransient<LocationService>();
 builder.Services.AddTransient<CustomerService>();
 builder.Services.AddTransient<CustomerGroupService>();
+builder.Services.AddTransient<SupplierService>();
 builder.Services.AddHttpClient();
 builder.Services.AddAutoMapper(config =>
 {

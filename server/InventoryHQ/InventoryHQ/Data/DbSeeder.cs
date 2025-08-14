@@ -444,8 +444,27 @@ namespace InventoryHQ.Data
 
             context.Customers.Add(customer);
             context.Customers.Add(customer2);
-
             context.SaveChanges();
+
+            var supplier = new Supplier
+            {
+                Name = "Supplier 1",
+                PMR = "Supplier 1",
+                VAT = "123456789",
+                Pricelist = new List<Pricelist>
+                {
+                    new Pricelist
+                    {
+                        Variation = variableProduct.Variations.First(),
+                        Price = 10,
+                    }
+                }
+            };
+
+            context.Suppliers.Add(supplier);
+            context.SaveChanges();
+
+
             Console.WriteLine("Seeding completed successfully.");
         }
     }
