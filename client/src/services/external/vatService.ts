@@ -1,6 +1,6 @@
-import axios from 'axios';
+import api from '../../utils/api';
 
-type CheckVATResponse = {
+export type CheckVATResponse = {
     countryCode: string;
     vatNumber: string;
     valid: boolean;
@@ -16,10 +16,7 @@ class VatService {
         countryCode: string;
         vatNumber: string;
     }): Promise<CheckVATResponse> {
-        const response = await axios.post<CheckVATResponse>(
-            'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number',
-            { countryCode, vatNumber }
-        );
+        const response = await api.post<CheckVATResponse>('vat/check', { countryCode, vatNumber });
         return response.data;
     }
 }
