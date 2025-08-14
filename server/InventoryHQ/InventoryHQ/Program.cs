@@ -50,6 +50,10 @@ builder.Services.AddTransient<ProductService>();
 builder.Services.AddTransient<AttributeService>();
 builder.Services.AddTransient<CategoryService>();
 builder.Services.AddTransient<LocationService>();
+builder.Services.AddTransient<CustomerService>();
+builder.Services.AddTransient<CustomerGroupService>();
+builder.Services.AddTransient<SupplierService>();
+builder.Services.AddHttpClient();
 builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile<InventoryHQProfile>();
@@ -59,9 +63,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
     {
-        policy.WithOrigins("https://localhost:5173/")
+        policy.WithOrigins("https://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyOrigin()
               .AllowAnyMethod();
     });
 });

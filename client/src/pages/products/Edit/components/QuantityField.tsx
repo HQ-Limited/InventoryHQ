@@ -115,10 +115,8 @@ const LocationField = ({
                 showSearch
                 placeholder="Select location/s"
                 optionFilterProp="label"
-                options={locations!.map((location) => ({
-                    label: location.name,
-                    value: location.id,
-                }))}
+                fieldNames={{ label: 'name', value: 'id' }}
+                options={locations}
             />
         </Form.Item>
     );

@@ -30,6 +30,16 @@ namespace InventoryHQ.Data
 
         public DbSet<InventoryUnit> InventoryUnits { get; set; }
 
+        public DbSet<Customer> Customers { get; set; }
+
+        public DbSet<Receiver> Receivers { get; set; }
+
+        public DbSet<CustomerGroup> CustomerGroup { get; set; }
+
+        public DbSet<Supplier> Suppliers { get; set; }
+
+        public DbSet<Pricelist> Pricelists { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
