@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import { App, Button, Form, FormProps, Input, InputNumber, Select, Space, Spin } from 'antd';
+import { App, Button, Form, FormProps, Input, Space, Spin } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-
 import { SaveOutlined, SearchOutlined } from '@ant-design/icons';
-import { Customer, CustomerGroup } from '../types/Customer';
-import customerService from '../../../services/customerService';
-import customerGroupService from '../../../services/customerGroupService';
+import { Supplier } from '../types/Supplier';
+import supplierService from '../../../services/supplier';
 import { checkVAT } from '../../functions/form';
 
 const Update: React.FC = () => {
@@ -13,49 +11,45 @@ const Update: React.FC = () => {
     const params = useParams();
     const id = params.id;
     const [form] = Form.useForm();
-    const [values, setValues] = useState<Partial<Customer>>({});
-    const [customerGroups, setCustomerGroups] = useState<CustomerGroup[]>([]);
+    const [values, setValues] = useState<Partial<Supplier>>({});
     const [loading, setLoading] = useState(id ? true : false);
     const [saving, setSaving] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
-            const customerGroups = await customerGroupService.getCustomerGroups();
-            setCustomerGroups(customerGroups);
-
             if (!id) return;
             setLoading(true);
-            const customer = await customerService.getCustomerById(Number(id));
-            setValues(customer);
-            form.setFieldsValue(customer);
+            const supplier = await supplierService.getSupplierById(Number(id));
+            setValues(supplier);
+            form.setFieldsValue(supplier);
             setLoading(false);
         };
 
         fetchData();
     }, [form, id]);
 
-    const onFinish: FormProps<Customer>['onFinish'] = async (values) => {
+    const onFinish: FormProps<Supplier>['onFinish'] = async (values) => {
         setSaving(true);
 
         try {
             if (id) {
-                await customerService.updateCustomer({ ...values, id: Number(id) });
-                message.success('Customer successfully updated!');
+                await supplierService.updateSupplier({ ...values, id: Number(id) });
+                message.success('Supplier successfully updated!');
             } else {
-                const createdId = await customerService.createCustomer(values);
-                message.success('Customer successfully created!');
-                navigate(`/customers/${createdId}`);
+                const createdId = await supplierService.createSupplier(values);
+                message.success('Supplier successfully created!');
+                navigate(`/suppliers/${createdId}`);
             }
 
             setSaving(false);
         } catch {
             setSaving(false);
-            message.error('Failed to update customer');
+            message.error('Failed to update supplier');
         }
     };
 
-    const onFinishFailed: FormProps<Customer>['onFinishFailed'] = (errorInfo) => {
+    const onFinishFailed: FormProps<Supplier>['onFinishFailed'] = (errorInfo) => {
         message.error(errorInfo.errorFields[0].errors[0]);
         console.log('Failed:', errorInfo);
     };
@@ -93,25 +87,6 @@ const Update: React.FC = () => {
                             <Input />
                         </Form.Item>
 
-                        <Form.Item
-                            name="customerGroup"
-                            label="Customer group"
-                            getValueFromEvent={(value: number) => {
-                                return customerGroups.find((g) => g.id == value);
-                            }}
-                            getValueProps={(userGroup: CustomerGroup) => {
-                                return {
-                                    value: userGroup?.id,
-                                };
-                            }}
-                        >
-                            <Select
-                                allowClear
-                                fieldNames={{ label: 'name', value: 'id' }}
-                                options={customerGroups}
-                            />
-                        </Form.Item>
-
                         <Form.Item name="phone" label="Phone">
                             <Input />
                         </Form.Item>
@@ -147,22 +122,6 @@ const Update: React.FC = () => {
                                 </Button>
                             </Space.Compact>
                         </Form.Item>
-
-                        <Form.Item name="address" label="Address">
-                            <Input />
-                        </Form.Item>
-
-                        <Form.Item name="deliveryAddress" label="Delivery address">
-                            <Input />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="discount"
-                            label="Discount (%)"
-                            help="If set, it will be used instead of the Customer Group discount."
-                        >
-                            <InputNumber style={{ width: '100%' }} min={0} max={100} />
-                        </Form.Item>
                     </Space>
 
                     <Form.Item style={{ textAlign: 'center', marginTop: 50 }}>
@@ -173,7 +132,7 @@ const Update: React.FC = () => {
                             icon={<SaveOutlined />}
                             loading={saving}
                         >
-                            Save customer
+                            Save supplier
                         </Button>
                     </Form.Item>
                 </>
