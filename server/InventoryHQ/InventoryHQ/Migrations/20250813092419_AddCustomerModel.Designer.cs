@@ -3,6 +3,7 @@ using System;
 using InventoryHQ.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryHQ.Migrations
 {
     [DbContext(typeof(InventoryHQDbContext))]
-    partial class InventoryHQDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250813092419_AddCustomerModel")]
+    partial class AddCustomerModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,9 +161,6 @@ namespace InventoryHQ.Migrations
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("CustomerGroupId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
 
@@ -188,6 +188,7 @@ namespace InventoryHQ.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("TaxVAT")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
@@ -199,8 +200,6 @@ namespace InventoryHQ.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerGroupId");
-
                     b.HasIndex("Name")
                         .IsUnique();
 
@@ -211,38 +210,6 @@ namespace InventoryHQ.Migrations
                         .IsUnique();
 
                     b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.CustomerGroup", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<float?>("Discount")
-                        .HasColumnType("real");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("CustomerGroup");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.InventoryUnit", b =>
@@ -583,15 +550,6 @@ namespace InventoryHQ.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("InventoryHQ.Data.Models.Customer", b =>
-                {
-                    b.HasOne("InventoryHQ.Data.Models.CustomerGroup", "CustomerGroup")
-                        .WithMany("Customers")
-                        .HasForeignKey("CustomerGroupId");
-
-                    b.Navigation("CustomerGroup");
-                });
-
             modelBuilder.Entity("InventoryHQ.Data.Models.InventoryUnit", b =>
                 {
                     b.HasOne("InventoryHQ.Data.Models.Location", "Location")
@@ -706,11 +664,6 @@ namespace InventoryHQ.Migrations
             modelBuilder.Entity("InventoryHQ.Data.Models.Customer", b =>
                 {
                     b.Navigation("Receivers");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.CustomerGroup", b =>
-                {
-                    b.Navigation("Customers");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Package", b =>

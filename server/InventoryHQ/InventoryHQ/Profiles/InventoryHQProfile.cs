@@ -36,6 +36,12 @@ namespace InventoryHQ.Profiles
                 .ReverseMap();
 
             CreateMap<Data.Models.Attribute, AttributeDto>().ReverseMap();
+
+            CreateMap<Receiver, ReceiverDto>().ReverseMap();
+
+            CreateMap<Customer, CustomerDto>().ReverseMap();
+
+            CreateMap<CustomerGroup, CustomerGroupDto>().ReverseMap();
         }
 
         private object GetProductAttributes(Product src)
