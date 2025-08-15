@@ -56,7 +56,6 @@ const LocationField = ({
             rules={[{ required: true, message: 'Location is required' }]}
         >
             <Select
-                allowClear
                 showSearch
                 optionFilterProp="label"
                 options={locations!.map((location) => ({

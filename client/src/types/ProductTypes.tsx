@@ -46,7 +46,6 @@ export type Product = {
     name: string;
     description?: string;
     manageQuantity: boolean;
-    minStock?: number;
     vat?: number;
     categories: Category[];
     attributes: ProductAttribute[];
@@ -58,6 +57,7 @@ export type Variation = {
     id: number;
     sku: string;
     retailPrice: number;
+    minStock?: number;
     wholesalePrice?: number;
     description?: string;
     attributes?: VariationAttribute[];

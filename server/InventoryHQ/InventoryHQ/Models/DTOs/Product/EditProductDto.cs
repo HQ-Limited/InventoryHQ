@@ -10,7 +10,7 @@
 
         public bool IsVariable { get; set; }
 
-        public int? Vat { get; set; }
+        public int Vat { get; set; }
 
         public IEnumerable<AttributeDto>? Attributes { get; set; }
 

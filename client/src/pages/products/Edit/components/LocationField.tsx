@@ -78,7 +78,7 @@ export default function LocationField({
         >
             <Select
                 mode="multiple"
-                allowClear
+                allowClear={!required}
                 showSearch
                 placeholder="Select location/s"
                 optionFilterProp="label"

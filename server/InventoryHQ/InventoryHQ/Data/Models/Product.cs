@@ -9,7 +9,8 @@ namespace InventoryHQ.Data.Models
 
         public string? Description { get; set; }
 
-        public int? Vat { get; set; }
+        [Required]
+        public required int Vat { get; set; }
 
         [Required]
         public required List<Variation> Variations { get; set; }

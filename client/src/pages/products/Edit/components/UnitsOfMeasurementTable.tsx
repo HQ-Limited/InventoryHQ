@@ -14,7 +14,7 @@ import { AnyObject } from 'antd/es/_util/type';
 import { UnitOfMeasurement } from '../types/EditProductTypes';
 import { Context } from '../Context';
 
-export default function UnitsOfMeasruementTable() {
+export default function UnitsOfMeasurementTable() {
     const [editingIndex, setEditingIndex] = useState(undefined);
     const form = Form.useFormInstance();
     const baseBarcode = Form.useWatch(['variations', 0, 'barcode']);
