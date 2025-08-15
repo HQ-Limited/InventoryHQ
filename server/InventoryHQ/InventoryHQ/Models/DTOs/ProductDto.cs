@@ -12,10 +12,6 @@
 
         public bool IsVariable { get; set; }
 
-        public bool ManageQuantity { get; set; }
-
-        public bool? InStock { get; set; }
-
         public List<CategoryDto>? Categories { get; set; }
 
         public List<VariationDto> Variations { get; set; }

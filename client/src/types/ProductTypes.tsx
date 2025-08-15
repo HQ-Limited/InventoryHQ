@@ -46,7 +46,6 @@ export type Product = {
     name: string;
     description?: string;
     manageQuantity: boolean;
-    inStock?: boolean;
     minStock?: number;
     vat?: number;
     categories: Category[];
