@@ -12,8 +12,10 @@
 
         public string? Description { get; set; }
 
+        public float? MinStock { get; set; }
+
         public IEnumerable<VariationAttributeDto>? Attributes { get; set; }
 
-        public IEnumerable<InventoryUnitDto>? InventoryUnits { get; set; }
+        public IEnumerable<InventoryUnitDto> InventoryUnits { get; set; }
     }
 }

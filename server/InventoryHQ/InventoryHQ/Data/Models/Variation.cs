@@ -14,13 +14,15 @@ namespace InventoryHQ.Data.Models
         [Required]
         public required decimal RetailPrice { get; set; }
 
+        public float? MinStock { get; set; }
+
         public string? Description { get; set; }
 
         public int ProductId { get; set; }
 
         public Product Product { get; set; }
 
-        public ICollection<InventoryUnit>? InventoryUnits { get; set; }
+        public ICollection<InventoryUnit> InventoryUnits { get; set; } = new List<InventoryUnit>();
 
         public ICollection<VariationAttribute>? Attributes { get; set; }
     }

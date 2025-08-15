@@ -10,12 +10,6 @@
 
         public bool IsVariable { get; set; }
 
-        public bool ManageQuantity { get; set; }
-
-        public bool? InStock { get; set; }
-
-        public float? MinStock { get; set; }
-
         public int? Vat { get; set; }
 
         public IEnumerable<AttributeDto>? Attributes { get; set; }

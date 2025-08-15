@@ -1,4 +1,4 @@
-import { Button, Empty, Form, FormItemProps, Select, Space, Table, Tag, Tooltip } from 'antd';
+import { Button, Empty, Form, Select, Space, Table, Tag, Tooltip } from 'antd';
 import {
     AttributeValue,
     InventoryUnit,
@@ -20,7 +20,6 @@ export default function VariationsTable() {
     const [editingIndex, setEditingIndex] = useState(undefined);
     const form = Form.useFormInstance();
     const attributes = Form.useWatch('attributes') || [];
-    const manageQuantity = Form.useWatch('manageQuantity');
     const isDisabled =
         attributes.length === 0 || !attributes.find((a: ProductAttribute) => a.isVariational);
 
@@ -255,62 +254,53 @@ export default function VariationsTable() {
                                 }}
                             />
 
-                            {(manageQuantity || LOCATIONS_ENABLED) && (
-                                <Column
-                                    dataIndex={'inventoryUnits'}
-                                    title={manageQuantity ? 'Quantity' : 'Locations'}
-                                    render={(_, row) => {
-                                        return (
-                                            <>
-                                                {editingIndex !== row.name &&
-                                                    (LOCATIONS_ENABLED
-                                                        ? form
-                                                              .getFieldValue([
-                                                                  'variations',
-                                                                  row.name,
-                                                                  'inventoryUnits',
-                                                              ])
-                                                              .map((unit: InventoryUnit) => {
-                                                                  return (
-                                                                      <Tag key={unit.id}>
-                                                                          {unit.location!.name}{' '}
-                                                                          {manageQuantity
-                                                                              ? `(${unit.quantity})`
-                                                                              : ''}
-                                                                      </Tag>
-                                                                  );
-                                                              })
-                                                        : form.getFieldValue([
+                            <Column
+                                dataIndex={'inventoryUnits'}
+                                title="Quantity"
+                                render={(_, row) => {
+                                    return (
+                                        <>
+                                            {editingIndex !== row.name &&
+                                                (LOCATIONS_ENABLED
+                                                    ? form
+                                                          .getFieldValue([
                                                               'variations',
                                                               row.name,
                                                               'inventoryUnits',
-                                                          ])[0].quantity)}
+                                                          ])
+                                                          .map((unit: InventoryUnit) => {
+                                                              return (
+                                                                  <Tag key={unit.id}>
+                                                                      {unit.location!.name} (
+                                                                      {unit.quantity})
+                                                                  </Tag>
+                                                              );
+                                                          })
+                                                    : form.getFieldValue([
+                                                          'variations',
+                                                          row.name,
+                                                          'inventoryUnits',
+                                                      ])[0]?.quantity)}
 
-                                                <QuantityField
-                                                    quantityProps={{
-                                                        style: {
-                                                            marginBottom: LOCATIONS_ENABLED
-                                                                ? undefined
-                                                                : 0,
-                                                        },
-                                                        hidden: editingIndex !== row.name,
-                                                    }}
-                                                    locationProps={{
-                                                        hidden: editingIndex !== row.name,
-                                                    }}
-                                                    name={[row.name]}
-                                                    showLocationLabel={manageQuantity}
-                                                    locationRequired={false}
-                                                    quantity={{
-                                                        layout: 'horizontal',
-                                                        label: !LOCATIONS_ENABLED ? '' : undefined,
-                                                    }}
-                                                />
-                                            </>
-                                        );
-                                    }}
-                                />
-                            )}
+                                            <QuantityField
+                                                props={{
+                                                    style: {
+                                                        marginBottom: LOCATIONS_ENABLED
+                                                            ? undefined
+                                                            : 0,
+                                                    },
+                                                    hidden: editingIndex !== row.name,
+                                                }}
+                                                name={[row.name]}
+                                                quantity={{
+                                                    layout: 'horizontal',
+                                                    label: !LOCATIONS_ENABLED ? '' : undefined,
+                                                }}
+                                            />
+                                        </>
+                                    );
+                                }}
+                            />
 
                             <Column
                                 width={100}

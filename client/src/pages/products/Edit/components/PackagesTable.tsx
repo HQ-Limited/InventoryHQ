@@ -53,11 +53,11 @@ const LocationField = ({
                     value: values?.id,
                 };
             }}
+            rules={[{ required: true, message: 'Location is required' }]}
         >
             <Select
                 allowClear
                 showSearch
-                placeholder="None"
                 optionFilterProp="label"
                 options={locations!.map((location) => ({
                     label: location.name,
@@ -292,6 +292,7 @@ export default function PackagesTable() {
 
                                         return (
                                             <LocationField
+                                                required={LOCATIONS_ENABLED}
                                                 props={{
                                                     style: { marginBottom: 0 },
                                                 }}

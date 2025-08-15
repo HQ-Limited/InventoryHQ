@@ -9,13 +9,6 @@ namespace InventoryHQ.Data.Models
 
         public string? Description { get; set; }
 
-        [Required]
-        public required bool ManageQuantity { get; set; }
-
-        public bool? InStock { get; set; }
-
-        public float? MinStock { get; set; }
-
         public int? Vat { get; set; }
 
         [Required]
