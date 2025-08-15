@@ -38,17 +38,20 @@ namespace InventoryHQ.Services
                                 .Include(x => x.Variations)
                                     .ThenInclude(v => v.InventoryUnits)
                                         .ThenInclude(iu => iu.Package)
+                                            .ThenInclude(p => p.Location)
                                 .Include(x => x.UnitsOfMeasurement)
                                 .FirstOrDefaultAsync();
+
+            if (product == null)
+            {
+                return null;
+            }
 
             return new EditProductDto()
             {
                 Id = product.Id,
                 Description = product.Description,
                 Name = product.Name,
-                ManageQuantity = product.ManageQuantity,
-                InStock = product.InStock,
-                MinStock = product.MinStock,
                 Vat = product.Vat,
                 UnitsOfMeasurement = product.UnitsOfMeasurement.OrderBy(x => x.Id).Select(x => new UnitOfMeasurementDto()
                 {
@@ -84,7 +87,8 @@ namespace InventoryHQ.Services
                     Description = v.Description,
                     SKU = v.SKU,
                     Barcode = v.Barcode,
-                    InventoryUnits = v.InventoryUnits?
+                    MinStock = v.MinStock,
+                    InventoryUnits = v.InventoryUnits
                                     .Where(iu => iu.PackageId == null)
                                     .Select(viu => new InventoryUnitDto()
                                     {
@@ -129,11 +133,11 @@ namespace InventoryHQ.Services
                             Description = first.Package.Description,
                             Label = first.Package.Label,
                             Price = first.Package.Price,
-                            Location = new LocationDto()
+                            Location = first.Package.Location != null ? new LocationDto()
                             {
-                                Id = first.Location.Id,
-                                Name = first.Location.Name
-                            },
+                                Id = first.Package.Location.Id,
+                                Name = first.Package.Location.Name
+                            } : null,
                             InventoryUnits = g.Select(w => new InventoryUnitDto()
                             {
                                 Id = w.Id,

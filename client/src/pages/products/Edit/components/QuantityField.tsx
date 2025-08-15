@@ -1,17 +1,12 @@
 import { Form, FormItemProps, InputNumber } from 'antd';
 import { LOCATIONS_ENABLED } from '../../../../global';
-import LocationField from './LocationField';
-import { Context } from '../Context';
-import { useContext } from 'react';
 
 export const QuantityInputField = ({
-    required = true,
     name,
     label = 'Quantity',
     layout = 'vertical',
     props,
 }: {
-    required?: boolean;
     name: (number | string)[];
     label?: string;
     layout?: 'vertical' | 'horizontal';
@@ -24,7 +19,7 @@ export const QuantityInputField = ({
             name={[...name, 'quantity']}
             rules={[
                 {
-                    required,
+                    required: true,
                     message: 'Quantity is required.',
                 },
             ]}
@@ -118,67 +113,49 @@ const LocationField = ({
 export default function QuantityField({
     name,
     quantity,
-    showLocationLabel,
-    locationRequired = true,
-    locationProps,
-    quantityProps,
+    props,
 }: {
     name: (number | string)[];
-    showLocationLabel?: boolean;
     quantity?: {
         layout?: 'vertical' | 'horizontal';
         label?: string;
     };
-    locationRequired?: boolean;
-    locationProps?: FormItemProps;
-    quantityProps?: FormItemProps;
+    props?: FormItemProps;
 }) {
     const form = Form.useFormInstance();
-    const manageQuantity = Form.useWatch('manageQuantity');
-    const { isVariable } = useContext(Context);
 
     return (
         <>
-            {LOCATIONS_ENABLED && (
-                <LocationField
-                    name={name}
-                    required={locationRequired}
-                    showLabel={showLocationLabel}
-                    props={locationProps}
-                />
-            )}
-            {manageQuantity && (
-                <Form.List name={[...name, 'inventoryUnits']}>
-                    {(fields) =>
-                        fields.map((field) => {
-                            const inventoryUnit = form.getFieldValue([
-                                ...(isVariable ? ['variations'] : []),
-                                ...name,
-                                'inventoryUnits',
-                                field.name,
-                            ]);
+            <Form.List name={[...name, 'inventoryUnits']}>
+                {(fields) =>
+                    fields.map((field) => {
+                        const inventoryUnit = form.getFieldValue([
+                            ...(name.includes('variations') ? [] : ['variations']),
+                            ...name,
+                            'inventoryUnits',
+                            field.name,
+                        ]);
 
-                            if (inventoryUnit.package) return;
+                        if (inventoryUnit.package) return;
 
-                            return (
-                                <QuantityInputField
-                                    key={field.key}
-                                    name={[field.name]}
-                                    label={
-                                        quantity?.label !== undefined
-                                            ? quantity.label
-                                            : LOCATIONS_ENABLED
-                                              ? `${inventoryUnit.location.name}`
-                                              : 'Quantity'
-                                    }
-                                    layout={quantity?.layout}
-                                    props={quantityProps}
-                                />
-                            );
-                        })
-                    }
-                </Form.List>
-            )}
+                        return (
+                            <QuantityInputField
+                                key={field.key}
+                                name={[field.name]}
+                                label={
+                                    quantity?.label !== undefined
+                                        ? quantity.label
+                                        : LOCATIONS_ENABLED
+                                          ? `${inventoryUnit.location.name}`
+                                          : 'Quantity'
+                                }
+                                layout={quantity?.layout}
+                                props={props}
+                            />
+                        );
+                    })
+                }
+            </Form.List>
         </>
     );
 }

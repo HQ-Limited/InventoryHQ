@@ -34,14 +34,11 @@ import { LOCATIONS_ENABLED, PACKAGES_ENABLED, WHOLESALE_ENABLED } from '../../..
 import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
 import locationService from '../../../services/locationService';
-import ManageQuantityCheckbox from './components/ManageQuantityCheckbox';
 import PackagesTable from './components/PackagesTable';
 import UnitsOfMeasurementTable from './components/UnitsOfMeasurementTable';
 import BarcodeField from './components/BarcodeField';
 import QuantityTable from './components/QuantityTable';
 import { Context } from './Context';
-import LocationField from './components/LocationField';
-import InStockField from './components/InStockField';
 
 const CreateEdit: React.FC = () => {
     const { message } = App.useApp();
@@ -51,6 +48,8 @@ const CreateEdit: React.FC = () => {
     const [attributes, setAttributes] = useState<Attribute[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [form] = Form.useForm();
+    const [locations, setLocations] = useState<Location[]>([]);
+
     const [values, setValues] = useState<Partial<Product>>({
         categories: [],
         attributes: [],
@@ -64,7 +63,6 @@ const CreateEdit: React.FC = () => {
                 : []),
         ],
         isVariable: false,
-        manageQuantity: true,
     });
     const [loading, setLoading] = useState(id ? true : false);
     const [saving, setSaving] = useState(false);
@@ -174,7 +172,6 @@ const CreateEdit: React.FC = () => {
         const variations: Variation[] = combinations.map((combo) => {
             return {
                 attributes: combo,
-                manageQuantity: true,
             };
         });
 
@@ -339,18 +336,12 @@ const CreateEdit: React.FC = () => {
             icon: <TruckFilled />,
             children: (
                 <>
-                    <ManageQuantityCheckbox />
-                    {!manageQuantity && <InStockField />}
-                    {!isVariable && manageQuantity && LOCATIONS_ENABLED && (
-                        <>
-                            <LocationField required name={['variations', 0]} />
+                    {!isVariable &&
+                        (LOCATIONS_ENABLED ? (
                             <QuantityTable />
-                        </>
-                    )}
-
-                    {!isVariable && !LOCATIONS_ENABLED && (
-                        <QuantityField name={['variations', 0]} />
-                    )}
+                        ) : (
+                            <QuantityField name={['variations', 0]} />
+                        ))}
 
                     <UnitsOfMeasurementTable />
                 </>

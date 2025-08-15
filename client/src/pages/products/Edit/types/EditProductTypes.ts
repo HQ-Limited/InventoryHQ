@@ -4,9 +4,6 @@ export type Product = {
     description?: string;
     unitsOfMeasurement: UnitOfMeasurement[];
     isVariable: boolean;
-    manageQuantity: boolean;
-    inStock?: boolean;
-    minStock?: number;
     vat?: number;
     attributes?: ProductAttribute[];
     categories?: Category[];
@@ -35,9 +32,10 @@ export type Variation = {
     id: number;
     sku?: string;
     retailPrice: number;
+    minStock?: number;
     description?: string;
     attributes?: VariationAttribute[];
-    inventoryUnits?: InventoryUnit[];
+    inventoryUnits: InventoryUnit[];
     barcode?: string;
 };
 
@@ -72,7 +70,7 @@ export type InventoryUnit = {
     quantity: number;
     variation: Variation;
     package?: Package;
-    location: Location;
+    location?: Location;
 };
 
 export type Package = {
@@ -80,7 +78,7 @@ export type Package = {
     label?: string;
     price: number;
     description?: string;
-    location: Location;
+    location?: Location;
     inventoryUnits: InventoryUnit[];
 };
 
