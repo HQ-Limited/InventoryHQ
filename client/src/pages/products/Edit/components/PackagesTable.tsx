@@ -387,37 +387,36 @@ export default function PackagesTable() {
                                                                     iuIndex: number
                                                                 ) => (
                                                                     <Tag key={iuIndex}>
-                                                                        {unit.variation?.sku ||
+                                                                        {form
+                                                                            .getFieldValue(
+                                                                                'variations'
+                                                                            )
+                                                                            .find(
+                                                                                (v: Variation) =>
+                                                                                    v.id ===
+                                                                                    unit.variation
+                                                                                        .id
+                                                                            )?.sku ||
                                                                             form
-                                                                                .getFieldValue([
-                                                                                    'packages',
-                                                                                    row.name,
-                                                                                    'inventoryUnits',
-                                                                                    row.name,
-                                                                                    'variation',
-                                                                                    'attributes',
-                                                                                ])
-                                                                                .map(
+                                                                                .getFieldValue(
+                                                                                    'variations'
+                                                                                )
+                                                                                .find(
                                                                                     (
-                                                                                        attribute: VariationAttribute
-                                                                                    ) => {
-                                                                                        return (
-                                                                                            <>
-                                                                                                {
-                                                                                                    attribute.attributeName
-                                                                                                }
-                                                                                                {
-                                                                                                    ': '
-                                                                                                }
-                                                                                                {
-                                                                                                    attribute
-                                                                                                        .value
-                                                                                                        .value
-                                                                                                }
-                                                                                            </>
-                                                                                        );
-                                                                                    }
-                                                                                )}{' '}
+                                                                                        v: Variation
+                                                                                    ) =>
+                                                                                        v.id ===
+                                                                                        unit
+                                                                                            .variation
+                                                                                            .id
+                                                                                )
+                                                                                ?.attributes.map(
+                                                                                    (
+                                                                                        a: VariationAttribute
+                                                                                    ) =>
+                                                                                        `${a.attributeName}: ${a.value.value}`
+                                                                                )
+                                                                                .join(', ')}{' '}
                                                                         ({unit.quantity})
                                                                     </Tag>
                                                                 )
