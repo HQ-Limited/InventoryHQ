@@ -49,6 +49,7 @@ export default function LocationField({
                                 id: added,
                                 name: locations!.find((l) => l.id == added)!.name,
                             },
+                            quantity: 0,
                         },
                     ];
                 }
@@ -81,10 +82,11 @@ export default function LocationField({
                 showSearch
                 placeholder="Select location/s"
                 optionFilterProp="label"
-                options={locations!.map((location) => ({
-                    label: location.name,
-                    value: location.id,
-                }))}
+                fieldNames={{
+                    label: 'name',
+                    value: 'id',
+                }}
+                options={locations}
             />
         </Form.Item>
     );

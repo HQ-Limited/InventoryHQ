@@ -47,6 +47,9 @@ namespace InventoryHQ.Services
                 Description = product.Description,
                 Name = product.Name,
                 ManageQuantity = product.ManageQuantity,
+                InStock = product.InStock,
+                MinStock = product.MinStock,
+                Vat = product.Vat,
                 UnitsOfMeasurement = product.UnitsOfMeasurement.OrderBy(x => x.Id).Select(x => new UnitOfMeasurementDto()
                 {
                     Id = x.Id,
@@ -126,11 +129,11 @@ namespace InventoryHQ.Services
                             Description = first.Package.Description,
                             Label = first.Package.Label,
                             Price = first.Package.Price,
-                            Location = first.Location != null ? new LocationDto()
+                            Location = new LocationDto()
                             {
                                 Id = first.Location.Id,
                                 Name = first.Location.Name
-                            } : null,
+                            },
                             InventoryUnits = g.Select(w => new InventoryUnitDto()
                             {
                                 Id = w.Id,
@@ -138,8 +141,19 @@ namespace InventoryHQ.Services
                                 Variation = new VariationDto()
                                 {
                                     Id = w.Variation.Id,
-                                    SKU = w.Variation.SKU
-                                }
+                                    SKU = w.Variation.SKU,
+                                    Attributes = w.Variation.Attributes?.Select(va => new VariationAttributeDto()
+                                    {
+                                        Id = va.Id,
+                                        AttributeId = va.Value.Attribute.Id,
+                                        AttributeName = va.Value.Attribute.Name,
+                                        Value = new AttributeValueDto()
+                                        {
+                                            Id = va.Value.Id,
+                                            Value = va.Value.Value
+                                        }
+                                    })
+                                },
                             })
                         };
                     })

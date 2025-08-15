@@ -1,20 +1,20 @@
 import { Form, Select } from 'antd';
 import { Attribute, ProductAttribute } from '../types/EditProductTypes';
+import { removeAttributeFromVariations } from './shared_functions';
 
 export default function AttributesField({
     attributes,
     fetchValues,
     required = false,
-    removeAttributeFromVariations,
     createNewAttribute,
 }: {
     attributes: Attribute[];
-    removeAttributeFromVariations: (id: number) => void;
     fetchValues: (id: number) => void;
     required?: boolean;
     createNewAttribute: (name: string) => Promise<void>;
 }) {
     const prevAttributes: ProductAttribute[] = Form.useWatch('attributes');
+    const form = Form.useFormInstance();
 
     return (
         <>
@@ -29,6 +29,7 @@ export default function AttributesField({
                 ]}
                 getValueFromEvent={(values: (number | string)[]) => {
                     if (values.length == 0) {
+                        removeAttributeFromVariations(prevAttributes[0].attributeId, form);
                         return [];
                     }
                     // find out which value was added/removed
@@ -40,8 +41,10 @@ export default function AttributesField({
                     );
 
                     if (removed) {
-                        removeAttributeFromVariations(removed.id);
-                        return prevAttributes.filter((a: ProductAttribute) => a.id != removed.id);
+                        removeAttributeFromVariations(removed.attributeId, form);
+                        return prevAttributes.filter(
+                            (a: ProductAttribute) => a.attributeId != removed.attributeId
+                        );
                     }
 
                     if (added) {
@@ -83,10 +86,11 @@ export default function AttributesField({
                     allowClear
                     showSearch
                     optionFilterProp="label"
-                    options={attributes.map((v) => ({
-                        label: v.name!,
-                        value: v.id!,
-                    }))}
+                    options={attributes}
+                    fieldNames={{
+                        label: 'name',
+                        value: 'id',
+                    }}
                 />
             </Form.Item>
         </>

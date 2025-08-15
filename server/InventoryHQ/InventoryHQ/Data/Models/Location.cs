@@ -10,5 +10,7 @@ namespace InventoryHQ.Data.Models
         public required string Name { get; set; }
 
         public string? Description { get; set; }
+
+        public List<InventoryUnit> InventoryUnits { get; set; } = new List<InventoryUnit>();
     }
 }

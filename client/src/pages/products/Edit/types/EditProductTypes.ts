@@ -5,6 +5,9 @@ export type Product = {
     unitsOfMeasurement: UnitOfMeasurement[];
     isVariable: boolean;
     manageQuantity: boolean;
+    inStock?: boolean;
+    minStock?: number;
+    vat?: number;
     attributes?: ProductAttribute[];
     categories?: Category[];
     variations: Variation[];
@@ -69,7 +72,7 @@ export type InventoryUnit = {
     quantity: number;
     variation: Variation;
     package?: Package;
-    location?: Location;
+    location: Location;
 };
 
 export type Package = {
@@ -77,7 +80,7 @@ export type Package = {
     label?: string;
     price: number;
     description?: string;
-    location?: Location;
+    location: Location;
     inventoryUnits: InventoryUnit[];
 };
 

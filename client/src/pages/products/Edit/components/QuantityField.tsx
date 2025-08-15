@@ -5,11 +5,13 @@ import { Context } from '../Context';
 import { useContext } from 'react';
 
 export const QuantityInputField = ({
+    required = true,
     name,
     label = 'Quantity',
     layout = 'vertical',
     props,
 }: {
+    required?: boolean;
     name: (number | string)[];
     label?: string;
     layout?: 'vertical' | 'horizontal';
@@ -22,27 +24,13 @@ export const QuantityInputField = ({
             name={[...name, 'quantity']}
             rules={[
                 {
-                    required: true,
+                    required,
                     message: 'Quantity is required.',
-                },
-                {
-                    validator: (_, value) => {
-                        if (value <= 0) {
-                            return Promise.reject('Quantity must be greater than 0.');
-                        }
-                        return Promise.resolve();
-                    },
                 },
             ]}
             layout={layout}
         >
-            <InputNumber
-                style={{ width: '100%' }}
-                precision={2}
-                step={0.01}
-                min={0.01}
-                inputMode="decimal"
-            />
+            <InputNumber style={{ width: '100%' }} min={0} inputMode="decimal" />
         </Form.Item>
     );
 };

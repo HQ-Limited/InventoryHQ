@@ -12,7 +12,13 @@ import {
     Table,
     Tag,
 } from 'antd';
-import { Location, InventoryUnit, Variation, Package } from '../types/EditProductTypes';
+import {
+    Location,
+    InventoryUnit,
+    Variation,
+    Package,
+    VariationAttribute,
+} from '../types/EditProductTypes';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useContext, useState } from 'react';
 import Column from 'antd/es/table/Column';
@@ -65,8 +71,8 @@ const LocationField = ({
 export default function PackagesTable() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingIndex, setEditingIndex] = useState(undefined);
-    const [createPackageForm] = Form.useForm();
     const form = Form.useFormInstance();
+    const [createPackageForm] = Form.useForm();
     const variations = Form.useWatch('variations');
     const { locations, isVariable } = useContext(Context);
 
@@ -80,6 +86,7 @@ export default function PackagesTable() {
                 variation: {
                     sku: variation.sku,
                     id: variation.id,
+                    attributes: variation.attributes,
                 },
             })),
         });
@@ -102,7 +109,9 @@ export default function PackagesTable() {
                             label: values.label,
                             description: values.description,
                             price: values.price,
-                            inventoryUnits: values.inventoryUnits,
+                            inventoryUnits: values.inventoryUnits.filter(
+                                (iu: InventoryUnit) => iu.quantity > 0
+                            ),
                         });
                     }
                     handleCancel();
@@ -110,6 +119,7 @@ export default function PackagesTable() {
                 return (
                     <>
                         <Modal
+                            width={1000}
                             title="Add Packages"
                             closable={{ 'aria-label': 'Custom Close Button' }}
                             open={isModalOpen}
@@ -169,7 +179,7 @@ export default function PackagesTable() {
                                                 <Column
                                                     dataIndex={'sku'}
                                                     title="SKU"
-                                                    render={(value, row) => {
+                                                    render={(_, row) => {
                                                         return createPackageForm.getFieldValue([
                                                             'inventoryUnits',
                                                             row.name,
@@ -179,11 +189,43 @@ export default function PackagesTable() {
                                                     }}
                                                 />
                                                 <Column
+                                                    dataIndex={'attributes'}
+                                                    title="Attributes"
+                                                    render={(_, row) => {
+                                                        return createPackageForm
+                                                            .getFieldValue([
+                                                                'inventoryUnits',
+                                                                row.name,
+                                                                'variation',
+                                                                'attributes',
+                                                            ])
+                                                            .map(
+                                                                (attribute: VariationAttribute) => {
+                                                                    return (
+                                                                        <Tag key={attribute.id}>
+                                                                            {
+                                                                                attribute.attributeName
+                                                                            }{' '}
+                                                                            ({attribute.value.value}
+                                                                            )
+                                                                        </Tag>
+                                                                    );
+                                                                }
+                                                            );
+                                                    }}
+                                                />
+                                                <Column
                                                     dataIndex="quantity"
                                                     title="Quantity in package"
-                                                    render={(value, row) => {
+                                                    render={(_, row) => {
                                                         return (
                                                             <QuantityInputField
+                                                                required={false}
+                                                                props={{
+                                                                    style: {
+                                                                        marginBottom: 0,
+                                                                    },
+                                                                }}
                                                                 name={[row.name]}
                                                                 label=""
                                                             />
@@ -345,8 +387,38 @@ export default function PackagesTable() {
                                                                     iuIndex: number
                                                                 ) => (
                                                                     <Tag key={iuIndex}>
-                                                                        {unit.variation.sku} (
-                                                                        {unit.quantity})
+                                                                        {unit.variation?.sku ||
+                                                                            form
+                                                                                .getFieldValue([
+                                                                                    'packages',
+                                                                                    row.name,
+                                                                                    'inventoryUnits',
+                                                                                    row.name,
+                                                                                    'variation',
+                                                                                    'attributes',
+                                                                                ])
+                                                                                .map(
+                                                                                    (
+                                                                                        attribute: VariationAttribute
+                                                                                    ) => {
+                                                                                        return (
+                                                                                            <>
+                                                                                                {
+                                                                                                    attribute.attributeName
+                                                                                                }
+                                                                                                {
+                                                                                                    ': '
+                                                                                                }
+                                                                                                {
+                                                                                                    attribute
+                                                                                                        .value
+                                                                                                        .value
+                                                                                                }
+                                                                                            </>
+                                                                                        );
+                                                                                    }
+                                                                                )}{' '}
+                                                                        ({unit.quantity})
                                                                     </Tag>
                                                                 )
                                                             )}
