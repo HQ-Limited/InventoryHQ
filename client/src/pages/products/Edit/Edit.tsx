@@ -30,7 +30,13 @@ import {
     UnorderedListOutlined,
 } from '@ant-design/icons';
 import PriceField from './components/PriceField';
-import { LOCATIONS_ENABLED, PACKAGES_ENABLED, WHOLESALE_ENABLED } from '../../../global';
+import {
+    DEFAULT_UNIT_OF_MEASUREMENT_ABBREVIATION,
+    DEFAULT_VAT,
+    LOCATIONS_ENABLED,
+    PACKAGES_ENABLED,
+    WHOLESALE_ENABLED,
+} from '../../../global';
 import QuantityField from './components/QuantityField';
 import SKUField from './components/SKUField';
 import locationService from '../../../services/locationService';
@@ -39,6 +45,9 @@ import UnitsOfMeasurementTable from './components/UnitsOfMeasurementTable';
 import BarcodeField from './components/BarcodeField';
 import QuantityTable from './components/QuantityTable';
 import { Context } from './Context';
+import VATField from './components/VATField';
+import MinStockField from './components/MinStockField';
+import { generateEmptyInventoryUnits } from './components/shared_functions';
 
 const CreateEdit: React.FC = () => {
     const { message } = App.useApp();
@@ -50,20 +59,26 @@ const CreateEdit: React.FC = () => {
     const [form] = Form.useForm();
     const [locations, setLocations] = useState<Location[]>([]);
 
-    const [values, setValues] = useState<Partial<Product>>({
+    const initialValues: Partial<Product> = {
         categories: [],
         attributes: [],
+        unitsOfMeasurement: [
+            {
+                isBase: true,
+                isDefault: true,
+                abbreviation: DEFAULT_UNIT_OF_MEASUREMENT_ABBREVIATION,
+            },
+        ],
+        vat: DEFAULT_VAT,
         variations: [
-            ...(!LOCATIONS_ENABLED
-                ? [
-                      {
-                          inventoryUnits: [{}],
-                      },
-                  ]
-                : []),
+            {
+                inventoryUnits: generateEmptyInventoryUnits(locations),
+            },
         ],
         isVariable: false,
-    });
+    };
+
+    const [values, setValues] = useState<Partial<Product>>(initialValues);
     const [loading, setLoading] = useState(id ? true : false);
     const [saving, setSaving] = useState(false);
     const [locations, setLocations] = useState<Location[]>([]);
@@ -129,6 +144,17 @@ const CreateEdit: React.FC = () => {
                 form.setFieldsValue(product);
                 setLoading(false);
                 return;
+            } else {
+                const newInventoryUnits = generateEmptyInventoryUnits(locations);
+                const newVariation = values.variations![0];
+                newVariation.inventoryUnits = newInventoryUnits;
+                setValues((prev: Partial<Product>) => {
+                    return {
+                        ...prev,
+                        variations: [newVariation],
+                    };
+                });
+                form.setFieldValue(['variations', 0, 'inventoryUnits'], newInventoryUnits);
             }
 
             const attrs: Attribute[] = await attributeService.getAttributes();
@@ -304,38 +330,38 @@ const CreateEdit: React.FC = () => {
     }
 
     const productMenuItems: TabsProps['items'] = [
-        ...(!isVariable
-            ? [
-                  {
-                      key: 'general',
-                      label: 'General',
-                      icon: <ControlFilled />,
-                      children: (
-                          <>
-                              <PriceField />
+        {
+            key: 'general',
+            label: 'General',
+            icon: <ControlFilled />,
+            children: (
+                <>
+                    <VATField />
+                    {!isVariable && (
+                        <>
+                            <PriceField />
 
-                              {WHOLESALE_ENABLED && (
-                                  <PriceField
-                                      name={[0, 'wholesalePrice']}
-                                      label="Wholesale price"
-                                  />
-                              )}
+                            {WHOLESALE_ENABLED && (
+                                <PriceField name={[0, 'wholesalePrice']} label="Wholesale price" />
+                            )}
 
-                              <SKUField />
+                            <SKUField />
 
-                              <BarcodeField />
-                          </>
-                      ),
-                      forceRender: true,
-                  },
-              ]
-            : []),
+                            <BarcodeField />
+                        </>
+                    )}
+                </>
+            ),
+            forceRender: true,
+        },
         {
             key: 'inventory',
             label: 'Inventory',
             icon: <TruckFilled />,
             children: (
                 <>
+                    {!isVariable && <MinStockField />}
+
                     {!isVariable &&
                         (LOCATIONS_ENABLED ? (
                             <QuantityTable />
@@ -401,9 +427,6 @@ const CreateEdit: React.FC = () => {
                       key: 'packages',
                       label: 'Packages',
                       icon: <AppstoreOutlined />,
-                      onClick: () => {
-                          console.log('test');
-                      },
                       children: <PackagesTable />,
                       forceRender: true,
                   },

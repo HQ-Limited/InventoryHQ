@@ -25,7 +25,7 @@ export const QuantityInputField = ({
             ]}
             layout={layout}
         >
-            <InputNumber style={{ width: '100%' }} min={0} inputMode="decimal" />
+            <InputNumber style={{ width: '100%' }} min={0} inputMode="decimal" controls={false} />
         </Form.Item>
     );
 };

@@ -220,6 +220,7 @@ namespace InventoryHQ.Data
                 Description = "Comfortable t-shirt",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
+                Vat = 20,
                 UnitsOfMeasurement = new List<UnitOfMeasurement>
                 {
                     new UnitOfMeasurement
@@ -310,6 +311,7 @@ namespace InventoryHQ.Data
                 Description = "This product contains 2 packages with the following data inside: Package 1 - 10$ - 10 pieces inside, Package 2 - 5$ - 5 pieces inside",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
+                Vat = 20,
                 UnitsOfMeasurement = new List<UnitOfMeasurement>
                 {
                     new UnitOfMeasurement
@@ -373,6 +375,7 @@ namespace InventoryHQ.Data
                 Description = "This product contains 2 packages with the following data inside: Package 1 - 10$ - 10 pieces of variation 1 and 10 pieces of variation 2, Package 2 - 5$ - 10 pieces of variation 1 and 5 pieces of variation 2",
                 Categories = new List<Category> { categories[0] },
                 isVariable = true,
+                Vat = 20,
                 UnitsOfMeasurement = new List<UnitOfMeasurement>
                 {
                     new UnitOfMeasurement

@@ -7,7 +7,7 @@ import {
     VariationAttribute,
 } from '../types/EditProductTypes';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import Column from 'antd/es/table/Column';
 import PriceField from './PriceField';
 import QuantityField from './QuantityField';
@@ -15,6 +15,9 @@ import { LOCATIONS_ENABLED } from '../../../../global';
 import SKUField from './SKUField';
 import BarcodeField from './BarcodeField';
 import AddButtonTable from '../../../../components/AddButtonTable';
+import MinStockField from './MinStockField';
+import { generateEmptyInventoryUnits } from './shared_functions';
+import { Context } from '../Context';
 
 export default function VariationsTable() {
     const [editingIndex, setEditingIndex] = useState(undefined);
@@ -22,6 +25,8 @@ export default function VariationsTable() {
     const attributes = Form.useWatch('attributes') || [];
     const isDisabled =
         attributes.length === 0 || !attributes.find((a: ProductAttribute) => a.isVariational);
+
+    const { locations } = useContext(Context);
 
     function onRemove(name: number, remove: (name: number) => void) {
         // remove from packages
@@ -143,18 +148,9 @@ export default function VariationsTable() {
                                             />
                                         </>
                                     );
-                                    if (editingIndex !== row.name)
-                                        return form.getFieldValue([
-                                            'variations',
-                                            row.name,
-                                            'retailPrice',
-                                        ]);
-
-                                    return;
                                 }}
                             />
 
-                            {/* TODO: Decide if all products should be in one column or every attribute should be in a separate column */}
                             <Column
                                 dataIndex={'attributes'}
                                 title={'Attributes'}
@@ -200,7 +196,7 @@ export default function VariationsTable() {
                                                             return (
                                                                 <Form.Item
                                                                     key={attrKey}
-                                                                    name={[attrField.name]}
+                                                                    name={[attrField.name, 'value']}
                                                                     hidden={
                                                                         editingIndex !== row.name
                                                                     }
@@ -210,25 +206,29 @@ export default function VariationsTable() {
                                                                     getValueFromEvent={(
                                                                         value: number
                                                                     ) => {
-                                                                        return {
-                                                                            ...variationAttribute,
-                                                                            value: attributeValues.find(
-                                                                                (
-                                                                                    v: AttributeValue
-                                                                                ) => v.id === value
-                                                                            ),
-                                                                        };
-                                                                    }}
-                                                                    getValueProps={(value) => {
-                                                                        return {
-                                                                            value: value.value.id,
-                                                                        };
+                                                                        return attributeValues.find(
+                                                                            (v: AttributeValue) =>
+                                                                                v.id === value
+                                                                        );
                                                                     }}
                                                                     rules={[
                                                                         {
                                                                             required: true,
+                                                                            validator: (
+                                                                                _,
+                                                                                record
+                                                                            ) => {
+                                                                                if (!record.value)
+                                                                                    return Promise.reject(
+                                                                                        new Error(
+                                                                                            'Value is required.'
+                                                                                        )
+                                                                                    );
+
+                                                                                return Promise.resolve();
+                                                                            },
                                                                             message:
-                                                                                'Value is required.',
+                                                                                'Attribute value is required.',
                                                                         },
                                                                     ]}
                                                                     layout="horizontal"
@@ -255,6 +255,34 @@ export default function VariationsTable() {
                             />
 
                             <Column
+                                dataIndex={'minStock'}
+                                title="Min. Stock"
+                                render={(_, row) => {
+                                    return (
+                                        <>
+                                            {editingIndex !== row.name &&
+                                                form.getFieldValue([
+                                                    'variations',
+                                                    row.name,
+                                                    'minStock',
+                                                ])}
+
+                                            <MinStockField
+                                                label=""
+                                                props={{
+                                                    style: {
+                                                        marginBottom: 0,
+                                                    },
+                                                    hidden: editingIndex !== row.name,
+                                                }}
+                                                name={[row.name]}
+                                            />
+                                        </>
+                                    );
+                                }}
+                            />
+
+                            <Column
                                 dataIndex={'inventoryUnits'}
                                 title="Quantity"
                                 render={(_, row) => {
@@ -268,14 +296,19 @@ export default function VariationsTable() {
                                                               row.name,
                                                               'inventoryUnits',
                                                           ])
-                                                          .map((unit: InventoryUnit) => {
-                                                              return (
-                                                                  <Tag key={unit.id}>
-                                                                      {unit.location!.name} (
-                                                                      {unit.quantity})
-                                                                  </Tag>
-                                                              );
-                                                          })
+                                                          .map(
+                                                              (
+                                                                  unit: InventoryUnit,
+                                                                  index: number
+                                                              ) => {
+                                                                  return (
+                                                                      <Tag key={index}>
+                                                                          {unit.location!.name} (
+                                                                          {unit.quantity})
+                                                                      </Tag>
+                                                                  );
+                                                              }
+                                                          )
                                                     : form.getFieldValue([
                                                           'variations',
                                                           row.name,
@@ -351,7 +384,7 @@ export default function VariationsTable() {
                                                     attributeName: a.name,
                                                     value: {},
                                                 })),
-                                            inventoryUnits: [],
+                                            inventoryUnits: generateEmptyInventoryUnits(locations),
                                         })
                                     }
                                 />
