@@ -41,6 +41,7 @@ import BarcodeField from './components/BarcodeField';
 import QuantityTable from './components/QuantityTable';
 import { Context } from './Context';
 import LocationField from './components/LocationField';
+import InStockField from './components/InStockField';
 
 const CreateEdit: React.FC = () => {
     const { message } = App.useApp();
@@ -111,10 +112,8 @@ const CreateEdit: React.FC = () => {
             const categories = await categoryService.getCategories();
             setCategories(categories);
 
-            if (LOCATIONS_ENABLED) {
-                const locations = await locationService.getLocations();
-                setLocations(locations);
-            }
+            const locations = await locationService.getLocations();
+            setLocations(locations);
 
             let product: Product | undefined;
             if (id) {
@@ -191,6 +190,17 @@ const CreateEdit: React.FC = () => {
     }; */
 
     const onFinish: FormProps<Product>['onFinish'] = async (values) => {
+        if (!LOCATIONS_ENABLED) {
+            values.variations.forEach((variation) => {
+                variation.inventoryUnits?.forEach((inventoryUnit) => {
+                    inventoryUnit.location = locations[0];
+                });
+            });
+
+            values.packages?.forEach((pkg) => {
+                pkg.location = locations[0];
+            });
+        }
         return console.log(values);
         setSaving(true);
 
@@ -216,40 +226,6 @@ const CreateEdit: React.FC = () => {
         message.error(errorInfo.errorFields[0].errors[0]);
         console.log('Failed:', errorInfo);
     };
-
-    function removeAttributeFromVariations(id: number) {
-        // Remove attribute from all variations
-        const variations = form.getFieldValue('variations') || [];
-        if (variations.length > 0) {
-            const updatedVariations = variations.map((variation: Variation) => {
-                const attrs = (variation.attributes || []).filter(
-                    (a: VariationAttribute) => a.id !== id
-                );
-                return { ...variation, attributes: attrs };
-            });
-            form.setFieldValue('variations', updatedVariations);
-        }
-    }
-
-    function addAttributeToVariations(id: number) {
-        // Add to all variations with empty value
-        const variations = form.getFieldValue('variations') || [];
-        const attribute = attributes.find((a) => a.id === id)!;
-        if (variations.length > 0) {
-            const updatedVariations = variations.map((variation: Variation) => ({
-                ...variation,
-                attributes: [
-                    ...(variation.attributes || []),
-                    {
-                        id: attribute.id,
-                        name: attribute.name,
-                        value: {},
-                    },
-                ],
-            }));
-            form.setFieldValue('variations', updatedVariations);
-        }
-    }
 
     async function createNewCategory(name: string) {
         try {
@@ -364,6 +340,7 @@ const CreateEdit: React.FC = () => {
             children: (
                 <>
                     <ManageQuantityCheckbox />
+                    {!manageQuantity && <InStockField />}
                     {!isVariable && manageQuantity && LOCATIONS_ENABLED && (
                         <>
                             <LocationField required name={['variations', 0]} />
@@ -390,7 +367,6 @@ const CreateEdit: React.FC = () => {
                         attributes={attributes}
                         createNewAttribute={createNewAttribute}
                         fetchValues={fetchAttributeValues}
-                        removeAttributeFromVariations={removeAttributeFromVariations}
                         required={isVariable}
                     />
                     <Form.List name="attributes">
@@ -403,12 +379,8 @@ const CreateEdit: React.FC = () => {
                                                 key={field.key}
                                                 name={attributeKey}
                                                 attributes={attributes}
-                                                onRemove={remove}
+                                                remove={remove}
                                                 createNewAttributeValue={createNewAttributeValue}
-                                                removeAttributeFromVariations={
-                                                    removeAttributeFromVariations
-                                                }
-                                                addAttributeToVariations={addAttributeToVariations}
                                                 showVariationCheckbox={isVariable}
                                             />
                                         </>
@@ -438,6 +410,9 @@ const CreateEdit: React.FC = () => {
                       key: 'packages',
                       label: 'Packages',
                       icon: <AppstoreOutlined />,
+                      onClick: () => {
+                          console.log('test');
+                      },
                       children: <PackagesTable />,
                       forceRender: true,
                   },

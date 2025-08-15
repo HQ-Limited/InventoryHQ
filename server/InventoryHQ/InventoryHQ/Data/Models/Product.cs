@@ -14,6 +14,10 @@ namespace InventoryHQ.Data.Models
 
         public bool? InStock { get; set; }
 
+        public float? MinStock { get; set; }
+
+        public int? Vat { get; set; }
+
         [Required]
         public required List<Variation> Variations { get; set; }
 

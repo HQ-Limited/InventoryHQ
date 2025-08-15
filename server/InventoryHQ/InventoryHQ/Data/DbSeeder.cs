@@ -96,6 +96,8 @@ namespace InventoryHQ.Data
                 Categories = new List<Category> { categories[0] },
                 isVariable = true,
                 ManageQuantity = true,
+                MinStock = 20,
+                Vat = 20,
                 UnitsOfMeasurement = new List<UnitOfMeasurement>
                 {
                     new UnitOfMeasurement
@@ -280,6 +282,8 @@ namespace InventoryHQ.Data
                 Description = "Comfortable t-shirt",
                 Categories = new List<Category> { categories[1] },
                 isVariable = false,
+                InStock = true,
+                Vat = 20,
                 ManageQuantity = false,
                 UnitsOfMeasurement = new List<UnitOfMeasurement>
                 {
@@ -301,6 +305,7 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 Quantity = 0,
+                                LocationId = dbLocations[0].Id,
                             },
                         }
                     }
@@ -436,12 +441,14 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 Quantity = 10,
-                                PackageId = package3.Id
+                                PackageId = package3.Id,
+                                LocationId = dbLocations[0].Id,
                             },
                             new InventoryUnit
                             {
                                 Quantity = 10,
-                                PackageId = package4.Id
+                                PackageId = package4.Id,
+                                LocationId = dbLocations[0].Id,
                             },
                         }
                     },
@@ -461,12 +468,14 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 Quantity = 10,
-                                PackageId = package3.Id
+                                PackageId = package3.Id,
+                                LocationId = dbLocations[0].Id,
                             },
                             new InventoryUnit
                             {
                                 Quantity = 5,
-                                PackageId = package4.Id
+                                PackageId = package4.Id,
+                                LocationId = dbLocations[0].Id,
                             },
                         }
                     },

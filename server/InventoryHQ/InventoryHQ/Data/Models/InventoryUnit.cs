@@ -14,8 +14,8 @@ namespace InventoryHQ.Data.Models
 
         public Variation Variation { get; set; }
 
-        public int? LocationId { get; set; }
+        public int LocationId { get; set; }
 
-        public Location? Location { get; set; }
+        public Location Location { get; set; }
     }
 }
