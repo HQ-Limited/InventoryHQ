@@ -3,6 +3,7 @@ using System;
 using InventoryHQ.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryHQ.Migrations
 {
     [DbContext(typeof(InventoryHQDbContext))]
-    partial class InventoryHQDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250814222313_ForceLocationIU2")]
+    partial class ForceLocationIU2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -508,7 +511,7 @@ namespace InventoryHQ.Migrations
             modelBuilder.Entity("InventoryHQ.Data.Models.InventoryUnit", b =>
                 {
                     b.HasOne("InventoryHQ.Data.Models.Location", "Location")
-                        .WithMany("InventoryUnits")
+                        .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -614,11 +617,6 @@ namespace InventoryHQ.Migrations
             modelBuilder.Entity("InventoryHQ.Data.Models.Category", b =>
                 {
                     b.Navigation("Children");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.Location", b =>
-                {
-                    b.Navigation("InventoryUnits");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Package", b =>

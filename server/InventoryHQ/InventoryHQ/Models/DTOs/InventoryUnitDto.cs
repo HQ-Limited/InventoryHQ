@@ -10,6 +10,6 @@ namespace InventoryHQ.Models.DTOs
 
         public PackageDto? Package { get; set; }
 
-        public LocationDto? Location { get; set; }
+        public LocationDto Location { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using InventoryHQ.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryHQ.Migrations
 {
     [DbContext(typeof(InventoryHQDbContext))]
-    partial class InventoryHQDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250814221321_VATandMinStock")]
+    partial class VATandMinStock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,7 +161,7 @@ namespace InventoryHQ.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("LocationId")
+                    b.Property<int?>("LocationId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("PackageId")
@@ -508,10 +511,8 @@ namespace InventoryHQ.Migrations
             modelBuilder.Entity("InventoryHQ.Data.Models.InventoryUnit", b =>
                 {
                     b.HasOne("InventoryHQ.Data.Models.Location", "Location")
-                        .WithMany("InventoryUnits")
-                        .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("LocationId");
 
                     b.HasOne("InventoryHQ.Data.Models.Package", "Package")
                         .WithMany("InventoryUnit")
@@ -614,11 +615,6 @@ namespace InventoryHQ.Migrations
             modelBuilder.Entity("InventoryHQ.Data.Models.Category", b =>
                 {
                     b.Navigation("Children");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.Location", b =>
-                {
-                    b.Navigation("InventoryUnits");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Package", b =>

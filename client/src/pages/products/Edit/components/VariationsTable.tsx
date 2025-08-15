@@ -1,39 +1,20 @@
 import { Button, Empty, Form, FormItemProps, Select, Space, Table, Tag, Tooltip } from 'antd';
-import { InventoryUnit, ProductAttribute, VariationAttribute } from '../types/EditProductTypes';
+import {
+    AttributeValue,
+    InventoryUnit,
+    Package,
+    ProductAttribute,
+    VariationAttribute,
+} from '../types/EditProductTypes';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import Column from 'antd/es/table/Column';
 import PriceField from './PriceField';
 import QuantityField from './QuantityField';
 import { LOCATIONS_ENABLED } from '../../../../global';
-import { DefaultOptionType } from 'antd/es/select';
 import SKUField from './SKUField';
 import BarcodeField from './BarcodeField';
 import AddButtonTable from '../../../../components/AddButtonTable';
-
-function SelectField({
-    name,
-    options,
-    attributeName,
-    props,
-}: {
-    name: (number | string)[];
-    options: DefaultOptionType[];
-    attributeName: string;
-    props?: FormItemProps;
-}) {
-    return (
-        <Form.Item
-            {...props}
-            name={[...name, 'value']}
-            label={attributeName}
-            rules={[{ required: true, message: 'Value is required.' }]}
-            layout="horizontal"
-        >
-            <Select placeholder="Select value" optionFilterProp="label" options={options} />
-        </Form.Item>
-    );
-}
 
 export default function VariationsTable() {
     const [editingIndex, setEditingIndex] = useState(undefined);
@@ -42,6 +23,19 @@ export default function VariationsTable() {
     const manageQuantity = Form.useWatch('manageQuantity');
     const isDisabled =
         attributes.length === 0 || !attributes.find((a: ProductAttribute) => a.isVariational);
+
+    function onRemove(name: number, remove: (name: number) => void) {
+        // remove from packages
+        const variation = form.getFieldValue(['variations', name]);
+        const packages = form.getFieldValue('packages');
+        packages.forEach((pkg: Package) => {
+            pkg.inventoryUnits = pkg.inventoryUnits.filter(
+                (iu: InventoryUnit) => iu.variation.id !== variation.id
+            );
+        });
+        form.setFieldValue('packages', packages);
+        remove(name);
+    }
 
     return (
         <Form.List
@@ -195,28 +189,62 @@ export default function VariationsTable() {
                                                                     attrField.name,
                                                                 ]);
 
-                                                            const options = form
-                                                                .getFieldValue('attributes')
-                                                                .find(
-                                                                    (a: ProductAttribute) =>
-                                                                        a.attributeId ===
-                                                                        variationAttribute.attributeId
-                                                                )?.values;
+                                                            const attributeValues =
+                                                                form
+                                                                    .getFieldValue('attributes')
+                                                                    .find(
+                                                                        (a: ProductAttribute) =>
+                                                                            a.attributeId ===
+                                                                            variationAttribute.attributeId
+                                                                    )?.values || [];
 
                                                             return (
-                                                                <SelectField
-                                                                    props={{
-                                                                        hidden:
-                                                                            editingIndex !==
-                                                                            row.name,
-                                                                    }}
+                                                                <Form.Item
                                                                     key={attrKey}
                                                                     name={[attrField.name]}
-                                                                    options={options || []}
-                                                                    attributeName={
+                                                                    hidden={
+                                                                        editingIndex !== row.name
+                                                                    }
+                                                                    label={
                                                                         variationAttribute.attributeName
                                                                     }
-                                                                />
+                                                                    getValueFromEvent={(
+                                                                        value: number
+                                                                    ) => {
+                                                                        return {
+                                                                            ...variationAttribute,
+                                                                            value: attributeValues.find(
+                                                                                (
+                                                                                    v: AttributeValue
+                                                                                ) => v.id === value
+                                                                            ),
+                                                                        };
+                                                                    }}
+                                                                    getValueProps={(value) => {
+                                                                        return {
+                                                                            value: value.value.id,
+                                                                        };
+                                                                    }}
+                                                                    rules={[
+                                                                        {
+                                                                            required: true,
+                                                                            message:
+                                                                                'Value is required.',
+                                                                        },
+                                                                    ]}
+                                                                    layout="horizontal"
+                                                                >
+                                                                    <Select
+                                                                        showSearch
+                                                                        placeholder="Select value"
+                                                                        optionFilterProp="label"
+                                                                        options={attributeValues}
+                                                                        fieldNames={{
+                                                                            label: 'value',
+                                                                            value: 'id',
+                                                                        }}
+                                                                    />
+                                                                </Form.Item>
                                                             );
                                                         })}
                                                     </>
@@ -226,54 +254,6 @@ export default function VariationsTable() {
                                     );
                                 }}
                             />
-
-                            {attributes
-                                .filter((a: ProductAttribute) => a.isVariational)
-                                .map((attribute: ProductAttribute) => (
-                                    <Column
-                                        dataIndex={attribute.name}
-                                        title={attribute.name}
-                                        render={(_, row) => {
-                                            const variationAttributes = form.getFieldValue([
-                                                'variations',
-                                                row.name,
-                                                'attributes',
-                                            ]);
-
-                                            const attributeValue = variationAttributes.find(
-                                                (a: VariationAttribute) =>
-                                                    a.attributeId === attribute.attributeId
-                                            ).value.value;
-
-                                            return (
-                                                <>
-                                                    {editingIndex !== row.name && attributeValue}
-
-                                                    <SelectField
-                                                        name={[
-                                                            row.name,
-                                                            'attributes',
-                                                            variationAttributes.findIndex(
-                                                                (a: VariationAttribute) =>
-                                                                    a.attributeId ===
-                                                                    attribute.attributeId
-                                                            ),
-                                                        ]}
-                                                        options={attribute.values.map((v) => ({
-                                                            label: v.value,
-                                                            value: v.id,
-                                                        }))}
-                                                        attributeName={''}
-                                                        props={{
-                                                            style: { marginBottom: 0 },
-                                                            hidden: editingIndex !== row.name,
-                                                        }}
-                                                    />
-                                                </>
-                                            );
-                                        }}
-                                    />
-                                ))}
 
                             {(manageQuantity || LOCATIONS_ENABLED) && (
                                 <Column
@@ -354,7 +334,7 @@ export default function VariationsTable() {
                                                 shape={'circle'}
                                                 variant="solid"
                                                 color="danger"
-                                                onClick={() => remove(row.name)}
+                                                onClick={() => onRemove(row.name, remove)}
                                             />
                                         </Space>
                                     );

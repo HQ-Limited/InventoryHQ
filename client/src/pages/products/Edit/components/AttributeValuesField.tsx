@@ -2,35 +2,70 @@ import { Button, Card, Checkbox, Form, Select, Tooltip } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import {
     Attribute,
-    AttributeValue,
     ProductAttribute,
     Variation,
+    AttributeValue,
     VariationAttribute,
 } from '../types/EditProductTypes';
+import { useContext } from 'react';
+import { Context } from '../Context';
+import { removeAttributeFromVariations } from './shared_functions';
 
 export default function AttributeValuesField({
     name,
     attributes,
-    onRemove,
+    remove,
     showVariationCheckbox = false,
-    removeAttributeFromVariations,
-    addAttributeToVariations,
     createNewAttributeValue,
 }: {
     name: number;
     attributes: Attribute[];
-    onRemove: (id: number) => void;
+    remove: (id: number) => void;
     showVariationCheckbox?: boolean;
-    removeAttributeFromVariations: (id: number) => void;
-    addAttributeToVariations: (id: number) => void;
     createNewAttributeValue: ({ id, value }: { id: number; value: string }) => Promise<void>;
 }) {
+    const { isVariable } = useContext(Context);
     const form = Form.useFormInstance();
 
     const currentAttribute: ProductAttribute = form.getFieldValue('attributes')[name];
     const availableValues =
         attributes.find((x) => x.id == currentAttribute.attributeId)?.values || [];
-    const prevValues: VariationAttribute[] = Form.useWatch(['attributes', name, 'values']);
+    const prevValues: AttributeValue[] = Form.useWatch(['attributes', name, 'values']);
+
+    function addAttributeToVariations(id: number) {
+        // Add to all variations with empty value
+        const variations = form.getFieldValue('variations') || [];
+        const attribute = attributes.find((a) => a.id === id)!;
+
+        if (variations.length > 0) {
+            const updatedVariations = variations.map((variation: Variation) => ({
+                ...variation,
+                attributes: [
+                    ...(variation.attributes || []),
+                    {
+                        attributeName: attribute.name,
+                        attributeId: attribute.id,
+                        value: {},
+                    },
+                ],
+            }));
+            form.setFieldValue('variations', updatedVariations);
+        }
+    }
+
+    function removeAttributeValuesFromVariations(attributeId: number, valueId: number) {
+        const variations = form.getFieldValue('variations') || [];
+        const updatedVariations = variations.map((variation: Variation) => ({
+            ...variation,
+            attributes: (variation.attributes || []).map((a: VariationAttribute) => {
+                if (a.attributeId === attributeId && a.value.id === valueId) {
+                    return { ...a, value: {} };
+                }
+                return a;
+            }),
+        }));
+        form.setFieldValue('variations', updatedVariations);
+    }
 
     return (
         <Card
@@ -44,18 +79,9 @@ export default function AttributeValuesField({
                         shape="circle"
                         icon={<CloseOutlined />}
                         onClick={() => {
-                            // Remove attribute from all variations
-                            const variations = form.getFieldValue('variations') || [];
-                            if (variations.length > 0) {
-                                const updatedVariations = variations.map((variation: Variation) => {
-                                    const attrs = (variation.attributes || []).filter(
-                                        (a: VariationAttribute) => a.id !== currentAttribute?.id
-                                    );
-                                    return { ...variation, attributes: attrs };
-                                });
-                                form.setFieldValue('variations', updatedVariations);
-                            }
-                            onRemove(name);
+                            if (isVariable)
+                                removeAttributeFromVariations(currentAttribute.attributeId, form);
+                            remove(name);
                         }}
                     />
                 </Tooltip>
@@ -68,6 +94,11 @@ export default function AttributeValuesField({
                 rules={[{ required: true, message: 'At least one value is required.' }]}
                 getValueFromEvent={(values: (number | string)[]) => {
                     if (values.length == 0) {
+                        if (isVariable)
+                            removeAttributeValuesFromVariations(
+                                currentAttribute.attributeId,
+                                prevValues[0].id
+                            );
                         return [];
                     }
                     // find out which value was added/removed
@@ -75,7 +106,13 @@ export default function AttributeValuesField({
                     const removed = prevValues.find((a) => !values.find((v) => v == a.id));
 
                     if (removed) {
-                        return prevValues.filter((a: VariationAttribute) => a.id != removed.id);
+                        if (isVariable)
+                            removeAttributeValuesFromVariations(
+                                currentAttribute.attributeId,
+                                removed.id
+                            );
+
+                        return prevValues.filter((a: AttributeValue) => a.id != removed.id);
                     }
 
                     const attribute = attributes.find(
@@ -114,10 +151,11 @@ export default function AttributeValuesField({
                     showSearch
                     placeholder="Select value/s"
                     optionFilterProp="label"
-                    options={availableValues.map((v: AttributeValue) => ({
-                        label: v.value,
-                        value: v.id,
-                    }))}
+                    options={availableValues}
+                    fieldNames={{
+                        label: 'value',
+                        value: 'id',
+                    }}
                 />
             </Form.Item>
             {showVariationCheckbox && (
@@ -126,12 +164,12 @@ export default function AttributeValuesField({
                         onChange={(e) => {
                             const isChecked = e.target.checked;
                             const attributes = form.getFieldValue('attributes');
-                            const attribute = attributes[name];
+                            const attribute: ProductAttribute = attributes[name];
 
                             if (isChecked) {
-                                addAttributeToVariations(attribute.id);
+                                addAttributeToVariations(attribute.attributeId);
                             } else {
-                                removeAttributeFromVariations(attribute.id);
+                                removeAttributeFromVariations(attribute.attributeId, form);
                             }
                         }}
                     >
