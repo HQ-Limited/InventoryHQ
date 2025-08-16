@@ -253,6 +253,7 @@ export default function PackagesTable() {
                         </Modal>
 
                         <Table
+                            virtual
                             dataSource={packages}
                             pagination={false}
                             size="small"
