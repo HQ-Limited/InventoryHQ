@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { FieldData } from 'rc-field-form/lib/interface';
 import { App, Button, Form, FormProps, Select, Space, Spin, Tabs, TabsProps, Tooltip } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import productService from '../../../services/productService';
@@ -9,7 +10,6 @@ import {
     ProductAttribute,
     Category,
     Variation,
-    VariationAttribute,
     Location,
     AttributeValue,
     Attribute,
@@ -119,6 +119,9 @@ const CreateEdit: React.FC = () => {
             : await attributeService.getAttributes();
         setAttributes(attrs);
     };
+    const [variationAttributeErrors, setVariationAttributeErrors] = useState<
+        { index: number; errorFieldNames: (string | number)[][] }[]
+    >([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -212,18 +215,64 @@ const CreateEdit: React.FC = () => {
         form.setFieldsValue({ variations });
     }; */
 
-    const onFinish: FormProps<Product>['onFinish'] = async (values) => {
-        if (!LOCATIONS_ENABLED) {
-            values.variations.forEach((variation) => {
-                variation.inventoryUnits?.forEach((inventoryUnit) => {
-                    inventoryUnit.location = locations[0];
-                });
-            });
+    function checkForDuplicateValues(variations: Variation[]) {
+        const seen = new Map();
+        const duplicates: { duplicateOf: Variation; index: number; variation: Variation }[] = [];
 
-            values.packages?.forEach((pkg) => {
-                pkg.location = locations[0];
-            });
+        for (const [index, variation] of variations.entries()) {
+            // Normalize attributes into sorted signature string
+            const signature = variation
+                .attributes!.map((attr) => `${attr.attributeId}:${attr.value.id}`)
+                .sort() // order doesn't matter
+                .join('|');
+
+            if (seen.has(signature)) {
+                duplicates.push({
+                    duplicateOf: seen.get(signature),
+                    index,
+                    variation,
+                });
+            } else {
+                seen.set(signature, variation);
+            }
         }
+
+        return duplicates;
+    }
+
+    const onFinish: FormProps<Product>['onFinish'] = async (values) => {
+        if (isVariable) {
+            form.setFields([]);
+            const duplicates = checkForDuplicateValues(values.variations);
+
+            if (duplicates.length > 0) {
+                const errors = duplicates.map((duplicate) => {
+                    return duplicate.variation.attributes!.map((_, index) => {
+                        return {
+                            name: ['variations', duplicate.index, 'attributes', index, 'value'],
+                            errors: ['Duplicate value'],
+                        };
+                    });
+                });
+                form.setFields(errors.flat() as FieldData[]);
+
+                setVariationAttributeErrors(
+                    duplicates.map((duplicate) => ({
+                        index: duplicate.index,
+                        errorFieldNames: duplicate.variation.attributes!.map((_, index) => [
+                            'variations',
+                            duplicate.index,
+                            'attributes',
+                            index,
+                            'value',
+                        ]),
+                    }))
+                );
+                message.error('Every variation must have an unique attributes values combinations');
+                return;
+            }
+        }
+
         return console.log(values);
         setSaving(true);
 
@@ -435,7 +484,14 @@ const CreateEdit: React.FC = () => {
     ];
 
     return (
-        <Context.Provider value={{ locations, isVariable }}>
+        <Context.Provider
+            value={{
+                locations,
+                isVariable,
+                variationAttributeErrors,
+                setVariationAttributeErrors,
+            }}
+        >
             <Form
                 form={form}
                 style={{ padding: '20px' }}
