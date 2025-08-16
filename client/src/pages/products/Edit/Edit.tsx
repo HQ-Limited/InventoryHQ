@@ -185,36 +185,6 @@ const CreateEdit: React.FC = () => {
         fetchData();
     };
 
-    // TODO: Think of a way to make variations generation displayed to the user
-    /* const onGenerateVariations = () => {
-        const variationalAttributes = values.attributes!.filter((attr) => attr.isVariational);
-
-        const valueGroups = variationalAttributes.map((attr) =>
-            attr.values!.map((val) => ({ id: attr.id, value: val }))
-        );
-
-        const combinations = valueGroups.reduce(
-            (acc, group) => acc.flatMap((combo) => group.map((item) => [...combo, item])),
-            [[]] as VariationAttribute[][]
-        );
-
-        const variations: Variation[] = combinations.map((combo) => {
-            return {
-                attributes: combo,
-            };
-        });
-
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                variations,
-            };
-            return newValues;
-        });
-
-        form.setFieldsValue({ variations });
-    }; */
-
     function checkForDuplicateValues(variations: Variation[]) {
         const seen = new Map();
         const duplicates: { duplicateOf: Variation; index: number; variation: Variation }[] = [];

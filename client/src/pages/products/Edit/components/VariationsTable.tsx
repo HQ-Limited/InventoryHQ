@@ -1,4 +1,4 @@
-import { Button, Empty, Form, Select, Space, Table, Tag, Tooltip } from 'antd';
+import { Button, Empty, Form, Menu, Popconfirm, Select, Space, Table, Tag, Tooltip } from 'antd';
 import {
     AttributeValue,
     InventoryUnit,
@@ -19,11 +19,42 @@ import MinStockField from './MinStockField';
 import { generateEmptyInventoryUnits } from './shared_functions';
 import { Context } from '../Context';
 
+function generateAttributesCombinations(
+    attributes: ProductAttribute[]
+): Partial<VariationAttribute>[][] {
+    const variational = attributes.filter((attr) => attr.isVariational);
+
+    const valueSets = variational.map((attr) => attr.values.map((val) => ({ attr, val })));
+
+    // Iterative cartesian product (faster than reduce + flatMap)
+    let combos: { attr: ProductAttribute; val: AttributeValue }[][] = [[]];
+
+    for (const set of valueSets) {
+        const newCombos: typeof combos = [];
+        for (const combo of combos) {
+            for (const item of set) {
+                // push instead of spread
+                newCombos.push([...combo, item]);
+            }
+        }
+        combos = newCombos;
+    }
+
+    // Transform into your VariationAttribute shape
+    return combos.map((combo) =>
+        combo.map(({ attr, val }) => ({
+            attributeName: attr.name,
+            attributeId: attr.attributeId,
+            value: val,
+        }))
+    );
+}
+
 export default function VariationsTable() {
     const [editingIndex, setEditingIndex] = useState(undefined);
     const form = Form.useFormInstance();
     const attributes = Form.useWatch('attributes') || [];
-    const isDisabled =
+    const isAddBtnDisabled =
         attributes.length === 0 || !attributes.find((a: ProductAttribute) => a.isVariational);
 
     const { locations, variationAttributeErrors, setVariationAttributeErrors } =
@@ -42,6 +73,30 @@ export default function VariationsTable() {
         remove(name);
     }
 
+    const [open, setOpen] = useState(false);
+    function generateVariations() {
+        const combinations = generateAttributesCombinations(attributes);
+        const newVariations = combinations.map((combination) => {
+            return {
+                attributes: combination,
+                inventoryUnits: generateEmptyInventoryUnits(locations),
+            };
+        });
+        form.setFieldValue('variations', newVariations);
+    }
+
+    const handleMenuOpenChange = (newOpen: boolean) => {
+        if (!newOpen) {
+            setOpen(newOpen);
+            return;
+        }
+        if (form.getFieldValue('variations').length === 0) {
+            generateVariations();
+        } else {
+            setOpen(newOpen);
+        }
+    };
+
     return (
         <Form.List
             name="variations"
@@ -59,7 +114,39 @@ export default function VariationsTable() {
             {(variations, { add, remove }) => {
                 return (
                     <>
+                        <Menu
+                            mode="horizontal"
+                            items={[
+                                {
+                                    key: 'generate-combinations',
+                                    label: (
+                                        <Popconfirm
+                                            title="Warning"
+                                            description="This will remove all existing variations. Do you want to continue?"
+                                            open={open}
+                                            onOpenChange={handleMenuOpenChange}
+                                            onConfirm={generateVariations}
+                                            okText="Yes"
+                                            okType="danger"
+                                        >
+                                            <Tooltip
+                                                title={
+                                                    isAddBtnDisabled
+                                                        ? 'Mark at least one attribute as variational'
+                                                        : undefined
+                                                }
+                                            >
+                                                <Button disabled={isAddBtnDisabled}>
+                                                    Generate variations
+                                                </Button>
+                                            </Tooltip>
+                                        </Popconfirm>
+                                    ),
+                                },
+                            ]}
+                        />
                         <Table
+                            virtual
                             rowClassName={(_, index) => {
                                 return variationAttributeErrors.find(
                                     (error) => error.index === index
@@ -405,14 +492,14 @@ export default function VariationsTable() {
 
                         <Tooltip
                             title={
-                                isDisabled
+                                isAddBtnDisabled
                                     ? 'Mark at least one attribute as variational'
                                     : undefined
                             }
                         >
                             <>
                                 <AddButtonTable
-                                    disabled={isDisabled}
+                                    disabled={isAddBtnDisabled}
                                     onClick={() =>
                                         add({
                                             attributes: attributes
