@@ -26,7 +26,8 @@ export default function VariationsTable() {
     const isDisabled =
         attributes.length === 0 || !attributes.find((a: ProductAttribute) => a.isVariational);
 
-    const { locations } = useContext(Context);
+    const { locations, variationAttributeErrors, setVariationAttributeErrors } =
+        useContext(Context);
 
     function onRemove(name: number, remove: (name: number) => void) {
         // remove from packages
@@ -59,6 +60,13 @@ export default function VariationsTable() {
                 return (
                     <>
                         <Table
+                            rowClassName={(_, index) => {
+                                return variationAttributeErrors.find(
+                                    (error) => error.index === index
+                                )
+                                    ? 'error-row'
+                                    : '';
+                            }}
                             dataSource={variations}
                             pagination={false}
                             size="small"
@@ -160,6 +168,7 @@ export default function VariationsTable() {
                                         row.name,
                                         'attributes',
                                     ]);
+
                                     return (
                                         <>
                                             {editingIndex !== row.name &&
@@ -234,6 +243,35 @@ export default function VariationsTable() {
                                                                     layout="horizontal"
                                                                 >
                                                                     <Select
+                                                                        onChange={() => {
+                                                                            const error =
+                                                                                variationAttributeErrors.find(
+                                                                                    (error) =>
+                                                                                        error.index ===
+                                                                                        row.name
+                                                                                );
+
+                                                                            if (!error) return;
+
+                                                                            form.setFields(
+                                                                                error.errorFieldNames.map(
+                                                                                    (
+                                                                                        fieldName
+                                                                                    ) => ({
+                                                                                        name: fieldName,
+                                                                                        errors: [],
+                                                                                    })
+                                                                                )
+                                                                            );
+
+                                                                            setVariationAttributeErrors(
+                                                                                variationAttributeErrors.filter(
+                                                                                    (i) =>
+                                                                                        i.index !==
+                                                                                        row.name
+                                                                                )
+                                                                            );
+                                                                        }}
                                                                         showSearch
                                                                         placeholder="Select value"
                                                                         optionFilterProp="label"
