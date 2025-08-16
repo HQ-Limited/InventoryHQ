@@ -13,6 +13,7 @@ import {
     Grid,
     Popconfirm,
 } from 'antd';
+import type { FieldData } from 'rc-field-form/lib/interface';
 import { Attribute, AttributeValue } from '../../../types/AttributeTypes';
 import { useEffect, useState } from 'react';
 import { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
@@ -53,31 +54,27 @@ const View: React.FC = () => {
     }, [editingIndex, attributes, form]);
 
     const onFinish: FormProps<Attribute>['onFinish'] = async (values: Attribute) => {
-        // Check for duplicate values and mark them in the form
         const attributeValues = values.values;
         if (attributeValues) {
-            const valueCount: Record<string, number> = {};
-            attributeValues.forEach((value) => {
-                valueCount[value.value] = (valueCount[value.value] || 0) + 1;
-            });
-            const duplicateIds = attributeValues
-                .filter((value) => valueCount[value.value] > 1)
-                .map((value) => value.id);
+            const seen = new Set<string>();
+            const duplicates: number[] = [];
 
-            if (duplicateIds.length > 0) {
-                // Mark duplicate ids in the form
-                const errors = attributeValues
-                    .map((value, idx) =>
-                        duplicateIds.includes(value.id)
-                            ? {
-                                  name: ['values', idx, 'value'],
-                                  errors: ['Duplicate value'],
-                              }
-                            : null
-                    )
-                    .filter(Boolean);
+            for (const [index, value] of attributeValues.entries()) {
+                if (seen.has(value.value)) {
+                    duplicates.push(index);
+                }
+                seen.add(value.value);
+            }
 
-                form.setFields(errors as any);
+            if (duplicates.length > 0) {
+                const errors = duplicates.map((index) => {
+                    return {
+                        name: ['values', index, 'value'],
+                        errors: ['Duplicate value'],
+                    };
+                });
+
+                form.setFields(errors as FieldData[]);
                 message.error('All values must be unique');
                 return setCreateAttributeLoading(false);
             }
