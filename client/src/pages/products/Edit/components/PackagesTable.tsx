@@ -393,7 +393,7 @@ export default function PackagesTable({ locations }: { locations: Location[] }) 
                                                     ))}
                                                 </Space>
                                             )}
-                                            {/* TODO: Possibly add the option to add new content? Currently, when a new variation is added, the contents are not added automatically. */}
+                                            {/* TODO: Possibly add the option to add new content? Currently, when a new variation is added, you can't add it to the package, since it was already created. Should we allow adding newly created variations to packages that were already created? Or maybe always add the variations to all packages, but with a 0 quantity?*/}
                                         </Form.List>
                                     );
                                 }}

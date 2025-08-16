@@ -123,37 +123,6 @@ const CreateEdit: React.FC = () => {
         fetchData();
     };
 
-    // TODO: Think of a way to make variations generation displayed to the user
-    /* const onGenerateVariations = () => {
-        const variationalAttributes = values.attributes!.filter((attr) => attr.isVariational);
-
-        const valueGroups = variationalAttributes.map((attr) =>
-            attr.values!.map((val) => ({ id: attr.id, value: val }))
-        );
-
-        const combinations = valueGroups.reduce(
-            (acc, group) => acc.flatMap((combo) => group.map((item) => [...combo, item])),
-            [[]] as VariationAttribute[][]
-        );
-
-        const variations: Variation[] = combinations.map((combo) => {
-            return {
-                attributes: combo,
-                manageQuantity: true,
-            };
-        });
-
-        setValues((prev) => {
-            const newValues = {
-                ...prev,
-                variations,
-            };
-            return newValues;
-        });
-
-        form.setFieldsValue({ variations });
-    }; */
-
     const onFinish: FormProps<Product>['onFinish'] = async (values) => {
         return console.log(values);
         setSaving(true);
@@ -236,9 +205,9 @@ const CreateEdit: React.FC = () => {
 
     async function createNewAttribute(name: string) {
         try {
-            const attributeId: number = await attributeService.createAttribute(name);
+            const attribute = await attributeService.createAttribute({ name });
             setAttributes((prev) => {
-                return [...prev, { id: attributeId, name, values: [] }];
+                return [...prev, attribute];
             });
 
             const index = form
@@ -246,7 +215,7 @@ const CreateEdit: React.FC = () => {
                 .findIndex((a: ProductAttribute) => a.name === name);
 
             form.setFieldValue(['attributes', index], {
-                attributeId,
+                attributeId: attribute.id,
                 name: name,
                 values: [],
                 isVariable,

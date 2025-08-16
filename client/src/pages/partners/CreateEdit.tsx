@@ -32,8 +32,6 @@ const CreateEdit: React.FC = () => {
         type: 'customer',
     });
 
-    // TODO: Create a function to get the data from the API if id is not null
-
     return (
         <Form
             style={{ padding: '20px' }}

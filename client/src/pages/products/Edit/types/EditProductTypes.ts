@@ -1,3 +1,5 @@
+import { AttributeValue, ProductAttribute } from '../../../../types/AttributeTypes';
+
 export type Product = {
     id: number;
     name: string;
@@ -31,25 +33,6 @@ export type VariationAttribute = {
     attributeName: string;
     attributeId: number;
     value: AttributeValue;
-};
-
-export type Attribute = {
-    id: number;
-    name: string;
-    values: AttributeValue[];
-};
-
-export type ProductAttribute = {
-    id: number;
-    attributeId: number;
-    name: string;
-    values: AttributeValue[];
-    isVariational?: boolean;
-};
-
-export type AttributeValue = {
-    id: number;
-    value: string;
 };
 
 export type InventoryUnit = {
