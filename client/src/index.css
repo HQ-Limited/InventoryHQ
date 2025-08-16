@@ -65,3 +65,7 @@ body {
 * {
     box-sizing: border-box;
 }
+
+.error-row {
+    background-color: #ff00001a;
+}
