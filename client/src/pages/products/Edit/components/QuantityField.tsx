@@ -3,14 +3,18 @@ import { LOCATIONS_ENABLED } from '../../../../global';
 
 export const QuantityInputField = ({
     name,
+    required = true,
     label = 'Quantity',
     layout = 'vertical',
     props,
+    onChange,
 }: {
     name: (number | string)[];
+    required?: boolean;
     label?: string;
     layout?: 'vertical' | 'horizontal';
     props?: FormItemProps;
+    onChange?: (value: number | null) => void;
 }) => {
     return (
         <Form.Item
@@ -19,13 +23,19 @@ export const QuantityInputField = ({
             name={[...name, 'quantity']}
             rules={[
                 {
-                    required: true,
+                    required: required,
                     message: 'Quantity is required.',
                 },
             ]}
             layout={layout}
         >
-            <InputNumber style={{ width: '100%' }} min={0} inputMode="decimal" controls={false} />
+            <InputNumber
+                style={{ width: '100%' }}
+                min={0}
+                inputMode="decimal"
+                controls={false}
+                onChange={onChange}
+            />
         </Form.Item>
     );
 };
@@ -114,6 +124,7 @@ export default function QuantityField({
     name,
     quantity,
     props,
+    onChange,
 }: {
     name: (number | string)[];
     quantity?: {
@@ -121,6 +132,7 @@ export default function QuantityField({
         label?: string;
     };
     props?: FormItemProps;
+    onChange?: (value: number | null) => void;
 }) {
     const form = Form.useFormInstance();
 
@@ -151,6 +163,7 @@ export default function QuantityField({
                                 }
                                 layout={quantity?.layout}
                                 props={props}
+                                onChange={onChange}
                             />
                         );
                     })

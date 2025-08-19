@@ -17,6 +17,7 @@
         "antd": "^5.25.2",
         "antd-style": "^3.7.1",
         "axios": "^1.9.0",
+        "dayjs": "^1.11.13",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "react-highlight-words": "^0.21.0",

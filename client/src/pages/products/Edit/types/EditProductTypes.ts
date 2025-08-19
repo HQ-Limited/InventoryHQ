@@ -80,6 +80,8 @@ export type Package = {
     description?: string;
     location?: Location;
     inventoryUnits: InventoryUnit[];
+    expirationDate?: Date;
+    lotNumber?: string;
 };
 
 export type Location = {
