@@ -81,44 +81,7 @@ const CreateEdit: React.FC = () => {
     const [values, setValues] = useState<Partial<Product>>(initialValues);
     const [loading, setLoading] = useState(id ? true : false);
     const [saving, setSaving] = useState(false);
-    const [locations, setLocations] = useState<Location[]>([]);
     const navigate = useNavigate();
-
-    const fetchData = async () => {
-        const categories = await categoryService.getCategories();
-        setCategories(categories);
-
-        if (LOCATIONS_ENABLED) {
-            const locations = await locationService.getLocations();
-            setLocations(locations);
-        }
-
-        let product: Product | undefined;
-        if (id) {
-            setLoading(true);
-            product = await productService.getProductById(Number(id));
-
-            const attrs: Attribute[] = await attributeService.getAttributes({
-                includeValues: true,
-                ids: product!.attributes!.map((a) => a.attributeId),
-            });
-
-            setAttributes(attrs);
-            setIsVariable(product.isVariable);
-            setValues(product);
-            form.setFieldsValue(product);
-            setLoading(false);
-            return;
-        }
-
-        const attrs: Attribute[] = id
-            ? await attributeService.getAttributes({
-                  includeValues: true,
-                  ids: product!.attributes!.map((a) => a.id),
-              })
-            : await attributeService.getAttributes();
-        setAttributes(attrs);
-    };
     const [variationAttributeErrors, setVariationAttributeErrors] = useState<
         { index: number; errorFieldNames: (string | number)[][] }[]
     >([]);
