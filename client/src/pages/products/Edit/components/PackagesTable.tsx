@@ -11,6 +11,7 @@ import {
     Space,
     Table,
     Tag,
+    Typography,
 } from 'antd';
 import {
     Location,
@@ -25,9 +26,12 @@ import Column from 'antd/es/table/Column';
 import PriceField from './PriceField';
 import { QuantityInputField } from './QuantityField';
 import DescriptionField from './DescriptionField';
-import { LOCATIONS_ENABLED } from '../../../../global';
+import { DEFAULT_DATE_FORMAT, LOCATIONS_ENABLED } from '../../../../global';
 import { Context } from '../Context';
 import AddButtonTable from '../../../../components/AddButtonTable';
+import ExpirationDateField from './ExpirationDateField';
+import dayjs from 'dayjs';
+import LotNumberField from './LotNumberField';
 
 const LocationField = ({
     name,
@@ -157,8 +161,26 @@ export default function PackagesTable() {
 
                                 <PriceField label="Price" name={['price']} />
 
-                                <Form.List name="inventoryUnits">
-                                    {(inventoryUnits) => {
+                                <Form.List
+                                    name="inventoryUnits"
+                                    rules={[
+                                        {
+                                            validator: (_, value) => {
+                                                if (
+                                                    !value.find(
+                                                        (iu: InventoryUnit) => iu.quantity > 0
+                                                    )
+                                                ) {
+                                                    return Promise.reject();
+                                                }
+                                                return Promise.resolve();
+                                            },
+                                            message:
+                                                'At least one quantity must be greater than 0.',
+                                        },
+                                    ]}
+                                >
+                                    {(inventoryUnits, {}, { errors }) => {
                                         if (!isVariable) {
                                             return (
                                                 <QuantityInputField
@@ -169,72 +191,94 @@ export default function PackagesTable() {
                                         }
 
                                         return (
-                                            <Table
-                                                dataSource={inventoryUnits}
-                                                pagination={false}
-                                                sticky
-                                                bordered
-                                            >
-                                                <Column
-                                                    dataIndex={'sku'}
-                                                    title="SKU"
-                                                    render={(_, row) => {
-                                                        return createPackageForm.getFieldValue([
-                                                            'inventoryUnits',
-                                                            row.name,
-                                                            'variation',
-                                                            'sku',
-                                                        ]);
-                                                    }}
-                                                />
-                                                <Column
-                                                    dataIndex={'attributes'}
-                                                    title="Attributes"
-                                                    render={(_, row) => {
-                                                        return createPackageForm
-                                                            .getFieldValue([
+                                            <>
+                                                <Table
+                                                    dataSource={inventoryUnits}
+                                                    pagination={false}
+                                                    sticky
+                                                    bordered
+                                                >
+                                                    <Column
+                                                        dataIndex={'sku'}
+                                                        title="SKU"
+                                                        render={(_, row) => {
+                                                            return createPackageForm.getFieldValue([
                                                                 'inventoryUnits',
                                                                 row.name,
                                                                 'variation',
-                                                                'attributes',
-                                                            ])
-                                                            .map(
-                                                                (attribute: VariationAttribute) => {
-                                                                    return (
-                                                                        <Tag key={attribute.id}>
-                                                                            {
-                                                                                attribute.attributeName
-                                                                            }{' '}
-                                                                            ({attribute.value.value}
-                                                                            )
-                                                                        </Tag>
-                                                                    );
-                                                                }
+                                                                'sku',
+                                                            ]);
+                                                        }}
+                                                    />
+                                                    <Column
+                                                        dataIndex={'attributes'}
+                                                        title="Attributes"
+                                                        render={(_, row) => {
+                                                            return createPackageForm
+                                                                .getFieldValue([
+                                                                    'inventoryUnits',
+                                                                    row.name,
+                                                                    'variation',
+                                                                    'attributes',
+                                                                ])
+                                                                .map(
+                                                                    (
+                                                                        attribute: VariationAttribute
+                                                                    ) => {
+                                                                        return (
+                                                                            <Tag key={attribute.id}>
+                                                                                {
+                                                                                    attribute.attributeName
+                                                                                }{' '}
+                                                                                (
+                                                                                {
+                                                                                    attribute.value
+                                                                                        .value
+                                                                                }
+                                                                                )
+                                                                            </Tag>
+                                                                        );
+                                                                    }
+                                                                );
+                                                        }}
+                                                    />
+                                                    <Column
+                                                        dataIndex="quantity"
+                                                        title="Quantity in package"
+                                                        render={(_, row) => {
+                                                            return (
+                                                                <QuantityInputField
+                                                                    onChange={() => {
+                                                                        createPackageForm.validateFields(
+                                                                            ['inventoryUnits']
+                                                                        );
+                                                                    }}
+                                                                    required={false}
+                                                                    props={{
+                                                                        style: {
+                                                                            marginBottom: 0,
+                                                                        },
+                                                                    }}
+                                                                    name={[row.name]}
+                                                                    label=""
+                                                                />
                                                             );
-                                                    }}
-                                                />
-                                                <Column
-                                                    dataIndex="quantity"
-                                                    title="Quantity in package"
-                                                    render={(_, row) => {
-                                                        return (
-                                                            <QuantityInputField
-                                                                required={false}
-                                                                props={{
-                                                                    style: {
-                                                                        marginBottom: 0,
-                                                                    },
-                                                                }}
-                                                                name={[row.name]}
-                                                                label=""
-                                                            />
-                                                        );
-                                                    }}
-                                                />
-                                            </Table>
+                                                        }}
+                                                    />
+                                                </Table>
+                                                {errors.length > 0 && (
+                                                    <Typography.Text type="danger">
+                                                        <Form.ErrorList errors={errors} />
+                                                    </Typography.Text>
+                                                )}
+                                            </>
                                         );
                                     }}
                                 </Form.List>
+
+                                <LotNumberField />
+
+                                <ExpirationDateField />
 
                                 <Form.Item
                                     name="packagesAmount"
@@ -259,6 +303,7 @@ export default function PackagesTable() {
                             size="small"
                             sticky
                             bordered
+                            scroll={{ x: 'max-content' }}
                             locale={{
                                 emptyText: (
                                     <Empty
@@ -278,7 +323,6 @@ export default function PackagesTable() {
                             />
                             {LOCATIONS_ENABLED && (
                                 <Column
-                                    width={200}
                                     dataIndex={'location'}
                                     title={'Location'}
                                     render={(_, row) => {
@@ -292,7 +336,6 @@ export default function PackagesTable() {
 
                                         return (
                                             <LocationField
-                                                required={LOCATIONS_ENABLED}
                                                 props={{
                                                     style: { marginBottom: 0 },
                                                 }}
@@ -304,7 +347,6 @@ export default function PackagesTable() {
                                 />
                             )}
                             <Column
-                                width={200}
                                 dataIndex={'label'}
                                 title={'Label'}
                                 render={(_, row) => {
@@ -322,7 +364,6 @@ export default function PackagesTable() {
                                 }}
                             />
                             <Column
-                                width={250}
                                 dataIndex={'description'}
                                 title={'Description'}
                                 render={(_, row) => {
@@ -346,7 +387,6 @@ export default function PackagesTable() {
                                 }}
                             />
                             <Column
-                                width={150}
                                 dataIndex={'price'}
                                 title={'Price'}
                                 render={(_, row) => {
@@ -361,6 +401,56 @@ export default function PackagesTable() {
                                                     style: { marginBottom: 0 },
                                                 }}
                                                 name={[row.name, 'price']}
+                                                label=""
+                                            />
+                                        </>
+                                    );
+                                }}
+                            />
+                            <Column
+                                dataIndex={'lotNumber'}
+                                title={'Lot Number'}
+                                render={(_, row) => {
+                                    return (
+                                        <>
+                                            {editingIndex !== row.name &&
+                                                form.getFieldValue([
+                                                    'packages',
+                                                    row.name,
+                                                    'lotNumber',
+                                                ])}
+
+                                            <LotNumberField
+                                                props={{
+                                                    style: { marginBottom: 0 },
+                                                    hidden: editingIndex !== row.name,
+                                                }}
+                                                label=""
+                                                name={[row.name, 'lotNumber']}
+                                            />
+                                        </>
+                                    );
+                                }}
+                            />
+                            <Column
+                                dataIndex={'expirationDate'}
+                                title={'Expiration Date'}
+                                render={(_, row) => {
+                                    return (
+                                        <>
+                                            {editingIndex !== row.name &&
+                                                dayjs(
+                                                    form.getFieldValue([
+                                                        'packages',
+                                                        row.name,
+                                                        'expirationDate',
+                                                    ])
+                                                ).format(DEFAULT_DATE_FORMAT)}
+                                            <ExpirationDateField
+                                                props={{
+                                                    hidden: editingIndex !== row.name,
+                                                }}
+                                                name={[row.name, 'expirationDate']}
                                                 label=""
                                             />
                                         </>
@@ -466,7 +556,7 @@ export default function PackagesTable() {
                                 }}
                             />
                             <Column
-                                width={100}
+                                fixed="right"
                                 title={'Action'}
                                 render={(_, row) => {
                                     return (

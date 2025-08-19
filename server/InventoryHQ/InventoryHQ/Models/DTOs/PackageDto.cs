@@ -15,5 +15,9 @@ namespace InventoryHQ.Models.DTOs
         public LocationDto Location { get; set; }
 
         public IEnumerable<InventoryUnitDto> InventoryUnits { get; set; }
+
+        public DateOnly? ExpirationDate { get; set; }
+
+        public string? LotNumber { get; set; }
     }
 }

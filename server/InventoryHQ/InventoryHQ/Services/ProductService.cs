@@ -104,8 +104,10 @@ namespace InventoryHQ.Services
                                             Id = viu.Package.Id,
                                             Description = viu.Package.Description,
                                             Label = viu.Package.Label,
-                                            Price = viu.Package.Price
-                                        } : null
+                                            Price = viu.Package.Price,
+                                            ExpirationDate = viu.Package.ExpirationDate,
+                                            LotNumber = viu.Package.LotNumber
+                                        } : null,
                                     }),
                     RetailPrice = v.RetailPrice,
                     Attributes = v.Attributes?.Select(va => new VariationAttributeDto()
@@ -133,6 +135,8 @@ namespace InventoryHQ.Services
                             Description = first.Package.Description,
                             Label = first.Package.Label,
                             Price = first.Package.Price,
+                            ExpirationDate = first.Package.ExpirationDate,
+                            LotNumber = first.Package.LotNumber,
                             Location = first.Package.Location != null ? new LocationDto()
                             {
                                 Id = first.Package.Location.Id,

@@ -17,5 +17,9 @@ namespace InventoryHQ.Data.Models
 
         [MaxLength(200)]
         public string? Description { get; set; }
+
+        public DateOnly? ExpirationDate { get; set; }
+
+        public string? LotNumber { get; set; }
     }
 }

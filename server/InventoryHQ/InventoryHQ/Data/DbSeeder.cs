@@ -280,25 +280,33 @@ namespace InventoryHQ.Data
             var package1 = new Package
             {
                 Price = 10,
-                LocationId = dbLocations[0].Id
+                LocationId = dbLocations[0].Id,
+                ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(10)),
+                LotNumber = "ABC123"
             };
 
             var package2 = new Package
             {
                 Price = 5,
-                LocationId = dbLocations[0].Id
+                LocationId = dbLocations[0].Id,
+                ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(10)),
+                LotNumber = "ABC123"
             };
 
             var package3 = new Package
             {
                 Price = 10,
-                LocationId = dbLocations[0].Id
+                LocationId = dbLocations[0].Id,
+                ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(10)),
+                LotNumber = "F123"
             };
 
             var package4 = new Package
             {
                 Price = 5,
-                LocationId = dbLocations[0].Id
+                LocationId = dbLocations[0].Id,
+                ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-5)),
+                LotNumber = "G123"
             };
 
             context.Packages.AddRange(new List<Package> { package1, package2, package3, package4 });
@@ -355,13 +363,13 @@ namespace InventoryHQ.Data
                             {
                                 LocationId = dbLocations[0].Id,
                                 Quantity = 10,
-                                PackageId = package1.Id
+                                PackageId = package1.Id,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
                                 Quantity = 5,
-                                PackageId = package2.Id
+                                PackageId = package2.Id,
                             }
                         },
                     },
