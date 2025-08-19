@@ -169,13 +169,13 @@ export default function QuantityField({
                                         key={field.key}
                                         name={[field.name]}
                                         label={
-                                            quantity.label !== undefined
+                                            quantity?.label !== undefined
                                                 ? quantity.label
                                                 : LOCATIONS_ENABLED
                                                   ? `${inventoryUnit.location.name}`
                                                   : 'Quantity'
                                         }
-                                        layout={quantity.layout}
+                                        layout={quantity?.layout}
                                     />
                                 );
                             })
