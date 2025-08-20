@@ -93,5 +93,6 @@ namespace InventoryHQ.Profiles
                 .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.Name))
             .ReverseMap();
         }
+
     }
 }
