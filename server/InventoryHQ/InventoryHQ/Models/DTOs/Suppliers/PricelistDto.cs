@@ -4,6 +4,8 @@ namespace InventoryHQ.Models.DTOs
 {
     public class PricelistDto
     {
+        public int Id { get; set; }
+
         public int SupplierId { get; set; }
 
         public string ProductName { get; set; }

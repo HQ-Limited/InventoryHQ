@@ -7,6 +7,7 @@ using InventoryHQ.Models.DTOs;
 using InventoryHQ.Models.Request;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace InventoryHQ.Services
 {
@@ -168,7 +169,7 @@ namespace InventoryHQ.Services
             };
         }
 
-        public async Task<IEnumerable<ViewProductDto>> GetProducts()
+        public IQueryable<ViewProductDto> GetProducts()
         {
             var data = _data.Products
                             .Include(x => x.Categories)
@@ -185,14 +186,12 @@ namespace InventoryHQ.Services
                                         .ThenInclude(v => v.Attribute)
                             .AsQueryable();
 
-            var products = _mapper.Map<IEnumerable<ViewProductDto>>(data);
-
-            return products;
+            return _mapper.ProjectTo<ViewProductDto>(data);
         }
 
-        public async Task<int?> CreateProduct(ProductDto simpleProductDto)
+        public async Task<int?> CreateProduct(EditProductDto data)
         {
-            var product = _mapper.Map<Product>(simpleProductDto);
+            var product = _mapper.Map<Product>(data);
             await _data.Products.AddAsync(product);
 
             await _data.SaveChangesAsync();
@@ -200,16 +199,16 @@ namespace InventoryHQ.Services
             return product.Id;
         }
 
-        public async Task<int?> UpdateProduct(ProductDto productDto)
+        public async Task<int?> UpdateProduct(EditProductDto data)
         {
-            var product = await _data.Products.FirstAsync(x => x.Id == productDto.Id);
+            var product = await _data.Products.FirstAsync(x => x.Id == data.Id);
 
             if (product == null)
             {
                 return null;
             }
 
-            _mapper.Map(productDto, product);
+            _mapper.Map(data, product);
 
             await _data.SaveChangesAsync();
             return product.Id;

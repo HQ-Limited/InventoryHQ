@@ -32,6 +32,7 @@ namespace InventoryHQ.Profiles
             .ReverseMap();
 
             CreateMap<ProductAttribute, ProductAttributeDto>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Attribute.Name))
                 .ReverseMap();
 
             CreateMap<Data.Models.Attribute, AttributeDto>().ReverseMap();
