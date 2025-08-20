@@ -7,7 +7,8 @@ import api from '../utils/api';
 
 class ProductService {
     async getProducts(payload: any): Promise<ViewProduct[]> {
-        const response = await api.post<ViewProduct[]>('Product/search', payload ?? {});
+        //TODO: Add OData query parameters
+        const response = await api.get<ViewProduct[]>('Product');
         return response.data;
     }
 

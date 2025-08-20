@@ -495,6 +495,8 @@ const View: React.FC = () => {
 
         setTableParams(newTableParams);
 
+        // TODO: Add OData query parameters
+
         fetchProducts(dataRequest)
             .then((products) => {
                 setData(products);
