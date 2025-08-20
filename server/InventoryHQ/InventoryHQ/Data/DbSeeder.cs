@@ -170,11 +170,13 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 10,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[1].Id,
+                                Location = dbLocations[1],
                                 Quantity = 50,
                             },
                         }
@@ -201,11 +203,13 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 20,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[1].Id,
+                                Location = dbLocations[1],
                                 Quantity = 30,
                             },
                         }
@@ -264,11 +268,13 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 10,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[1].Id,
+                                Location = dbLocations[1],
                                 Quantity = 5,
                             },
                         }
@@ -352,22 +358,26 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 0,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[1].Id,
+                                Location = dbLocations[1],
                                 Quantity = 0,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 10,
                                 PackageId = package1.Id,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 5,
                                 PackageId = package2.Id,
                             }
@@ -424,20 +434,26 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 0,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[1].Id,
+                                Location = dbLocations[1],
                                 Quantity = 0,
                             },
                             new InventoryUnit
                             {
+                                LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 10,
                                 PackageId = package3.Id,
                             },
                             new InventoryUnit
                             {
+                                LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 10,
                                 PackageId = package4.Id,
                             },
@@ -459,23 +475,28 @@ namespace InventoryHQ.Data
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 0,
                             },
                             new InventoryUnit
                             {
                                 LocationId = dbLocations[1].Id,
+                                Location = dbLocations[1],
                                 Quantity = 0,
                             },
                             new InventoryUnit
                             {
+                                LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 10,
                                 PackageId = package3.Id,
                             },
                             new InventoryUnit
                             {
+                                LocationId = dbLocations[0].Id,
+                                Location = dbLocations[0],
                                 Quantity = 5,
                                 PackageId = package4.Id,
-                                LocationId = dbLocations[0].Id,
                             },
                         }
                     },

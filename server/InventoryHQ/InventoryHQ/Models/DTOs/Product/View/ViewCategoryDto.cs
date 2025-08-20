@@ -1,11 +1,9 @@
 ﻿namespace InventoryHQ.Models.DTOs
 {
-    public class AttributeDto
+    public class ViewCategoryDto
     {
         public int Id { get; set; }
 
         public required string Name { get; set; }
-
-        public IEnumerable<AttributeValueDto> Values { get; set; }
     }
 }

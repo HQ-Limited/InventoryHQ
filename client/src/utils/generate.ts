@@ -1,7 +1,7 @@
-import { Category } from '../types/ProductTypes';
+import { Attribute, Category } from '../pages/products/Edit/types/EditProductTypes';
 
 export type Tree = {
-    value: number;
+    value: number | string;
     title: string;
     text: string;
     children: Tree[];
@@ -18,4 +18,18 @@ export function generateCategoriesTree(categories: Category[]): Tree[] {
     }
 
     return categories.map(createChildren);
+}
+
+export function generateAttributesTree(attributes: Attribute[]): Tree[] {
+    return attributes.map((attribute) => ({
+        value: `attribute-${attribute.id}`,
+        title: attribute.name,
+        text: attribute.name,
+        children: attribute.values?.map((value) => ({
+            value: `value-${value.id}`,
+            title: value.value,
+            text: value.value,
+            children: [],
+        })),
+    }));
 }

@@ -44,7 +44,13 @@ namespace InventoryHQ.Controllers
         [HttpPost("search")]
         public async Task<ActionResult<IEnumerable<ProductDto>>> Get([FromBody]TableDatasourceRequest? request)
         {
-            var products = await _productService.GetProducts(request);
+            var products = await _productService.GetProducts();
+
+            if (products == null || !products.Any())
+            {
+                return NotFound();
+            }
+
             return Ok(products);
         }
 

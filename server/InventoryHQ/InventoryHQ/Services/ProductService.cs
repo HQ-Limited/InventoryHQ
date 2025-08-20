@@ -64,7 +64,7 @@ namespace InventoryHQ.Services
                     IsBase = x.IsBase,
                 }),
                 IsVariable = product.isVariable,
-                Attributes = product.Attributes?.Select(x => new AttributeDto()
+                Attributes = product.Attributes?.Select(x => new ProductAttributeDto()
                 {
                     Id = x.Id,
                     AttributeId = x.Attribute.Id,
@@ -93,11 +93,11 @@ namespace InventoryHQ.Services
                                     .Select(viu => new InventoryUnitDto()
                                     {
                                         Id = viu.Id,
-                                        Location = viu.Location != null ? new LocationDto()
+                                        Location = new LocationDto()
                                         {
                                             Id = viu.Location.Id,
                                             Name = viu.Location.Name
-                                        } : null,
+                                        },
                                         Quantity = viu.Quantity,
                                         Package = viu.Package != null ? new PackageDto()
                                         {
@@ -137,11 +137,11 @@ namespace InventoryHQ.Services
                             Price = first.Package.Price,
                             ExpirationDate = first.Package.ExpirationDate,
                             LotNumber = first.Package.LotNumber,
-                            Location = first.Package.Location != null ? new LocationDto()
+                            Location = new LocationDto()
                             {
                                 Id = first.Package.Location.Id,
                                 Name = first.Package.Location.Name
-                            } : null,
+                            },
                             InventoryUnits = g.Select(w => new InventoryUnitDto()
                             {
                                 Id = w.Id,
@@ -168,27 +168,24 @@ namespace InventoryHQ.Services
             };
         }
 
-        public async Task<IEnumerable<ProductDto>> GetProducts(TableDatasourceRequest? request)
+        public async Task<IEnumerable<ViewProductDto>> GetProducts()
         {
             var data = _data.Products
                             .Include(x => x.Categories)
-                                .Include(x => x.Attributes)
-                                    .ThenInclude(pa => pa.Attribute)
-                                .Include(x => x.Attributes)
-                                    .ThenInclude(a => a.Values)
-                                .Include(x => x.Variations)
-                                    .ThenInclude(v => v.Attributes)
-                                .Include(x => x.Variations)
-                                    .ThenInclude(i => i.InventoryUnits)
-                                        .ThenInclude(i => i.Location)
-                                .Include(x => x.Variations)
-                                    .ThenInclude(v => v.InventoryUnits)
-                                        .ThenInclude(iu => iu.Package)
+                            .Include(x => x.Attributes)
+                                .ThenInclude(a => a.Values)
+                            .Include(x => x.Attributes)
+                                .ThenInclude(a => a.Attribute)
+                            .Include(x => x.Variations)
+                                .ThenInclude(i => i.InventoryUnits)
+                                    .ThenInclude(i => i.Location)
+                            .Include(x => x.Variations)
+                                .ThenInclude(v => v.Attributes)
+                                    .ThenInclude(a => a.Value)
+                                        .ThenInclude(v => v.Attribute)
                             .AsQueryable();
 
-            data = data.ApplyProductFilters(request.Filters);
-
-            var products = _mapper.Map<IEnumerable<ProductDto>>(data);
+            var products = _mapper.Map<IEnumerable<ViewProductDto>>(data);
 
             return products;
         }

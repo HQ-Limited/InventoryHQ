@@ -12,7 +12,7 @@
 
         public int Vat { get; set; }
 
-        public IEnumerable<AttributeDto>? Attributes { get; set; }
+        public IEnumerable<ProductAttributeDto>? Attributes { get; set; }
 
         public IEnumerable<CategoryDto>? Categories { get; set; }
 

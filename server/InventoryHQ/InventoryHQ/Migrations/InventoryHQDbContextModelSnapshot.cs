@@ -259,7 +259,7 @@ namespace InventoryHQ.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("LocationId")
+                    b.Property<int>("LocationId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("PackageId")
@@ -341,7 +341,7 @@ namespace InventoryHQ.Migrations
                     b.Property<string>("Label")
                         .HasColumnType("text");
 
-                    b.Property<int?>("LocationId")
+                    b.Property<int>("LocationId")
                         .HasColumnType("integer");
 
                     b.Property<string>("LotNumber")
@@ -484,6 +484,7 @@ namespace InventoryHQ.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
@@ -555,6 +556,52 @@ namespace InventoryHQ.Migrations
                         .IsUnique();
 
                     b.ToTable("Suppliers");
+                });
+
+            modelBuilder.Entity("InventoryHQ.Data.Models.UnitOfMeasurement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Abbreviation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Barcode")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsBase")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<float?>("Multiplier")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("UnitsOfMeasurement");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Variation", b =>
@@ -701,7 +748,9 @@ namespace InventoryHQ.Migrations
                 {
                     b.HasOne("InventoryHQ.Data.Models.Location", "Location")
                         .WithMany("InventoryUnits")
-                        .HasForeignKey("LocationId");
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("InventoryHQ.Data.Models.Package", "Package")
                         .WithMany("InventoryUnit")
@@ -724,7 +773,9 @@ namespace InventoryHQ.Migrations
                 {
                     b.HasOne("InventoryHQ.Data.Models.Location", "Location")
                         .WithMany()
-                        .HasForeignKey("LocationId");
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Location");
                 });
@@ -776,6 +827,17 @@ namespace InventoryHQ.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("InventoryHQ.Data.Models.UnitOfMeasurement", b =>
+                {
+                    b.HasOne("InventoryHQ.Data.Models.Product", "Product")
+                        .WithMany("UnitsOfMeasurement")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Variation", b =>
@@ -831,6 +893,11 @@ namespace InventoryHQ.Migrations
             modelBuilder.Entity("InventoryHQ.Data.Models.CustomerGroup", b =>
                 {
                     b.Navigation("Customers");
+                });
+
+            modelBuilder.Entity("InventoryHQ.Data.Models.Location", b =>
+                {
+                    b.Navigation("InventoryUnits");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Package", b =>

@@ -40,6 +40,8 @@ namespace InventoryHQ.Data
 
         public DbSet<Pricelist> Pricelists { get; set; }
 
+        public DbSet<UnitOfMeasurement> UnitsOfMeasurement { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())

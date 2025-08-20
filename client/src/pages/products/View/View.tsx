@@ -1,34 +1,16 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import type { CheckboxProps, GetProp, MenuProps, TableProps } from 'antd';
-import {
-    App,
-    Button,
-    Checkbox,
-    Input,
-    Menu,
-    Popconfirm,
-    Popover,
-    Space,
-    Table,
-    Tag,
-    Tooltip,
-    Typography,
-} from 'antd';
+import { App, Button, Checkbox, Input, Menu, Popconfirm, Popover, Space, Table, Tag } from 'antd';
 import type { SorterResult } from 'antd/es/table/interface';
 import { Link } from 'react-router-dom';
-import {
-    DeleteOutlined,
-    DownOutlined,
-    EditOutlined,
-    InfoCircleOutlined,
-    PlusOutlined,
-} from '@ant-design/icons';
+import { DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import productService from '../../../services/productService';
-import { Product, Variation } from '../../../types/ProductTypes';
 import { TextFilter } from './components/TextFilter';
 import { NumberFilter } from './components/NumberFilter';
-import { generateCategoriesTree, Tree } from '../../../utils/generate';
+import { generateAttributesTree, generateCategoriesTree, Tree } from '../../../utils/generate';
 import categoryService from '../../../services/categoryService';
+import { Product, Variation } from './types/ViewProductTypes';
+import attributeService from '../../../services/attributeService';
 import { LOCATIONS_ENABLED } from '../../../global';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
@@ -41,28 +23,23 @@ interface TableParams {
     filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
 }
 
-const StatusTag = ({ quantity }: { quantity: number }) => {
-    if (quantity > 0) {
-        return <Tag color="green">In Stock</Tag>;
-    } else {
-        return <Tag color="red">Out of Stock</Tag>;
-    }
-};
-
-const IconTooltip = ({ title, text }: { title: string; text: string | number }) => (
-    <>
-        <Typography.Text style={{ paddingRight: '5px' }}>{text}</Typography.Text>
-        <Tooltip title={title}>
-            <InfoCircleOutlined />
-        </Tooltip>
-    </>
+const QuantityTitle = () => (
+    <Popover content="Summary from all units and packages">Quantity</Popover>
 );
 
 const View: React.FC = () => {
     const [categoriesTree, setCategoriesTree] = useState<Tree[]>([]);
+    const [attributesTree, setAttributesTree] = useState<Tree[]>([]);
     const { message } = App.useApp();
 
     const [variationColumns, setVariationColumns] = useState<ColumnsType<Variation>>([
+        {
+            width: 100,
+            key: 'id',
+            title: 'ID',
+            dataIndex: 'id',
+            ...NumberFilter(),
+        },
         {
             width: 100,
             key: 'sku',
@@ -80,18 +57,29 @@ const View: React.FC = () => {
         },
         {
             width: 100,
-            key: 'locations',
-            title: 'Quantity',
+            key: 'quantity',
+            title: <QuantityTitle />,
             dataIndex: 'inventoryUnits',
             render: (_, record) => {
+                const locationQuantities = new Map<string, number>();
+                record.inventoryUnits.forEach((unit) => {
+                    const currentQuantity = locationQuantities.get(unit.locationName) || 0;
+                    locationQuantities.set(unit.locationName, currentQuantity + unit.quantity);
+                });
+
                 if (LOCATIONS_ENABLED) {
-                    return record.inventoryUnits!.map((unit) => (
-                        <Tag key={unit.location.id}>
-                            {unit.location.name} ({unit.quantity})
-                        </Tag>
-                    ));
+                    return Array.from(locationQuantities.entries()).map(
+                        ([location, quantity], i) => (
+                            <Tag key={i}>
+                                {location} ({quantity})
+                            </Tag>
+                        )
+                    );
                 }
-                return record.inventoryUnits![0].quantity;
+                return Array.from(locationQuantities.values()).reduce(
+                    (sum, quantity) => sum + quantity,
+                    0
+                );
             },
             ...NumberFilter(),
         },
@@ -102,7 +90,11 @@ const View: React.FC = () => {
             title: 'Attributes',
             dataIndex: 'attributes',
             render: (_, record) =>
-                record.attributes?.map((attr, i) => <Tag key={i}>{attr.value.value}</Tag>),
+                record.attributes?.map((attr, i) => (
+                    <Tag key={i}>
+                        {attr.name}: {attr.value}
+                    </Tag>
+                )),
         },
     ]);
 
@@ -148,30 +140,29 @@ const View: React.FC = () => {
         {
             width: 100,
             key: 'quantity',
-            title: 'Quantity',
+            title: <QuantityTitle />,
             render: (_, record) => {
-                if (record.manageQuantity === false) return 'Infinite';
+                const locationQuantities = new Map<string, number>();
+                record.variations.forEach((variation) => {
+                    variation.inventoryUnits.forEach((unit) => {
+                        const currentQuantity = locationQuantities.get(unit.locationName) || 0;
+                        locationQuantities.set(unit.locationName, currentQuantity + unit.quantity);
+                    });
+                });
 
-                if (record.isVariable === false) {
-                    if (LOCATIONS_ENABLED) {
-                        return record.variations[0].inventoryUnits!.map((unit) => (
-                            <Tag key={unit.location.id}>
-                                {unit.location.name} ({unit.quantity})
+                if (LOCATIONS_ENABLED) {
+                    return Array.from(locationQuantities.entries()).map(
+                        ([location, quantity], i) => (
+                            <Tag key={i}>
+                                {location} ({quantity})
                             </Tag>
-                        ));
-                    }
-                    return record.variations[0].inventoryUnits![0].quantity;
-                } else {
-                    return (
-                        <IconTooltip
-                            title="Sum of all variation quantities"
-                            text={record.variations.reduce(
-                                (a, b) => a + b.inventoryUnits!.reduce((c, d) => c + d.quantity, 0),
-                                0
-                            )}
-                        />
+                        )
                     );
                 }
+                return Array.from(locationQuantities.values()).reduce(
+                    (sum, quantity) => sum + quantity,
+                    0
+                );
             },
             ...NumberFilter(),
         },
@@ -180,17 +171,20 @@ const View: React.FC = () => {
             width: 100,
             key: 'attributes',
             title: 'Attributes',
+            filterMode: 'tree',
+            filterSearch: true,
+            filters: attributesTree,
             render: (_, record) => {
-                return record.attributes.map((attr, i) => (
+                return record.attributes?.map((attr, i) => (
                     <Popover
                         key={i}
-                        content={attr.values.map((v) => (
-                            <Tag style={{ marginLeft: 3, marginRight: 3 }} tabIndex={-1}>
-                                {v.value}
+                        content={attr.values.map((v, vI) => (
+                            <Tag key={vI} style={{ marginLeft: 3, marginRight: 3 }} tabIndex={-1}>
+                                {v}
                             </Tag>
                         ))}
                     >
-                        <Tag key={attr.id}>{attr.name}</Tag>
+                        <Tag>{attr.name}</Tag>
                     </Popover>
                 ));
             },
@@ -205,19 +199,14 @@ const View: React.FC = () => {
             filterSearch: true,
             filters: categoriesTree,
             render: (_, record) => {
-                if (record.categories) {
-                    return (
-                        <Space>
-                            {record.categories.map((category, i) => (
-                                <Link key={i} to={`/categories/${category.id}`}>
-                                    {category.name}
-                                </Link>
-                            ))}
-                        </Space>
-                    );
-                } else {
-                    return null;
-                }
+                if (!record.categories) return;
+                return (
+                    <Space>
+                        {record.categories.map((category, i) => {
+                            return <Tag key={i}>{category.name}</Tag>;
+                        })}
+                    </Space>
+                );
             },
         },
         {
@@ -228,9 +217,7 @@ const View: React.FC = () => {
             render: (_, record) => (
                 <Space size="middle">
                     <Link to={`/products/${record.id}`}>
-                        <Tooltip title="Edit" color="blue">
-                            <Button type="primary" shape="circle" icon={<EditOutlined />}></Button>
-                        </Tooltip>
+                        <Button type="primary" shape="circle" icon={<EditOutlined />}></Button>
                     </Link>
                     <Popconfirm
                         title="Delete"
@@ -238,17 +225,14 @@ const View: React.FC = () => {
                         onConfirm={() => onDeleteProduct(record.id)}
                         okText="Yes"
                         okType="danger"
-                        cancelText="No"
                         cancelButtonProps={{ type: 'primary' }}
                     >
-                        <Tooltip title="Delete" color="red">
-                            <Button
-                                variant="solid"
-                                color="danger"
-                                shape="circle"
-                                icon={<DeleteOutlined />}
-                            ></Button>
-                        </Tooltip>
+                        <Button
+                            variant="solid"
+                            color="danger"
+                            shape="circle"
+                            icon={<DeleteOutlined />}
+                        ></Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -318,6 +302,7 @@ const View: React.FC = () => {
     const [hiddenColumns, setHiddenColumns] = useState<string[]>(
         productColumns.filter((item) => item?.hidden == true).map((item) => item.key as string)
     );
+
     const onDeleteProduct = (id: number) => {
         return new Promise<void>((resolve, reject) => {
             try {
@@ -428,18 +413,23 @@ const View: React.FC = () => {
         setLoading(true);
 
         const fetchCategories = async () => {
-            return await categoryService.getCategoriesTree();
+            const categories = await categoryService.getCategoriesTree();
+            setCategoriesTree(generateCategoriesTree(categories));
+        };
+
+        const fetchAttributes = async () => {
+            const attributes = await attributeService.getAttributes({ includeValues: true });
+            setAttributesTree(generateAttributesTree(attributes));
         };
 
         fetchProducts()
             .then((products) => {
                 setData(products);
-                fetchCategories().then((categories) => {
-                    setCategoriesTree(generateCategoriesTree(categories));
-                });
             })
             .catch(console.error)
             .finally(() => setLoading(false));
+        fetchCategories();
+        fetchAttributes();
     }, []);
 
     function convertFiltersToDescriptors(data) {
