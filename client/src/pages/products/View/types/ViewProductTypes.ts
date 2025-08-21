@@ -3,6 +3,7 @@ export type Product = {
     name: string;
     description?: string;
     isVariable: boolean;
+    quantity: number;
     attributes?: ProductAttribute[];
     categories?: Category[];
     variations: Variation[];

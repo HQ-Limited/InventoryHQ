@@ -5,13 +5,15 @@ import type { SorterResult } from 'antd/es/table/interface';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import productService from '../../../services/productService';
-import { TextFilter } from './components/TextFilter';
-import { NumberFilter } from './components/NumberFilter';
+import { TextFilter } from '../../../components/Table/Filters/TextFilter';
+import { NumberFilter } from '../../../components/Table/Filters/NumberFilter';
 import { generateAttributesTree, generateCategoriesTree, Tree } from '../../../utils/generate';
 import categoryService from '../../../services/categoryService';
 import { Product, Variation } from './types/ViewProductTypes';
 import attributeService from '../../../services/attributeService';
 import { LOCATIONS_ENABLED } from '../../../global';
+import { FilterMap } from '../../../components/Table/Filters/types/FilterTypes';
+import { buildODataRequest } from '../../../components/Table/Filters/functions/ODataRequest';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -104,7 +106,10 @@ const View: React.FC = () => {
             key: 'name',
             title: 'Name',
             dataIndex: 'name',
-            sorter: true,
+            sorter: {
+                compare: (a, b) => a.name.localeCompare(b.name),
+                multiple: 2,
+            },
             ...TextFilter(),
         },
         {
@@ -124,16 +129,27 @@ const View: React.FC = () => {
         {
             // responsive: ['md'],
             width: 100,
-            key: 'price',
+            key: 'retailPrice',
             title: 'Price',
-            dataIndex: 'price',
-            sorter: true,
+            dataIndex: 'variations',
             render: (_, record) => {
                 if (record.isVariable === false) {
                     return record.variations[0].retailPrice;
                 } else {
                     return 'N/A';
                 }
+            },
+            sorter: {
+                compare: (a, b) => {
+                    if (a.isVariable === false) {
+                        return (
+                            (a.variations[0].retailPrice || 0) - (b.variations[0].retailPrice || 0)
+                        );
+                    } else {
+                        return 0;
+                    }
+                },
+                multiple: 1,
             },
             ...NumberFilter(),
         },
@@ -164,7 +180,7 @@ const View: React.FC = () => {
                     0
                 );
             },
-            ...NumberFilter(),
+            // Create a custom Location filters
         },
         {
             responsive: ['lg'],
@@ -405,8 +421,8 @@ const View: React.FC = () => {
         },
     });
 
-    const fetchProducts = async (tableParams = {}) => {
-        return await productService.getProducts(tableParams);
+    const fetchProducts = async (query?: any) => {
+        return await productService.getProducts(query);
     };
 
     useEffect(() => {
@@ -432,43 +448,12 @@ const View: React.FC = () => {
         fetchAttributes();
     }, []);
 
-    function convertFiltersToDescriptors(data) {
-        const descriptors = [];
-
-        for (const [field, filters] of Object.entries(data)) {
-            if (Array.isArray(filters)) {
-                if (
-                    typeof filters[0] === 'object' &&
-                    filters[0] !== null &&
-                    'operator' in filters[0]
-                ) {
-                    for (const f of filters) {
-                        descriptors.push({
-                            fieldName: field,
-                            value: f.input,
-                            operator: f.operator,
-                        });
-                    }
-                } else {
-                    // Simple array of values, assume equality
-                    for (const val of filters) {
-                        descriptors.push({
-                            fieldName: field,
-                            value: val,
-                            operator: 'eq',
-                        });
-                    }
-                }
-            }
-        }
-
-        return descriptors;
-    }
-
-    const onTableChange: TableProps<Product>['onChange'] = (pagination, filters, sorter) => {
-        setLoading(true);
-
-        const filterDescriptors = convertFiltersToDescriptors(filters);
+    const onTableChange: (
+        pagination: TablePaginationConfig,
+        filters: FilterMap<any>, // replace AntD default filters
+        sorter: SorterResult<Product> | SorterResult<Product>[]
+    ) => void = (pagination, filters, sorter) => {
+        // setLoading(true);
 
         const newTableParams = {
             pagination,
@@ -477,27 +462,16 @@ const View: React.FC = () => {
             sortField: Array.isArray(sorter) ? undefined : sorter.field,
         };
 
-        setVariationColumns(
+        /* setVariationColumns(
             variationColumns?.map((col) => ({
                 ...col,
                 filteredValue: filters[col.dataIndex as string],
             }))
-        );
-
-        console.log({ filters });
-
-        const dataRequest = {
-            pagination,
-            filters: filterDescriptors,
-            sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
-            sortField: Array.isArray(sorter) ? undefined : sorter.field,
-        };
+        ); */
 
         setTableParams(newTableParams);
 
-        // TODO: Add OData query parameters
-
-        fetchProducts(dataRequest)
+        fetchProducts(buildODataRequest({ pagination, filters, sorter }))
             .then((products) => {
                 setData(products);
             })

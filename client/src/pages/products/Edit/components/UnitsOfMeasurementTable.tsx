@@ -9,7 +9,7 @@ import {
 import { useContext, useState } from 'react';
 import Column from 'antd/es/table/Column';
 import BarcodeField from './BarcodeField';
-import AddButtonTable from '../../../../components/AddButtonTable';
+import AddButtonTable from '../../../../components/Table/AddButtonTable';
 import { AnyObject } from 'antd/es/_util/type';
 import { UnitOfMeasurement } from '../types/EditProductTypes';
 import { Context } from '../Context';

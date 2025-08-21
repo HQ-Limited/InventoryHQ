@@ -64,7 +64,7 @@ namespace InventoryHQ.Services
                     IsDefault = x.IsDefault,
                     IsBase = x.IsBase,
                 }),
-                IsVariable = product.isVariable,
+                IsVariable = product.IsVariable,
                 Attributes = product.Attributes?.Select(x => new ProductAttributeDto()
                 {
                     Id = x.Id,

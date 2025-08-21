@@ -4,7 +4,7 @@ import { App, Button, Checkbox, Input, Menu, Popconfirm, Space, Table, Tooltip }
 import type { SorterResult } from 'antd/es/table/interface';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { TextFilter } from '../../products/View/components/TextFilter';
+import { TextFilter } from '../../../components/Table/Filters/TextFilter';
 import { Supplier } from '../types/Supplier';
 import supplierService from '../../../services/supplier';
 

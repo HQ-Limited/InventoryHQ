@@ -28,7 +28,7 @@ import { QuantityInputField } from './QuantityField';
 import DescriptionField from './DescriptionField';
 import { DEFAULT_DATE_FORMAT, LOCATIONS_ENABLED } from '../../../../global';
 import { Context } from '../Context';
-import AddButtonTable from '../../../../components/AddButtonTable';
+import AddButtonTable from '../../../../components/Table/AddButtonTable';
 import ExpirationDateField from './ExpirationDateField';
 import dayjs from 'dayjs';
 import LotNumberField from './LotNumberField';

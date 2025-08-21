@@ -58,7 +58,8 @@ namespace InventoryHQ.Profiles
 
             CreateMap<Category, CreateCategoryDto>().ReverseMap();
 
-            CreateMap<Data.Models.Product, ViewProductDto>().ReverseMap();
+            CreateMap<Data.Models.Product, ViewProductDto>()
+                .ReverseMap();
 
             CreateMap<ProductAttribute, ViewProductAttributeDto>()
                 .ForMember(dest => dest.Values, opt => opt.MapFrom(src => src.Values.Select(v => v.Value)))
@@ -86,6 +87,5 @@ namespace InventoryHQ.Profiles
                 .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.Name))
             .ReverseMap();
         }
-
     }
 }
