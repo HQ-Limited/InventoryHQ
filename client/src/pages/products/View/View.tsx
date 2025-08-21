@@ -22,7 +22,8 @@ interface TableParams {
     pagination?: TablePaginationConfig;
     sortField?: SorterResult<any>['field'];
     sortOrder?: SorterResult<any>['order'];
-    filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
+    filters?: FilterMap<any>;
+    // filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
 }
 
 const QuantityTitle = () => (
@@ -256,6 +257,7 @@ const View: React.FC = () => {
     ];
 
     const onVariationTableChange = (pagination, filters, sorter, product: Product) => {
+        // TODO: Do the same filtering logic for variations
         setLoading(true);
 
         const filterDescriptors = convertFiltersToDescriptors(filters);
@@ -450,10 +452,10 @@ const View: React.FC = () => {
 
     const onTableChange: (
         pagination: TablePaginationConfig,
-        filters: FilterMap<any>, // replace AntD default filters
+        filters: FilterMap<any>,
         sorter: SorterResult<Product> | SorterResult<Product>[]
     ) => void = (pagination, filters, sorter) => {
-        // setLoading(true);
+        setLoading(true);
 
         const newTableParams = {
             pagination,
@@ -462,6 +464,7 @@ const View: React.FC = () => {
             sortField: Array.isArray(sorter) ? undefined : sorter.field,
         };
 
+        // TODO: Do the same filtering logic for variations
         /* setVariationColumns(
             variationColumns?.map((col) => ({
                 ...col,

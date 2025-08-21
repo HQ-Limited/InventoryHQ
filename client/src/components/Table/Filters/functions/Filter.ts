@@ -1,3 +1,5 @@
+import { FilterMap } from '../types/FilterTypes';
+
 /**
  * Recursively sets a value at a nested path inside an object.
  */
@@ -15,13 +17,7 @@ function setNestedFilter(target: any, path: string[], value: any) {
  * Converts a flat filter map (with propertyPath in each condition) into a nested OData-ready object.
  * Skips null or undefined values.
  */
-export function buildODataFilter(
-    filters: Record<
-        string,
-        | { propertyPath: string[]; operator: string; value: any }
-        | { propertyPath: string[]; operator: string; value: any }[]
-    >
-): Record<string, any> {
+export function buildODataFilter(filters: FilterMap<any>): Record<string, any> {
     const nestedFilters: Record<string, any> = {};
 
     // Step 1: Normalize input and insert into nested structure

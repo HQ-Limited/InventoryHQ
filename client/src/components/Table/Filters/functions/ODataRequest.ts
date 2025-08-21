@@ -29,7 +29,5 @@ export function buildODataRequest({
         ...(orderby && { orderby }),
         expand,
     });
-
-    console.log({ filters, query });
     return query;
 }

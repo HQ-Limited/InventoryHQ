@@ -1,6 +1,7 @@
 import { DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, InputNumber, Select, Space, TableColumnType } from 'antd';
 import { CustomFilterProps, NumberOperators } from './types/FilterTypes';
+import { ActionButtons } from './ActionButtons';
 
 export const NumberFilter = <T,>(propertyPath?: string[]): TableColumnType<T> => {
     const NumberSearch: TableColumnType<T> = {
@@ -14,6 +15,17 @@ export const NumberFilter = <T,>(propertyPath?: string[]): TableColumnType<T> =>
             // Ensure there is at least one default key object with propertyPath
             if (selectedKeys.length === 0) {
                 setSelectedKeys([{ value: null, operator: 'eq', propertyPath }]);
+            }
+
+            function applyFilters() {
+                const newKeys = selectedKeys.filter((key) => key.value !== null);
+                setSelectedKeys(newKeys);
+                confirm();
+            }
+
+            function clearFilters() {
+                setSelectedKeys([]);
+                confirm();
             }
 
             return (
@@ -33,7 +45,7 @@ export const NumberFilter = <T,>(propertyPath?: string[]): TableColumnType<T> =>
                                 newKeys[index] = { ...key, value, propertyPath };
                                 setSelectedKeys(newKeys);
                             }}
-                            onPressEnter={() => confirm()}
+                            onPressEnter={() => applyFilters()}
                             addonBefore={
                                 <Select
                                     value={key.operator}
@@ -63,22 +75,22 @@ export const NumberFilter = <T,>(propertyPath?: string[]): TableColumnType<T> =>
                             }
                         />
                     ))}
-                    <Space>
-                        <Button type="link" size="small" onClick={close}>
-                            Close
-                        </Button>
-                        <Button
-                            onClick={() =>
-                                setSelectedKeys([
-                                    ...selectedKeys,
-                                    { value: null, operator: 'eq', propertyPath },
-                                ])
-                            }
-                        >
-                            Add filter
-                        </Button>
-                        <Button onClick={() => confirm()}>Apply</Button>
-                    </Space>
+                    <Button
+                        size="small"
+                        onClick={() =>
+                            setSelectedKeys([
+                                ...selectedKeys,
+                                { value: null, operator: 'eq', propertyPath },
+                            ])
+                        }
+                    >
+                        Add filter
+                    </Button>
+                    <ActionButtons
+                        close={close}
+                        clearFilters={clearFilters}
+                        applyFilters={applyFilters}
+                    />
                 </Space>
             );
         },
