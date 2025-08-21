@@ -124,14 +124,14 @@ const View: React.FC = () => {
                     return 'N/A';
                 }
             },
-            ...TextFilter(),
+            ...TextFilter(['Variations', 'any']),
         },
         {
             // responsive: ['md'],
             width: 100,
             key: 'retailPrice',
             title: 'Price',
-            dataIndex: 'variations',
+            dataIndex: 'retailPrice',
             render: (_, record) => {
                 if (record.isVariable === false) {
                     return record.variations[0].retailPrice;
@@ -151,7 +151,7 @@ const View: React.FC = () => {
                 },
                 multiple: 1,
             },
-            ...NumberFilter(),
+            ...NumberFilter(['Variations', 'any']),
         },
         {
             width: 100,

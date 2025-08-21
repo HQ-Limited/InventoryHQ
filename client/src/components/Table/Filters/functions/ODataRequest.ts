@@ -22,11 +22,14 @@ export function buildODataRequest({
             ? sorter.map((s) => `${s.field} ${s.order === 'ascend' ? 'asc' : 'desc'}`)
             : [`${sorter.field} ${sorter.order === 'ascend' ? 'asc' : 'desc'}`]);
 
-    return buildQuery({
+    const query = buildQuery({
         top: pagination.pageSize || 20,
         skip: (pagination.pageSize || 20) * ((pagination.current || 1) - 1),
         ...(filters && { filter: buildODataFilter(filters) }),
         ...(orderby && { orderby }),
         expand,
     });
+
+    console.log({ filters, query });
+    return query;
 }

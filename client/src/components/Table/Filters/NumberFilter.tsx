@@ -2,7 +2,7 @@ import { DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, InputNumber, Select, Space, TableColumnType } from 'antd';
 import { CustomFilterProps, NumberOperators } from './types/FilterTypes';
 
-export const NumberFilter = <T,>(): TableColumnType<T> => {
+export const NumberFilter = <T,>(propertyPath?: string[]): TableColumnType<T> => {
     const NumberSearch: TableColumnType<T> = {
         filterIcon: (filtered: boolean) => (
             <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
@@ -11,8 +11,9 @@ export const NumberFilter = <T,>(): TableColumnType<T> => {
             const { setSelectedKeys, selectedKeys, confirm, close } =
                 props as unknown as CustomFilterProps<number>;
 
+            // Ensure there is at least one default key object with propertyPath
             if (selectedKeys.length === 0) {
-                setSelectedKeys([{ value: null, operator: 'eq' }]);
+                setSelectedKeys([{ value: null, operator: 'eq', propertyPath }]);
             }
 
             return (
@@ -23,12 +24,13 @@ export const NumberFilter = <T,>(): TableColumnType<T> => {
                 >
                     {selectedKeys.map((key, index) => (
                         <InputNumber
+                            key={index}
                             controls={false}
                             value={key.value}
                             inputMode="decimal"
                             onChange={(value) => {
                                 const newKeys = [...selectedKeys];
-                                newKeys[index] = { ...key, value };
+                                newKeys[index] = { ...key, value, propertyPath };
                                 setSelectedKeys(newKeys);
                             }}
                             onPressEnter={() => confirm()}
@@ -38,7 +40,7 @@ export const NumberFilter = <T,>(): TableColumnType<T> => {
                                     options={NumberOperators}
                                     onChange={(operator) => {
                                         const newKeys = [...selectedKeys];
-                                        newKeys[index] = { ...key, operator };
+                                        newKeys[index] = { ...key, operator, propertyPath };
                                         setSelectedKeys(newKeys);
                                     }}
                                 />
@@ -62,18 +64,15 @@ export const NumberFilter = <T,>(): TableColumnType<T> => {
                         />
                     ))}
                     <Space>
-                        <Button
-                            type="link"
-                            size="small"
-                            onClick={() => {
-                                close();
-                            }}
-                        >
+                        <Button type="link" size="small" onClick={close}>
                             Close
                         </Button>
                         <Button
                             onClick={() =>
-                                setSelectedKeys([...selectedKeys, { value: null, operator: 'eq' }])
+                                setSelectedKeys([
+                                    ...selectedKeys,
+                                    { value: null, operator: 'eq', propertyPath },
+                                ])
                             }
                         >
                             Add filter

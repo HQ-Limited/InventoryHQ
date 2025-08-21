@@ -3,6 +3,7 @@ import { FilterDropdownProps } from 'antd/es/table/interface';
 export interface FilterCondition<T> {
     operator: ODataOperator;
     value: T | null;
+    propertyPath?: string[];
 }
 
 export const NumberOperators: { value: ODataOperator; label: string }[] = [
