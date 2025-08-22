@@ -32,7 +32,12 @@ export type VariationAttribute = {
 export type ProductAttribute = {
     id: number;
     name: string;
-    values: string[];
+    values: AttributeValue[];
+};
+
+export type AttributeValue = {
+    id: number;
+    value: string;
 };
 
 export type InventoryUnit = {

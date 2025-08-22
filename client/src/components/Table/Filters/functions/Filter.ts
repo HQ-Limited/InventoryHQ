@@ -29,14 +29,11 @@ export function buildODataFilter(filters: FilterMap<any>): Record<string, any> {
             if (!cond || cond.value === null || cond.value === undefined) continue;
 
             const { operator, value, propertyPath } = cond;
-            if (!propertyPath || propertyPath.length === 0) continue;
-
-            const fullPath = [...propertyPath, field];
 
             // Insert using setNestedFilter
             const leafValue = { [operator]: value };
-            const existing = getNestedFilter(nestedFilters, fullPath) || {};
-            setNestedFilter(nestedFilters, fullPath, { ...existing, ...leafValue });
+            const existing = getNestedFilter(nestedFilters, propertyPath) || {};
+            setNestedFilter(nestedFilters, propertyPath, { ...existing, ...leafValue });
         }
     }
 

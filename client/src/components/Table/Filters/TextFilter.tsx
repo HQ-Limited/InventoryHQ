@@ -3,7 +3,7 @@ import { Button, Input, Select, Space, TableColumnType } from 'antd';
 import { CustomFilterProps, StringOperators } from './types/FilterTypes';
 import { ActionButtons } from './ActionButtons';
 
-export const TextFilter = <T,>(propertyPath?: string[]): TableColumnType<T> => {
+export const TextFilter = <T,>(propertyPath: string[]): TableColumnType<T> => {
     const TextFilter: TableColumnType<T> = {
         filterIcon: (filtered: boolean) => (
             <FilterFilled style={{ color: filtered ? '#1677ff' : undefined }} />

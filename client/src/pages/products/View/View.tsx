@@ -110,7 +110,7 @@ const View: React.FC = () => {
                 compare: (a, b) => a.name.localeCompare(b.name),
                 multiple: 2,
             },
-            ...TextFilter(),
+            ...TextFilter(['Name']),
         },
         {
             // responsive: ['md'],
@@ -124,7 +124,7 @@ const View: React.FC = () => {
                     return 'N/A';
                 }
             },
-            ...TextFilter(['Variations', 'any']),
+            ...TextFilter(['Variations', 'any', 'Sku']),
         },
         {
             // responsive: ['md'],
@@ -151,7 +151,7 @@ const View: React.FC = () => {
                 },
                 multiple: 1,
             },
-            ...NumberFilter(['Variations', 'any']),
+            ...NumberFilter(['Variations', 'any', 'RetailPrice']),
         },
         {
             width: 100,
@@ -197,7 +197,7 @@ const View: React.FC = () => {
                         key={i}
                         content={attr.values.map((v, vI) => (
                             <Tag key={vI} style={{ marginLeft: 3, marginRight: 3 }} tabIndex={-1}>
-                                {v}
+                                {v.value}
                             </Tag>
                         ))}
                     >
@@ -440,7 +440,7 @@ const View: React.FC = () => {
             setAttributesTree(generateAttributesTree(attributes));
         };
 
-        fetchProducts()
+        fetchProducts('?$count=true')
             .then((products) => {
                 setData(products);
             })
@@ -464,17 +464,35 @@ const View: React.FC = () => {
             sortField: Array.isArray(sorter) ? undefined : sorter.field,
         };
 
-        // TODO: Do the same filtering logic for variations
-        /* setVariationColumns(
-            variationColumns?.map((col) => ({
-                ...col,
-                filteredValue: filters[col.dataIndex as string],
-            }))
-        ); */
-
         setTableParams(newTableParams);
 
-        fetchProducts(buildODataRequest({ pagination, filters, sorter }))
+        // TODO: Do the same for categories
+        if (filters.attributes) {
+            const attributesArray = filters.attributes as unknown as string[];
+            const attributes = attributesArray.filter((a) => a.includes('attribute'));
+            const values = attributesArray.filter((a) => a.includes('value'));
+
+            if (attributes.length > 0) {
+                filters.attributes = {
+                    value: attributes.map((a) => a.split('attribute-')[1]),
+                    operator: 'in',
+                    propertyPath: ['Attributes', 'any', 'Id'],
+                };
+            }
+
+            if (values.length > 0) {
+                filters.attributeValues = {
+                    value: values.map((v) => v.split('value-')[1]),
+                    operator: 'in',
+                    propertyPath: ['Attributes', 'any', 'Values', 'any', 'Id'],
+                };
+            }
+        }
+
+        const odataRequest = buildODataRequest({ pagination, filters, sorter });
+
+        // TODO: Check why count=true is not working. We need it for the Table component for pagination
+        fetchProducts(odataRequest)
             .then((products) => {
                 setData(products);
             })
@@ -503,6 +521,7 @@ const View: React.FC = () => {
                 bordered
                 scroll={{ x: 'max-content', scrollToFirstRowOnChange: false }}
                 loading={loading}
+                // @ts-expect-error - no need for changing the type of the onChange function
                 onChange={onTableChange}
             />
         </>

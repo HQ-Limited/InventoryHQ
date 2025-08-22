@@ -45,7 +45,7 @@ namespace InventoryHQ.Controllers
         /// </summary>
         /// <returns>A list of all products.</returns>
         [HttpGet]
-        [EnableQuery]
+        [EnableQuery(MaxAnyAllExpressionDepth = 3)]
         public IQueryable<ViewProductDto> Get()
         {
             // Directly return the IQueryable from the service

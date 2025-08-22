@@ -3,7 +3,7 @@ import { FilterDropdownProps } from 'antd/es/table/interface';
 export interface FilterCondition<T> {
     operator: ODataOperator;
     value: T | null;
-    propertyPath?: string[];
+    propertyPath: string[];
 }
 
 export const NumberOperators: { value: ODataOperator; label: string }[] = [
@@ -58,13 +58,6 @@ export type ODataOperator =
     | 'ceiling'
     | 'indexof'
     | 'substring';
-
-// Filter condition with value
-export interface FilterCondition<T> {
-    operator: ODataOperator;
-    value: T | null;
-    propertyPath?: string[];
-}
 
 // A property may be filtered by a single condition or multiple
 type FieldFilter<T> = FilterCondition<T> | FilterCondition<T>[];

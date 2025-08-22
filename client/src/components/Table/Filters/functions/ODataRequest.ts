@@ -5,11 +5,13 @@ import { SorterResult } from 'antd/es/table/interface';
 import buildQuery from 'odata-query';
 
 export function buildODataRequest({
+    count = true,
     pagination,
     filters,
     sorter,
     expand,
 }: {
+    count?: boolean;
     pagination: TablePaginationConfig;
     filters?: FilterMap<any>;
     sorter?: SorterResult<any> | SorterResult<any>[];
@@ -23,6 +25,7 @@ export function buildODataRequest({
             : [`${sorter.field} ${sorter.order === 'ascend' ? 'asc' : 'desc'}`]);
 
     const query = buildQuery({
+        count,
         top: pagination.pageSize || 20,
         skip: (pagination.pageSize || 20) * ((pagination.current || 1) - 1),
         ...(filters && { filter: buildODataFilter(filters) }),

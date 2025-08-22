@@ -25,6 +25,8 @@ public static class ODataEdmConfig
         builder.EntitySet<PackageDto>("Packages");
         builder.EntitySet<ProductAttributeDto>("ProductAttributes");
         builder.EntitySet<ViewProductDto>("ViewProducts");
+        builder.EntitySet<ViewProductAttributeDto>("ViewProductAttributes");
+        builder.EntitySet<ViewAttributeValueDto>("ViewAttributeValues");
         builder.EntitySet<VariationAttributeDto>("VariationAttributes");
         builder.EntitySet<VariationDto>("Variations");
 

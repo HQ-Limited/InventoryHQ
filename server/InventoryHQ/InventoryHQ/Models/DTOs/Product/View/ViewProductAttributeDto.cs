@@ -6,6 +6,6 @@
 
         public required string Name { get; set; }
 
-        public IEnumerable<string> Values { get; set; }
+        public IEnumerable<ViewAttributeValueDto> Values { get; set; }
     }
 }

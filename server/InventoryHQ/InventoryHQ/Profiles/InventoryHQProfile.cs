@@ -62,10 +62,11 @@ namespace InventoryHQ.Profiles
                 .ReverseMap();
 
             CreateMap<ProductAttribute, ViewProductAttributeDto>()
-                .ForMember(dest => dest.Values, opt => opt.MapFrom(src => src.Values.Select(v => v.Value)))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Attribute.Id))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Attribute.Name))
                 .ReverseMap();
+
+            CreateMap<AttributeValue, ViewAttributeValueDto>().ReverseMap();
 
             CreateMap<Category, ViewCategoryDto>().ReverseMap();
 
