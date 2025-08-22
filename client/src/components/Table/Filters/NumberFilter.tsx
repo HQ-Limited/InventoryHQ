@@ -1,12 +1,12 @@
-import { DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { DeleteOutlined, FilterFilled } from '@ant-design/icons';
 import { Button, InputNumber, Select, Space, TableColumnType } from 'antd';
 import { CustomFilterProps, NumberOperators } from './types/FilterTypes';
 import { ActionButtons } from './ActionButtons';
 
 export const NumberFilter = <T,>(propertyPath?: string[]): TableColumnType<T> => {
-    const NumberSearch: TableColumnType<T> = {
+    const NumberFilter: TableColumnType<T> = {
         filterIcon: (filtered: boolean) => (
-            <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+            <FilterFilled style={{ color: filtered ? '#1677ff' : undefined }} />
         ),
         filterDropdown: (props) => {
             const { setSelectedKeys, selectedKeys, confirm, close } =
@@ -96,5 +96,5 @@ export const NumberFilter = <T,>(propertyPath?: string[]): TableColumnType<T> =>
         },
     };
 
-    return NumberSearch;
+    return NumberFilter;
 };

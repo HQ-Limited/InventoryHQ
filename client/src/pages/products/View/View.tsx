@@ -23,7 +23,6 @@ interface TableParams {
     sortField?: SorterResult<any>['field'];
     sortOrder?: SorterResult<any>['order'];
     filters?: FilterMap<any>;
-    // filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
 }
 
 const QuantityTitle = () => (
@@ -181,7 +180,7 @@ const View: React.FC = () => {
                     0
                 );
             },
-            // Create a custom Location filters
+            // TODO: Create a custom Location filter (user can pick locations from a list)
         },
         {
             responsive: ['lg'],
@@ -189,6 +188,7 @@ const View: React.FC = () => {
             key: 'attributes',
             title: 'Attributes',
             filterMode: 'tree',
+            filterMultiple: true,
             filterSearch: true,
             filters: attributesTree,
             render: (_, record) => {
