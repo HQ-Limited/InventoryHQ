@@ -6,7 +6,7 @@ const Home = () => {
     return (
         <Row gutter={[32, { xs: 30, sm: 40, md: 40, lg: 50 }]}>
             {routes!
-                .filter((page) => page.url !== '/' && !page.hidden)
+                .filter((page) => page.url !== '/' && page.showOnHome)
                 .map((page, i) => (
                     <Col
                         key={i}
