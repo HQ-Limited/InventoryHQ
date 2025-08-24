@@ -431,7 +431,7 @@ const View: React.FC = () => {
         setLoading(true);
 
         const fetchCategories = async () => {
-            const categories = await categoryService.getCategoriesTree();
+            const categories = await categoryService.getNestedCategoriesTree();
             setCategoriesTree(generateCategoriesTree(categories));
         };
 
