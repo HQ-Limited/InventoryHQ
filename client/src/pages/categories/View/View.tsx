@@ -90,7 +90,6 @@ const View: React.FC = () => {
     };
 
     const onDelete = async () => {
-        // fake promise after 3 sec
         try {
             if (!selectedNode) return;
             await categoryService.deleteCategory(selectedNode.id as number);

@@ -3,6 +3,7 @@ using System;
 using InventoryHQ.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryHQ.Migrations
 {
     [DbContext(typeof(InventoryHQDbContext))]
-    partial class InventoryHQDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250824115914_FixCategoryCascade")]
+    partial class FixCategoryCascade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,107 +147,6 @@ namespace InventoryHQ.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("InventoryHQ.Data.Models.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("CustomerGroupId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("DeliveryAddress")
-                        .HasColumnType("text");
-
-                    b.Property<float?>("Discount")
-                        .HasColumnType("real");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PMR")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TaxVAT")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("VAT")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerGroupId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.HasIndex("TaxVAT")
-                        .IsUnique();
-
-                    b.HasIndex("VAT")
-                        .IsUnique();
-
-                    b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.CustomerGroup", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<float?>("Discount")
-                        .HasColumnType("real");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("CustomerGroup");
-                });
-
             modelBuilder.Entity("InventoryHQ.Data.Models.InventoryUnit", b =>
                 {
                     b.Property<int>("Id")
@@ -259,7 +161,7 @@ namespace InventoryHQ.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("LocationId")
+                    b.Property<int>("LocationId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("PackageId")
@@ -332,20 +234,14 @@ namespace InventoryHQ.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<DateOnly?>("ExpirationDate")
-                        .HasColumnType("date");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Label")
                         .HasColumnType("text");
 
-                    b.Property<int?>("LocationId")
+                    b.Property<int>("LocationId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("LotNumber")
-                        .HasColumnType("text");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
@@ -358,42 +254,6 @@ namespace InventoryHQ.Migrations
                     b.HasIndex("LocationId");
 
                     b.ToTable("Packages");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.Pricelist", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<float>("Price")
-                        .HasColumnType("real");
-
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("VariationId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VariationId");
-
-                    b.HasIndex("SupplierId", "VariationId")
-                        .IsUnique();
-
-                    b.ToTable("Pricelists");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Product", b =>
@@ -410,7 +270,13 @@ namespace InventoryHQ.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<bool?>("InStock")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ManageQuantity")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -419,9 +285,6 @@ namespace InventoryHQ.Migrations
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Vat")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("isVariable")
                         .HasColumnType("boolean");
@@ -466,97 +329,6 @@ namespace InventoryHQ.Migrations
                     b.ToTable("ProductAttribute");
                 });
 
-            modelBuilder.Entity("InventoryHQ.Data.Models.Receiver", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Receivers");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.Supplier", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PMR")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TaxVAT")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("VAT")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.HasIndex("TaxVAT")
-                        .IsUnique();
-
-                    b.HasIndex("VAT")
-                        .IsUnique();
-
-                    b.ToTable("Suppliers");
-                });
-
             modelBuilder.Entity("InventoryHQ.Data.Models.Variation", b =>
                 {
                     b.Property<int>("Id")
@@ -564,9 +336,6 @@ namespace InventoryHQ.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Barcode")
-                        .HasColumnType("text");
 
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
@@ -577,9 +346,6 @@ namespace InventoryHQ.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<float?>("MinStock")
-                        .HasColumnType("real");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
@@ -587,15 +353,13 @@ namespace InventoryHQ.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<string>("SKU")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Barcode")
-                        .IsUnique();
 
                     b.HasIndex("ProductId");
 
@@ -688,23 +452,15 @@ namespace InventoryHQ.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("InventoryHQ.Data.Models.Customer", b =>
-                {
-                    b.HasOne("InventoryHQ.Data.Models.CustomerGroup", "CustomerGroup")
-                        .WithMany("Customers")
-                        .HasForeignKey("CustomerGroupId");
-
-                    b.Navigation("CustomerGroup");
-                });
-
             modelBuilder.Entity("InventoryHQ.Data.Models.InventoryUnit", b =>
                 {
                     b.HasOne("InventoryHQ.Data.Models.Location", "Location")
-                        .WithMany("InventoryUnits")
-                        .HasForeignKey("LocationId");
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("InventoryHQ.Data.Models.Package", "Package")
-                        .WithMany("InventoryUnit")
                         .WithMany("InventoryUnit")
                         .HasForeignKey("PackageId");
 
@@ -725,28 +481,11 @@ namespace InventoryHQ.Migrations
                 {
                     b.HasOne("InventoryHQ.Data.Models.Location", "Location")
                         .WithMany()
-                        .HasForeignKey("LocationId");
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Location");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.Pricelist", b =>
-                {
-                    b.HasOne("InventoryHQ.Data.Models.Supplier", "Supplier")
-                        .WithMany("Pricelist")
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InventoryHQ.Data.Models.Variation", "Variation")
-                        .WithMany()
-                        .HasForeignKey("VariationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Supplier");
-
-                    b.Navigation("Variation");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.ProductAttribute", b =>
@@ -766,17 +505,6 @@ namespace InventoryHQ.Migrations
                     b.Navigation("Attribute");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.Receiver", b =>
-                {
-                    b.HasOne("InventoryHQ.Data.Models.Customer", "Customer")
-                        .WithMany("Receivers")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Variation", b =>
@@ -824,16 +552,6 @@ namespace InventoryHQ.Migrations
                     b.Navigation("Children");
                 });
 
-            modelBuilder.Entity("InventoryHQ.Data.Models.Customer", b =>
-                {
-                    b.Navigation("Receivers");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.CustomerGroup", b =>
-                {
-                    b.Navigation("Customers");
-                });
-
             modelBuilder.Entity("InventoryHQ.Data.Models.Package", b =>
                 {
                     b.Navigation("InventoryUnit");
@@ -843,14 +561,7 @@ namespace InventoryHQ.Migrations
                 {
                     b.Navigation("Attributes");
 
-                    b.Navigation("UnitsOfMeasurement");
-
                     b.Navigation("Variations");
-                });
-
-            modelBuilder.Entity("InventoryHQ.Data.Models.Supplier", b =>
-                {
-                    b.Navigation("Pricelist");
                 });
 
             modelBuilder.Entity("InventoryHQ.Data.Models.Variation", b =>
