@@ -17,12 +17,13 @@ import {
 } from 'antd';
 import categoryService from '../../../services/categoryService';
 import { useEffect, useState } from 'react';
-import { Category, CategoryTree, CreateCategory, EditCategory } from './types/CategoryTypes';
+import { Category, CreateCategory, EditCategory } from './types/CategoryTypes';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { EventDataNode } from 'antd/es/tree';
 import { AxiosError } from 'axios';
+import { TreeType } from '../../../types/TreeType';
 
-const ParentSelect = ({ categories }: { categories: CategoryTree[] }) => {
+const ParentSelect = ({ categories }: { categories: TreeType[] }) => {
     return (
         <Form.Item label="Parent" name="parentId">
             <TreeSelect
@@ -50,13 +51,13 @@ const { Search } = Input;
 
 const View: React.FC = () => {
     const { message } = App.useApp();
-    const [categoriesTree, setCategoriesTree] = useState<CategoryTree[]>([]);
+    const [categoriesTree, setCategoriesTree] = useState<TreeType[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
-    const [editingNode, setEditingNode] = useState<CategoryTree | null>(null);
-    const [selectedNode, setSelectedNode] = useState<
-        EventDataNode<CategoryTree> | CategoryTree | null
-    >(null);
+    const [editingNode, setEditingNode] = useState<TreeType | null>(null);
+    const [selectedNode, setSelectedNode] = useState<EventDataNode<TreeType> | TreeType | null>(
+        null
+    );
     const [form] = Form.useForm();
     const screens = useBreakpoint();
     const [formHidden, setFormHidden] = useState(true);
@@ -85,7 +86,7 @@ const View: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    const onRightClick = ({ node }: { node: EventDataNode<CategoryTree> }) => {
+    const onRightClick = ({ node }: { node: EventDataNode<TreeType> }) => {
         setSelectedNode(node);
     };
 
@@ -107,7 +108,7 @@ const View: React.FC = () => {
             key: 'edit',
             icon: <EditOutlined />,
             onClick: async () => {
-                setEditingNode(selectedNode as CategoryTree);
+                setEditingNode(selectedNode as TreeType);
                 setFormHidden(false);
                 form.setFieldsValue(selectedNode as EditCategory);
             },
@@ -196,8 +197,8 @@ const View: React.FC = () => {
         dragNode,
     }: {
         event: React.MouseEvent<HTMLDivElement>;
-        node: CategoryTree;
-        dragNode: CategoryTree;
+        node: TreeType;
+        dragNode: TreeType;
     }) {
         try {
             const category = categories.find((c) => c.id === dragNode.id)!;

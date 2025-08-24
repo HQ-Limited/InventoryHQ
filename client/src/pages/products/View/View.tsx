@@ -7,13 +7,15 @@ import { DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined } from '@ant-d
 import productService from '../../../services/productService';
 import { TextFilter } from '../../../components/Table/Filters/TextFilter';
 import { NumberFilter } from '../../../components/Table/Filters/NumberFilter';
-import { generateAttributesTree, generateCategoriesTree, Tree } from '../../../utils/generate';
+import { generateAttributesTree, Tree } from '../../../utils/generate';
 import categoryService from '../../../services/categoryService';
-import { Product, Variation } from './types/ViewProductTypes';
+import { Category, Product, Variation } from './types/ViewProductTypes';
 import attributeService from '../../../services/attributeService';
 import { LOCATIONS_ENABLED } from '../../../global';
 import { FilterMap } from '../../../components/Table/Filters/types/FilterTypes';
 import { buildODataRequest } from '../../../components/Table/Filters/functions/ODataRequest';
+import { TreeFilter } from '../../../components/Table/Filters/TreeFilter';
+import { TreeType } from '../../../types/TreeType';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
 type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
@@ -30,7 +32,8 @@ const QuantityTitle = () => (
 );
 
 const View: React.FC = () => {
-    const [categoriesTree, setCategoriesTree] = useState<Tree[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoriesTree, setCategoriesTree] = useState<TreeType[]>([]);
     const [attributesTree, setAttributesTree] = useState<Tree[]>([]);
     const { message } = App.useApp();
 
@@ -211,10 +214,15 @@ const View: React.FC = () => {
             width: 100,
             key: 'categories',
             title: 'Categories',
-            dataIndex: 'categories',
-            filterMode: 'tree',
+            // dataIndex: 'categories',
+            ...TreeFilter({
+                propertyPath: ['Categories', 'any', 'Id'],
+                treeData: categoriesTree,
+                flatData: categories,
+            }),
+            /* filterMode: 'tree',
             filterSearch: true,
-            filters: categoriesTree,
+            filters: categoriesTree, */
             render: (_, record) => {
                 if (!record.categories) return;
                 return (
@@ -431,8 +439,12 @@ const View: React.FC = () => {
         setLoading(true);
 
         const fetchCategories = async () => {
-            const categories = await categoryService.getNestedCategoriesTree();
-            setCategoriesTree(generateCategoriesTree(categories));
+            const [categoriesTree, categories] = await Promise.all([
+                categoryService.getNestedCategoriesTree(),
+                categoryService.getCategories(),
+            ]);
+            setCategoriesTree(categoriesTree);
+            setCategories(categories);
         };
 
         const fetchAttributes = async () => {
