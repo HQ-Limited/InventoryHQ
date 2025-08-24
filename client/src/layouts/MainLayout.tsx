@@ -13,13 +13,6 @@ interface Props {
 
 const MainLayout = (props: Props) => {
     const location = useLocation();
-    const items = routes
-        .filter((route) => route.pinned)
-        .map((route) => ({
-            key: route.url,
-            icon: route.icon && route.icon(),
-            label: route.label,
-        }));
 
     return (
         <>
@@ -69,13 +62,19 @@ const MainLayout = (props: Props) => {
                         align={'center'}
                         gap={'10px'}
                     >
-                        {items.map((item) => (
-                            <Link key={item.key} to={item.key}>
-                                <Button color={'default'} variant={'link'} icon={item.icon}>
-                                    {item.label}
-                                </Button>
-                            </Link>
-                        ))}
+                        {routes
+                            .filter((route) => route.pinned)
+                            .map((item, i) => (
+                                <Link key={i} to={item.url}>
+                                    <Button
+                                        color={'default'}
+                                        variant={'link'}
+                                        icon={item.icon && item.icon()}
+                                    >
+                                        {item.label}
+                                    </Button>
+                                </Link>
+                            ))}
                     </Flex>
                     <Button
                         className="header-darkModeButton"
@@ -124,8 +123,8 @@ const MainLayout = (props: Props) => {
                             }}
                             items={routes
                                 .filter((route) => route.pinned)
-                                .map((route) => ({
-                                    key: route.url,
+                                .map((route, i) => ({
+                                    key: i,
                                     label: (
                                         <Link to={route.url}>
                                             <Flex

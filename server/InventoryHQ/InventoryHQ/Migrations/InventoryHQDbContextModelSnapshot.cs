@@ -705,7 +705,6 @@ namespace InventoryHQ.Migrations
 
                     b.HasOne("InventoryHQ.Data.Models.Package", "Package")
                         .WithMany("InventoryUnit")
-                        .WithMany("InventoryUnit")
                         .HasForeignKey("PackageId");
 
                     b.HasOne("InventoryHQ.Data.Models.Variation", "Variation")

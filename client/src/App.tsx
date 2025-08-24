@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import { ConfigProvider, theme, App } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Page404 from './pages/404';
 import routes from './Routes';
 
@@ -34,7 +34,7 @@ function MainApp() {
                     <MainLayout isDark={isDark} setIsDark={setIsDark}>
                         <Routes>
                             {routes.map((route) => (
-                                <Route key={route.url} path={route.url} element={route.element} />
+                                <Route key={route.url} path={route.url} element={route.page} />
                             ))}
                             <Route path="*" element={<Page404 />} />
                         </Routes>
