@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import { ConfigProvider, theme, App } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Page404 from './pages/404';
 import routes from './Routes';
 

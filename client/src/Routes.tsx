@@ -34,41 +34,16 @@ const productsRoutes: Route[] = [
         icon: (style?: CSSProperties) => <ProductOutlined style={{ ...style }} />,
         label: 'Products',
         url: '/products',
-        pinned: true,
-        element: <ProductsView />,
+        showOnHome: true,
+        page: <ProductsView />,
     },
     {
         url: '/products/new',
-        element: <ProductsEdit />,
-        hidden: true,
+        page: <ProductsEdit />,
     },
     {
         url: '/products/:id',
-        element: <ProductsEdit />,
-        hidden: true,
-    },
-    {
-        icon: (style?: CSSProperties) => <FolderOutlined style={{ ...style }} />,
-        label: 'Categories',
-        url: '/categories',
-        pinned: false,
-        element: <CategoriesView />,
-    },
-    {
-        icon: (style?: CSSProperties) => <UserOutlined style={{ ...style }} />,
-        label: 'Partners',
-        url: '/partners',
-        element: <PartnersView />,
-    },
-    {
-        url: '/partners/new',
-        element: <PartnersCreateEdit />,
-        hidden: true,
-    },
-    {
-        url: '/partners/:id',
-        element: <PartnersCreateEdit />,
-        hidden: true,
+        page: <ProductsEdit />,
     },
 ];
 
