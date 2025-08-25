@@ -4,10 +4,12 @@
     {
         public int Id { get; set; }
 
+        public int AttributeId { get; set; }
+
         public required string Name { get; set; }
 
-        public required List<AttributeValueDto> Values { get; set; }
+        public IEnumerable<AttributeValueDto> Values { get; set; }
 
-        public required bool IsVariational { get; set; }
+        public bool? IsVariational { get; set; }
     }
 }

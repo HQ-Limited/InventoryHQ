@@ -14,7 +14,7 @@ import QuantityField from './QuantityField';
 import { LOCATIONS_ENABLED } from '../../../../global';
 import SKUField from './SKUField';
 import BarcodeField from './BarcodeField';
-import AddButtonTable from '../../../../components/AddButtonTable';
+import AddButtonTable from '../../../../components/Table/AddButtonTable';
 import MinStockField from './MinStockField';
 import { generateEmptyInventoryUnits } from './shared_functions';
 import { Context } from '../Context';

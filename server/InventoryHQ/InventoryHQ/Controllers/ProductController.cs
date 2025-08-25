@@ -1,7 +1,10 @@
-﻿using InventoryHQ.Models.DTOs;
+﻿using InventoryHQ.Data.Models;
+using InventoryHQ.Models.DTOs;
 using InventoryHQ.Models.Request;
 using InventoryHQ.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace InventoryHQ.Controllers
 {
@@ -10,7 +13,7 @@ namespace InventoryHQ.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductController : ControllerBase
+    public class ProductController : ODataController
     {
         private readonly ProductService _productService;
 
@@ -41,22 +44,23 @@ namespace InventoryHQ.Controllers
         /// Retrieves all products.
         /// </summary>
         /// <returns>A list of all products.</returns>
-        [HttpPost("search")]
-        public async Task<ActionResult<IEnumerable<ProductDto>>> Get([FromBody]TableDatasourceRequest? request)
+        [HttpGet]
+        [EnableQuery(MaxAnyAllExpressionDepth = 3)]
+        public IQueryable<ViewProductDto> Get()
         {
-            var products = await _productService.GetProducts(request);
-            return Ok(products);
+            // Directly return the IQueryable from the service
+            return _productService.GetProducts();
         }
 
         /// <summary>
         /// Creates a new product.
         /// </summary>
-        /// <param name="simpleProductDto">The product to create.</param>
+        /// <param name="data">The product to create.</param>
         /// <returns>The ID of the created product.</returns>
         [HttpPost]
-        public async Task<ActionResult<int?>> CreateProduct(ProductDto simpleProductDto)
+        public async Task<ActionResult<int?>> CreateProduct(EditProductDto data)
         {
-            var id = await _productService.CreateProduct(simpleProductDto);
+            var id = await _productService.CreateProduct(data);
 
             if (id == null)
             {
@@ -69,12 +73,12 @@ namespace InventoryHQ.Controllers
         /// <summary>
         /// Updates an existing product.
         /// </summary>
-        /// <param name="simpleProductDto">The product to update.</param>
+        /// <param name="data">The product to update.</param>
         /// <returns>The ID of the updated product.</returns>
         [HttpPut]
-        public async Task<ActionResult<ProductDto>> UpdateProduct(ProductDto simpleProductDto)
+        public async Task<ActionResult<ProductDto>> UpdateProduct(EditProductDto data)
         {
-            var id = await _productService.UpdateProduct(simpleProductDto);
+            var id = await _productService.UpdateProduct(data);
 
             if (id == null)
             {

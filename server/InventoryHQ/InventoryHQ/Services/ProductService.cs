@@ -7,6 +7,7 @@ using InventoryHQ.Models.DTOs;
 using InventoryHQ.Models.Request;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace InventoryHQ.Services
 {
@@ -63,8 +64,8 @@ namespace InventoryHQ.Services
                     IsDefault = x.IsDefault,
                     IsBase = x.IsBase,
                 }),
-                IsVariable = product.isVariable,
-                Attributes = product.Attributes?.Select(x => new AttributeDto()
+                IsVariable = product.IsVariable,
+                Attributes = product.Attributes?.Select(x => new ProductAttributeDto()
                 {
                     Id = x.Id,
                     AttributeId = x.Attribute.Id,
@@ -93,11 +94,11 @@ namespace InventoryHQ.Services
                                     .Select(viu => new InventoryUnitDto()
                                     {
                                         Id = viu.Id,
-                                        Location = viu.Location != null ? new LocationDto()
+                                        Location = new LocationDto()
                                         {
                                             Id = viu.Location.Id,
                                             Name = viu.Location.Name
-                                        } : null,
+                                        },
                                         Quantity = viu.Quantity,
                                         Package = viu.Package != null ? new PackageDto()
                                         {
@@ -137,11 +138,11 @@ namespace InventoryHQ.Services
                             Price = first.Package.Price,
                             ExpirationDate = first.Package.ExpirationDate,
                             LotNumber = first.Package.LotNumber,
-                            Location = first.Package.Location != null ? new LocationDto()
+                            Location = new LocationDto()
                             {
                                 Id = first.Package.Location.Id,
                                 Name = first.Package.Location.Name
-                            } : null,
+                            },
                             InventoryUnits = g.Select(w => new InventoryUnitDto()
                             {
                                 Id = w.Id,
@@ -168,34 +169,29 @@ namespace InventoryHQ.Services
             };
         }
 
-        public async Task<IEnumerable<ProductDto>> GetProducts(TableDatasourceRequest? request)
+        public IQueryable<ViewProductDto> GetProducts()
         {
             var data = _data.Products
                             .Include(x => x.Categories)
-                                .Include(x => x.Attributes)
-                                    .ThenInclude(pa => pa.Attribute)
-                                .Include(x => x.Attributes)
-                                    .ThenInclude(a => a.Values)
-                                .Include(x => x.Variations)
-                                    .ThenInclude(v => v.Attributes)
-                                .Include(x => x.Variations)
-                                    .ThenInclude(i => i.InventoryUnits)
-                                        .ThenInclude(i => i.Location)
-                                .Include(x => x.Variations)
-                                    .ThenInclude(v => v.InventoryUnits)
-                                        .ThenInclude(iu => iu.Package)
+                            .Include(x => x.Attributes)
+                                .ThenInclude(a => a.Values)
+                            .Include(x => x.Attributes)
+                                .ThenInclude(a => a.Attribute)
+                            .Include(x => x.Variations)
+                                .ThenInclude(i => i.InventoryUnits)
+                                    .ThenInclude(i => i.Location)
+                            .Include(x => x.Variations)
+                                .ThenInclude(v => v.Attributes)
+                                    .ThenInclude(a => a.Value)
+                                        .ThenInclude(v => v.Attribute)
                             .AsQueryable();
 
-            data = data.ApplyProductFilters(request.Filters);
-
-            var products = _mapper.Map<IEnumerable<ProductDto>>(data);
-
-            return products;
+            return _mapper.ProjectTo<ViewProductDto>(data);
         }
 
-        public async Task<int?> CreateProduct(ProductDto simpleProductDto)
+        public async Task<int?> CreateProduct(EditProductDto data)
         {
-            var product = _mapper.Map<Product>(simpleProductDto);
+            var product = _mapper.Map<Product>(data);
             await _data.Products.AddAsync(product);
 
             await _data.SaveChangesAsync();
@@ -203,16 +199,16 @@ namespace InventoryHQ.Services
             return product.Id;
         }
 
-        public async Task<int?> UpdateProduct(ProductDto productDto)
+        public async Task<int?> UpdateProduct(EditProductDto data)
         {
-            var product = await _data.Products.FirstAsync(x => x.Id == productDto.Id);
+            var product = await _data.Products.FirstAsync(x => x.Id == data.Id);
 
             if (product == null)
             {
                 return null;
             }
 
-            _mapper.Map(productDto, product);
+            _mapper.Map(data, product);
 
             await _data.SaveChangesAsync();
             return product.Id;

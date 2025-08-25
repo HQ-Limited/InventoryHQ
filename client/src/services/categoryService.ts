@@ -1,4 +1,4 @@
-import { Category } from '../types/ProductTypes';
+import { Category } from '../pages/products/Edit/types/EditProductTypes';
 import api from '../utils/api';
 import {
     CategoryTree,

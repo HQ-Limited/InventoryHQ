@@ -23,8 +23,8 @@ import {
 } from '@ant-design/icons';
 import { Customer, CustomerGroup } from '../types/Customer';
 import customerService from '../../../services/customerService';
-import { TextFilter } from '../../products/View/components/TextFilter';
-import { NumberFilter } from '../../products/View/components/NumberFilter';
+import { TextFilter } from '../../../components/Table/Filters/TextFilter';
+import { NumberFilter } from '../../../components/Table/Filters/NumberFilter';
 import customerGroupService from '../../../services/customerGroupService';
 
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];

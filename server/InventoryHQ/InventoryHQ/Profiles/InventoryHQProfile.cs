@@ -14,10 +14,6 @@ namespace InventoryHQ.Profiles
 
             CreateMap<InventoryUnit, InventoryUnitDto>().ReverseMap();
 
-            CreateMap<Data.Models.Product, ProductDto>()
-                .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src => GetProductAttributes(src)))
-                .ReverseMap();
-
             CreateMap<Data.Models.Product, EditProductDto>().ReverseMap();
 
             CreateMap<UnitOfMeasurement, UnitOfMeasurementDto>().ReverseMap();
@@ -30,13 +26,13 @@ namespace InventoryHQ.Profiles
             CreateMap<AttributeValue, AttributeValueDto>().ReverseMap();
 
             CreateMap<Variation, VariationDto>()
-                .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src => GetVariationAttributes(src)))
                 .ReverseMap();
 
             CreateMap<VariationAttribute, VariationAttributeDto>()
             .ReverseMap();
 
             CreateMap<ProductAttribute, ProductAttributeDto>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Attribute.Name))
                 .ReverseMap();
 
             CreateMap<Data.Models.Attribute, AttributeDto>().ReverseMap();
@@ -61,36 +57,41 @@ namespace InventoryHQ.Profiles
                 .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.ParentId));
 
             CreateMap<Category, CreateCategoryDto>().ReverseMap();
-        }
 
-        private object GetProductAttributes(Product src)
-        {
-            return src.Attributes.Select(pa => new ProductAttributeDto
-            {
-                Id = pa.Attribute.Id,
-                Name = pa.Attribute.Name,
-                IsVariational = pa.IsVariational,
-                Values = pa.Values.Select(v => new AttributeValueDto
-                {
-                    Id = v.Id,
-                    Value = v.Value
-                }).ToList()
-            }).ToList();
-        }
+            CreateMap<Category, CategoryTreeDto>()
+                .ForMember(dest => dest.IsLeaf, opt => opt.MapFrom(src => src.Children == null || !src.Children.Any()))
+                .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.ParentId));
 
-        private object GetVariationAttributes(Variation src)
-        {
-            return src.Attributes.Select(vav => new VariationAttributeDto
-            {
-                Id = vav.Id,
-                AttributeId = vav.Value.Attribute.Id,
-                AttributeName = vav.Value.Attribute.Name,
-                Value = new AttributeValueDto
+            CreateMap<Category, CreateCategoryDto>().ReverseMap();
+            CreateMap<Data.Models.Product, ViewProductDto>()
+                .ReverseMap();
+
+            CreateMap<ProductAttribute, ViewProductAttributeDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Attribute.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Attribute.Name))
+                .ReverseMap();
+
+            CreateMap<AttributeValue, ViewAttributeValueDto>().ReverseMap();
+
+            CreateMap<Category, ViewCategoryDto>().ReverseMap();
+
+            CreateMap<Variation, ViewVariationDto>()
+                .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src => src.Attributes.Select(a => new ViewVariationAttributeDto
                 {
-                    Id = vav.Value.Id,
-                    Value = vav.Value.Value
-                }
-            }).ToList();
+                    Name = a.Value.Attribute.Name,
+                    Value = a.Value.Value
+                })))
+                .ForMember(dest => dest.InventoryUnits, opt => opt.MapFrom(src => src.InventoryUnits.Select(iu => new ViewInventoryUnitDto
+                {
+                    Id = iu.Id,
+                    Quantity = iu.Quantity,
+                    LocationName = iu.Location.Name,
+                })))
+                .ReverseMap();
+
+            CreateMap<InventoryUnit, ViewInventoryUnitDto>()
+                .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.Name))
+            .ReverseMap();
         }
     }
 }

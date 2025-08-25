@@ -22,6 +22,6 @@ namespace InventoryHQ.Data.Models
         [Required]
         public required List<UnitOfMeasurement> UnitsOfMeasurement { get; set; }
 
-        public bool isVariable { get; set; }
+        public bool IsVariable { get; set; }
     }
 }

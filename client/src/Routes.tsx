@@ -34,7 +34,6 @@ const productsRoutes: Route[] = [
         icon: (style?: CSSProperties) => <ProductOutlined style={{ ...style }} />,
         label: 'Products',
         url: '/products',
-        pinned: true,
         showOnHome: true,
         page: <ProductsView />,
     },

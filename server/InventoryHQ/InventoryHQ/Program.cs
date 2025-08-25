@@ -1,17 +1,20 @@
 using InventoryHQ.Data;
-using InventoryHQ.Middlewares;
 using InventoryHQ.Profiles;
 using InventoryHQ.Services;
-using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddOData(opt =>
+{
+    opt.Filter().Select().OrderBy().Expand().Count().SetMaxTop(100)
+       .AddRouteComponents("odata", ODataEdmConfig.GetEdmModel());
+}); ;
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -19,13 +22,13 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "InventoryHQ",
         Version = "v1",
-        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        Contact = new OpenApiContact
         {
             Name = "HQ Limited",
             Email = "contact@hq-limited.com",
             Url = new Uri("https://hq-limited.com")
         },
-        License = new Microsoft.OpenApi.Models.OpenApiLicense
+        License = new OpenApiLicense
         {
             Name = "EULA",
             Url = new Uri("https://hq-limited.com/eula")
